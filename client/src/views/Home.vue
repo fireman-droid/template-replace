@@ -1,130 +1,281 @@
 <template>
-  <div class="home">
-    <el-container>
-      <el-header>
-        <div class="header-content">
-          <h1>FastReplace - 模板填充系统</h1>
-          <div class="user-info">
-            <el-tag v-if="authStore.isAdmin" type="danger">管理员</el-tag>
-            <el-tag v-else type="success">普通用户</el-tag>
-            <span style="margin: 0 10px">{{ authStore.username }}</span>
-            <el-button size="small" @click="handleLogout">退出登录</el-button>
+  <div class="legal-tech-container">
+    <div class="cyber-bg">
+      <div class="grid-floor"></div>
+      <div class="data-stream"></div>
+    </div>
+
+    <nav class="navbar">
+      <div class="brand">
+        <div class="logo-hexagon"><el-icon><ScaleToOriginal /></el-icon></div>
+        <div class="brand-info"><span class="brand-name">FastReplace <span class="tag">AI.LAW</span></span></div>
+      </div>
+      <div class="user-zone">
+        <div class="status-indicator"><span class="dot"></span> 引擎就绪</div>
+        <el-dropdown trigger="click" popper-class="legal-dropdown-popper">
+          <div class="user-pill">
+            <el-avatar :size="32" class="avatar-glow">{{ authStore.username.charAt(0).toUpperCase() }}</el-avatar>
+            <span class="username">{{ authStore.username }}</span>
+            <el-icon class="arrow-icon"><CaretBottom /></el-icon>
+          </div>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item divided icon="SwitchButton" @click="handleLogout">退出</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </div>
+    </nav>
+
+    <main class="main-stage">
+      <section class="hero-box">
+        <div class="hero-text-group">
+          <div class="glitch-badge">LEGAL INTELLIGENCE</div>
+          <h1 class="hero-title">法律文书，<br /><span class="typing-effect">AI 毫秒级生成</span></h1>
+          <p class="hero-desc">智能解析案情要素，一键生成严谨法律文件。<br />支持离婚纠纷、房屋买卖、借贷纠纷等多种场景。</p>
+          <div class="cta-group">
+            <button class="btn-cyber primary" @click="router.push('/template/select')">
+              <span class="btn-content"><el-icon><Plus /></el-icon> 开始起草新案</span>
+              <div class="glitch-layer"></div>
+            </button>
           </div>
         </div>
-      </el-header>
-      <el-main>
-        <el-card>
-          <template #header>
-            <span>欢迎使用模板填充系统</span>
-          </template>
-          <el-space direction="vertical" style="width: 100%">
-            <el-alert
-              title="系统功能"
-              type="info"
-              :closable="false"
-            >
-              <p>✅ 用户认证系统已完成</p>
-              <p>🔄 模板管理功能开发中...</p>
-            </el-alert>
-            
-            <el-button type="primary" @click="testApi">测试后端连接</el-button>
-            <el-button type="success" @click="testDatabase">测试数据库连接</el-button>
-            <el-alert v-if="message" :title="message" :type="alertType" show-icon />
-          </el-space>
-        </el-card>
-      </el-main>
-    </el-container>
+        
+        <div class="hologram-visual">
+          <div class="scanner-line"></div>
+          <div class="doc-stack">
+            <div class="doc-card doc-1"><div class="doc-header">案件数据分析中...</div><div class="doc-lines"><span class="line l-100"></span><span class="line l-60 highlight"></span></div></div>
+            <div class="tech-ring"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="my-projects-section">
+        <div class="section-title">
+          <h3><el-icon><FolderOpened /></el-icon> 我的案卷库</h3>
+          <div class="search-pill">
+            <el-icon><Search /></el-icon>
+            <input placeholder="检索案卷号或当事人..." v-model="searchQuery" />
+          </div>
+        </div>
+
+        <div class="cards-container">
+          <div 
+            v-for="(item, index) in myProjects" 
+            :key="item.id" 
+            class="legal-card"
+            @click="goToProject(item)"
+          >
+            <div class="card-glow-border"></div>
+            <div class="card-content">
+              <div class="card-top">
+                <div class="file-type-icon">
+                  <el-icon><component :is="item.icon" /></el-icon>
+                </div>
+                
+                <div class="card-actions">
+                  <el-tag :type="item.statusType" effect="dark" size="small" class="status-tag">{{ item.status }}</el-tag>
+                  <div class="delete-btn" @click.stop="handleDelete(item)">
+                    <el-icon><Delete /></el-icon>
+                  </div>
+                </div>
+              </div>
+              
+              <h4 class="project-title">{{ item.title }}</h4>
+              <div class="meta-info">
+                <p><el-icon><User /></el-icon> 当事人：{{ item.client }}</p>
+                <p><el-icon><Timer /></el-icon> {{ item.time }}</p>
+              </div>
+              <div class="hover-arrow"><el-icon><Right /></el-icon></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
-import { useAppStore } from '@/stores/app'
-import axios from 'axios'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { 
+  ScaleToOriginal, CaretBottom, Plus, Search, FolderOpened, 
+  User, Timer, Right, House, ChatDotSquare, Money, Delete 
+} from '@element-plus/icons-vue'
 
-export default {
-  name: 'Home',
-  setup() {
-    const router = useRouter()
-    const authStore = useAuthStore()
-    const appStore = useAppStore()
-    const message = ref('')
-    const alertType = ref('success')
+const router = useRouter()
+const authStore = useAuthStore()
+const searchQuery = ref('')
 
-    const testApi = async () => {
-      const result = await appStore.testConnection()
-      message.value = result
-      alertType.value = 'success'
+// 模拟“我的项目”数据
+const myProjects = ref([
+  { id: 101, title: '张三诉李四离婚纠纷案', client: '张三', type: 'divorce', status: '草稿', statusType: 'info', time: '2小时前', icon: 'ChatDotSquare' },
+  { id: 102, title: '滨海花园房屋买卖合同', client: '王五', type: 'house', status: '定稿', statusType: 'success', time: '1天前', icon: 'House' },
+  { id: 103, title: '民间借贷纠纷起诉状', client: '赵六', type: 'loan', status: '审核中', statusType: 'warning', time: '3天前', icon: 'Money' },
+])
+
+const handleLogout = () => {
+  authStore.logout()
+  router.push('/login')
+}
+
+const goToProject = (project) => {
+  router.push({ path: '/project/edit', query: { id: project.id, type: project.type } })
+}
+
+// 删除处理函数
+const handleDelete = (item) => {
+  ElMessageBox.confirm(
+    `确定要删除案卷 "${item.title}" 吗？此操作无法撤销。`,
+    '警告',
+    {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+      lockScroll: false, // 防止抖动
     }
-
-    const testDatabase = async () => {
-      try {
-        const response = await axios.get('/api/db/test')
-        if (response.data.success) {
-          message.value = response.data.message
-          alertType.value = 'success'
-        } else {
-          message.value = response.data.message
-          alertType.value = 'error'
-        }
-      } catch (error) {
-        message.value = '数据库连接失败: ' + error.message
-        alertType.value = 'error'
-      }
-    }
-
-    const handleLogout = () => {
-      authStore.logout()
-      ElMessage.success('已退出登录')
-      router.push('/login')
-    }
-
-    return {
-      authStore,
-      message,
-      alertType,
-      testApi,
-      testDatabase,
-      handleLogout
-    }
-  }
+  ).then(() => {
+    // 模拟删除逻辑
+    myProjects.value = myProjects.value.filter(p => p.id !== item.id)
+    ElMessage.success('案卷已安全移除')
+  }).catch(() => {
+    // 取消删除
+  })
 }
 </script>
 
-<style scoped>
-.home {
+<style lang="scss" scoped>
+$bg-deep: #050b14;
+$bg-card: #0f172a;
+$primary: #3b82f6;
+$accent: #06b6d4;
+$text-main: #f8fafc;
+$text-sub: #94a3b8;
+$danger: #ef4444;
+
+.legal-tech-container {
   min-height: 100vh;
-  background: #f5f5f5;
+  background-color: $bg-deep;
+  color: $text-main;
+  font-family: 'Inter', sans-serif;
 }
+.cyber-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; .grid-floor { position: absolute; bottom: -20%; width: 200%; height: 100%; background-image: linear-gradient(rgba($primary, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba($primary, 0.1) 1px, transparent 1px); background-size: 60px 60px; transform: perspective(500px) rotateX(60deg); mask-image: linear-gradient(to top, black, transparent 80%); } }
+.navbar { position: sticky; top: 0; z-index: 100; height: 70px; padding: 0 40px; display: flex; justify-content: space-between; align-items: center; background: rgba($bg-deep, 0.7); backdrop-filter: blur(12px); border-bottom: 1px solid rgba($primary, 0.2); .brand { display: flex; gap: 12px; align-items: center; .logo-hexagon { color: #fff; font-size: 20px; } .brand-name { font-size: 22px; font-weight: 700; .tag { font-size: 12px; color: $accent; border: 1px solid $accent; padding: 2px 6px; border-radius: 4px; margin-left: 8px; } } } .user-zone { display: flex; gap: 20px; align-items: center; .status-indicator { color: $accent; font-size: 12px; } .user-pill { display: flex; gap: 10px; align-items: center; padding: 6px 12px; background: rgba(255,255,255,0.05); border-radius: 30px; cursor: pointer; } } }
+.main-stage { max-width: 1280px; margin: 0 auto; padding: 60px 20px; z-index: 1; position: relative; }
+.hero-box { display: flex; margin-bottom: 80px; .hero-text-group { flex: 1; .glitch-badge { color: $accent; border-left: 2px solid $accent; padding-left: 10px; font-family: monospace; } .hero-title { font-size: 56px; font-weight: 800; margin: 20px 0; .typing-effect { background: linear-gradient(90deg, $text-main, $primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; border-right: 4px solid $primary; } } .hero-desc { color: $text-sub; font-size: 18px; margin-bottom: 40px; } } .hologram-visual { width: 400px; position: relative; } }
+.btn-cyber { padding: 14px 32px; background: $primary; color: white; border: none; font-weight: 600; clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%); cursor: pointer; &:hover { filter: brightness(1.2); } }
 
-.el-header {
-  background: #409eff;
-  color: white;
-  display: flex;
-  align-items: center;
-}
+// --- My Projects 列表样式 ---
+.my-projects-section {
+  .section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    h3 { font-size: 24px; display: flex; gap: 10px; align-items: center; }
+    .search-pill { background: rgba(255,255,255,0.05); padding: 8px 16px; border-radius: 20px; display: flex; width: 300px; input { background: transparent; border: none; outline: none; color: white; margin-left: 8px; width: 100%; } }
+  }
 
-.header-content {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+  .cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+  }
 
-.header-content h1 {
-  margin: 0;
-  font-size: 20px;
-}
+  .legal-card {
+    background: $bg-card;
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: all 0.3s;
+    overflow: hidden;
 
-.user-info {
-  display: flex;
-  align-items: center;
-}
+    .card-content {
+      padding: 24px;
+      position: relative;
+      z-index: 2;
+    }
 
-.el-main {
-  padding: 40px;
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      
+      .file-type-icon {
+        font-size: 24px;
+        color: $primary;
+        background: rgba($primary, 0.1);
+        padding: 8px;
+        border-radius: 8px;
+      }
+
+      // 右上角操作区
+      .card-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        // 删除按钮样式
+        .delete-btn {
+          color: #64748b;
+          padding: 4px;
+          border-radius: 4px;
+          opacity: 0; // 默认隐藏
+          transform: translateX(10px); // 默认位移
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          &:hover {
+            background: rgba($danger, 0.1);
+            color: $danger;
+          }
+        }
+      }
+    }
+
+    .project-title {
+      font-size: 18px;
+      margin: 0 0 16px 0;
+      color: $text-main;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .meta-info {
+      p { margin: 0 0 8px; font-size: 13px; color: $text-sub; display: flex; align-items: center; gap: 8px; }
+    }
+
+    .hover-arrow {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: all 0.3s;
+      color: $accent;
+    }
+
+    // 卡片悬停效果
+    &:hover {
+      transform: translateY(-5px);
+      border-color: $primary;
+      background: lighten($bg-card, 2%);
+      
+      .hover-arrow { opacity: 1; transform: translateX(0); }
+      
+      // 悬停时显示删除按钮
+      .card-actions .delete-btn {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  }
 }
 </style>

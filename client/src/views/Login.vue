@@ -1,395 +1,450 @@
 <template>
-  <div class="login-container">
-    <div class="login-box">
-      <!-- 左侧装饰区域 -->
-      <div class="login-banner">
-        <div class="banner-content">
-          <h1 class="banner-title">FastReplace</h1>
-          <p class="banner-subtitle">智能模板填充系统</p>
-          <div class="banner-features">
-            <div class="feature-item">
-              <span class="feature-icon">📝</span>
-              <span>快速填充</span>
-            </div>
-            <div class="feature-item">
-              <span class="feature-icon">🤖</span>
-              <span>AI 辅助</span>
-            </div>
-            <div class="feature-item">
-              <span class="feature-icon">📄</span>
-              <span>多格式导出</span>
-            </div>
+  <div class="login-wrapper">
+    <div class="tech-bg">
+      <div class="grid-overlay"></div>
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+    </div>
+
+    <div class="login-box glass-panel">
+      <div class="side-brand">
+        <div class="brand-content">
+          <div class="logo-circle">
+            <el-icon><Lightning /></el-icon>
           </div>
+          <h2>FastReplace</h2>
+          <p class="slogan">下一代智能合同填充平台</p>
+          <ul class="features">
+            <li><el-icon><Check /></el-icon> AI 语义识别</li>
+            <li><el-icon><Check /></el-icon> 毫秒级渲染</li>
+            <li><el-icon><Check /></el-icon> 银行级加密</li>
+          </ul>
         </div>
+        <svg class="waves" viewBox="0 24 150 28" preserveAspectRatio="none">
+          <defs>
+            <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+          </defs>
+          <g class="parallax">
+            <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.1" />
+            <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.05)" />
+          </g>
+        </svg>
       </div>
 
-      <!-- 右侧表单区域 -->
-      <div class="login-form-wrapper">
-        <div class="form-container">
-          <div class="form-header">
-            <h2>{{ isLogin ? '欢迎回来' : '创建账号' }}</h2>
-            <p>{{ isLogin ? '登录以继续使用' : '注册新账号开始使用' }}</p>
-          </div>
-
-          <el-form :model="form" :rules="rules" ref="formRef" class="login-form">
-            <el-form-item prop="email">
-              <el-input
-                v-model="form.email"
-                placeholder="邮箱地址"
-                size="large"
-                prefix-icon="Message"
-              />
-            </el-form-item>
-
-            <el-form-item v-if="!isLogin" prop="username">
-              <el-input
-                v-model="form.username"
-                placeholder="用户名"
-                size="large"
-                prefix-icon="User"
-              />
-            </el-form-item>
-
-            <el-form-item prop="password">
-              <el-input
-                v-model="form.password"
-                type="password"
-                placeholder="密码"
-                size="large"
-                prefix-icon="Lock"
-                show-password
-              />
-            </el-form-item>
-
-            <el-form-item v-if="!isLogin" prop="confirmPassword">
-              <el-input
-                v-model="form.confirmPassword"
-                type="password"
-                placeholder="确认密码"
-                size="large"
-                prefix-icon="Lock"
-                show-password
-              />
-            </el-form-item>
-
-            <el-button
-              type="primary"
-              size="large"
-              @click="handleSubmit"
-              :loading="loading"
-              class="submit-btn"
-            >
-              {{ isLogin ? '登录' : '注册' }}
-            </el-button>
-          </el-form>
-
-          <div class="test-accounts" v-if="isLogin">
-            <el-divider>测试账号</el-divider>
-            <div class="account-tips">
-              <div class="tip-item">
-                <el-tag type="danger" size="small">管理员</el-tag>
-                <span>admin@test.com / admin123</span>
-              </div>
-              <div class="tip-item">
-                <el-tag type="success" size="small">普通用户</el-tag>
-                <span>user@test.com / user123</span>
-              </div>
+      <div class="form-side">
+        <transition name="fade-slide" mode="out-in">
+          <div v-if="isLogin" key="login" class="form-container">
+            <div class="header">
+              <h3>欢迎回来</h3>
+              <p>登录您的账户以继续</p>
+            </div>
+            
+            <el-form ref="loginFormRef" :model="form" :rules="rules" class="custom-form">
+              <el-form-item prop="email">
+                <div class="input-group">
+                  <el-icon><Message /></el-icon>
+                  <input v-model="form.email" placeholder="邮箱地址" />
+                </div>
+              </el-form-item>
+              <el-form-item prop="password">
+                <div class="input-group">
+                  <el-icon><Lock /></el-icon>
+                  <input v-model="form.password" type="password" placeholder="密码" />
+                </div>
+              </el-form-item>
+              
+              <button type="button" class="submit-btn" @click="handleLogin" :disabled="loading">
+                <span v-if="!loading">登 录</span>
+                <el-icon v-else class="is-loading"><Loading /></el-icon>
+              </button>
+            </el-form>
+            
+            <div class="footer">
+              还没有账号？ <a @click="toggleMode">立即注册</a>
             </div>
           </div>
 
-          <div class="form-footer">
-            <span class="footer-text">
-              {{ isLogin ? '还没有账号？' : '已有账号？' }}
-            </span>
-            <el-button type="primary" link @click="toggleMode">
-              {{ isLogin ? '立即注册' : '立即登录' }}
-            </el-button>
+          <div v-else key="register" class="form-container">
+            <div class="header">
+              <h3>创建账户</h3>
+              <p>开始您的智能文档之旅</p>
+            </div>
+            
+            <el-form ref="registerFormRef" :model="form" :rules="rules" class="custom-form">
+              <el-form-item prop="username">
+                <div class="input-group">
+                  <el-icon><User /></el-icon>
+                  <input v-model="form.username" placeholder="用户名" />
+                </div>
+              </el-form-item>
+              <el-form-item prop="email">
+                <div class="input-group">
+                  <el-icon><Message /></el-icon>
+                  <input v-model="form.email" placeholder="邮箱地址" />
+                </div>
+              </el-form-item>
+              <el-form-item prop="password">
+                <div class="input-group">
+                  <el-icon><Lock /></el-icon>
+                  <input v-model="form.password" type="password" placeholder="设置密码" />
+                </div>
+              </el-form-item>
+              
+              <button type="button" class="submit-btn" @click="handleRegister" :disabled="loading">
+                <span v-if="!loading">注 册</span>
+                <el-icon v-else class="is-loading"><Loading /></el-icon>
+              </button>
+            </el-form>
+            
+            <div class="footer">
+              已有账号？ <a @click="toggleMode">直接登录</a>
+            </div>
           </div>
-        </div>
+        </transition>
       </div>
     </div>
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
+import { ElMessage } from 'element-plus'
+import { Message, Lock, User, Lightning, Check, Loading } from '@element-plus/icons-vue'
 
-export default {
-  name: 'Login',
-  setup() {
-    const router = useRouter()
-    const authStore = useAuthStore()
-    const formRef = ref(null)
-    const isLogin = ref(true)
-    const loading = ref(false)
+const router = useRouter()
+const authStore = useAuthStore()
+const isLogin = ref(true)
+const loading = ref(false)
+const loginFormRef = ref(null)
+const registerFormRef = ref(null)
 
-    const form = reactive({
-      email: 'user@test.com',
-      username: '',
-      password: 'user123',
-      confirmPassword: ''
-    })
+const form = reactive({
+  email: 'user@test.com',
+  username: '',
+  password: 'user123'
+})
 
-    const validateConfirmPassword = (rule, value, callback) => {
-      if (value !== form.password) {
-        callback(new Error('两次输入的密码不一致'))
-      } else {
-        callback()
-      }
-    }
+const rules = {
+  email: [{ required: true, message: '请输入邮箱', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }]
+}
 
-    const rules = reactive({
-      email: [
-        { required: true, message: '请输入邮箱', trigger: 'blur' },
-        { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
-      ],
-      username: [
-        { required: true, message: '请输入用户名', trigger: 'blur' },
-        { min: 3, max: 20, message: '用户名长度在 3 到 20 个字符', trigger: 'blur' }
-      ],
-      password: [
-        { required: true, message: '请输入密码', trigger: 'blur' },
-        { min: 6, message: '密码至少需要 6 个字符', trigger: 'blur' }
-      ],
-      confirmPassword: [
-        { required: true, message: '请再次输入密码', trigger: 'blur' },
-        { validator: validateConfirmPassword, trigger: 'blur' }
-      ]
-    })
+const toggleMode = () => {
+  isLogin.value = !isLogin.value
+  form.password = '' // 清空密码
+}
 
-    const toggleMode = () => {
-      isLogin.value = !isLogin.value
-      formRef.value?.resetFields()
-    }
-
-    const handleSubmit = async () => {
+const handleLogin = async () => {
+  if (!loginFormRef.value) return
+  await loginFormRef.value.validate(async (valid) => {
+    if (valid) {
+      loading.value = true
       try {
-        await formRef.value.validate()
-        loading.value = true
-
-        if (isLogin.value) {
-          await authStore.login({
-            email: form.email,
-            password: form.password
-          })
-          ElMessage.success('登录成功')
-          router.push('/')
-        } else {
-          await authStore.register({
-            username: form.username,
-            email: form.email,
-            password: form.password
-          })
-          ElMessage.success('注册成功，请登录')
-          isLogin.value = true
-          form.password = ''
-          form.confirmPassword = ''
-        }
+        await authStore.login({ email: form.email, password: form.password })
+        ElMessage.success('登录成功')
+        router.push('/')
       } catch (error) {
-        ElMessage.error(error.message || '操作失败')
+        ElMessage.error(error.message)
       } finally {
         loading.value = false
       }
     }
+  })
+}
 
-    return {
-      form,
-      rules,
-      formRef,
-      isLogin,
-      loading,
-      toggleMode,
-      handleSubmit
+const handleRegister = async () => {
+  if (!registerFormRef.value) return
+  await registerFormRef.value.validate(async (valid) => {
+    if (valid) {
+      loading.value = true
+      try {
+        await authStore.register({ username: form.username, email: form.email, password: form.password })
+        ElMessage.success('注册成功')
+        isLogin.value = true
+      } catch (error) {
+        ElMessage.error(error.message)
+      } finally {
+        loading.value = false
+      }
     }
-  }
+  })
 }
 </script>
 
-<style scoped>
-.login-container {
+<style lang="scss" scoped>
+$primary: #6366f1;
+$secondary: #8b5cf6;
+$dark-bg: #0f172a;
+$glass-bg: rgba(255, 255, 255, 0.95);
+$text-color: #334155;
+
+.login-wrapper {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
+  background: $dark-bg;
+  position: relative;
+  overflow: hidden;
 }
 
+// 科技背景
+.tech-bg {
+  position: absolute;
+  inset: 0;
+  
+  .grid-overlay {
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background-image: 
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px);
+    animation: grid-move 20s linear infinite;
+  }
+
+  .shape {
+    position: absolute;
+    filter: blur(80px);
+    opacity: 0.4;
+  }
+  .shape-1 {
+    top: -10%;
+    left: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, $primary, transparent 70%);
+  }
+  .shape-2 {
+    bottom: -10%;
+    right: -10%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, $secondary, transparent 70%);
+  }
+}
+
+@keyframes grid-move {
+  0% { transform: perspective(500px) rotateX(60deg) translateY(0) translateZ(-200px); }
+  100% { transform: perspective(500px) rotateX(60deg) translateY(40px) translateZ(-200px); }
+}
+
+// 登录盒子
 .login-box {
   display: flex;
   width: 900px;
-  min-height: 550px;
-  background: white;
-  border-radius: 20px;
+  height: 550px;
+  background: $glass-bg;
+  border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-/* 左侧装饰区域 */
-.login-banner {
-  flex: 1;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 40px;
-  color: white;
-}
-
-.banner-content {
-  text-align: center;
-}
-
-.banner-title {
-  font-size: 48px;
-  font-weight: bold;
-  margin: 0 0 10px 0;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.banner-subtitle {
-  font-size: 20px;
-  margin: 0 0 50px 0;
-  opacity: 0.9;
-}
-
-.banner-features {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-
-.feature-item {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  font-size: 18px;
-  padding: 15px 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  backdrop-filter: blur(10px);
-}
-
-.feature-icon {
-  font-size: 28px;
-}
-
-/* 右侧表单区域 */
-.login-form-wrapper {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 50px;
-}
-
-.form-container {
-  width: 100%;
-  max-width: 380px;
-}
-
-.form-header {
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-.form-header h2 {
-  font-size: 32px;
-  color: #333;
-  margin: 0 0 10px 0;
-  font-weight: 600;
-}
-
-.form-header p {
-  color: #666;
-  font-size: 14px;
-  margin: 0;
-}
-
-.login-form {
-  margin-bottom: 20px;
-}
-
-.login-form .el-form-item {
-  margin-bottom: 24px;
-}
-
-.submit-btn {
-  width: 100%;
-  height: 48px;
-  font-size: 16px;
-  font-weight: 600;
-  margin-top: 10px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-}
-
-.submit-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-.test-accounts {
-  margin: 20px 0;
-}
-
-.account-tips {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.tip-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  background: #f5f7fa;
-  border-radius: 6px;
-  font-size: 13px;
-  color: #606266;
-}
-
-.form-footer {
-  text-align: center;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
-}
-
-.footer-text {
-  color: #666;
-  font-size: 14px;
-  margin-right: 5px;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .login-box {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  position: relative;
+  
+  .side-brand {
+    flex: 1;
+    background: linear-gradient(135deg, $primary, $secondary);
+    padding: 40px;
+    color: white;
+    display: flex;
     flex-direction: column;
-    width: 100%;
-    max-width: 450px;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    
+    .brand-content {
+      z-index: 2;
+      
+      .logo-circle {
+        width: 56px;
+        height: 56px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        margin-bottom: 24px;
+        backdrop-filter: blur(5px);
+      }
+      
+      h2 {
+        font-size: 32px;
+        margin: 0 0 8px;
+      }
+      
+      .slogan {
+        opacity: 0.8;
+        font-size: 16px;
+        margin-bottom: 40px;
+      }
+      
+      .features {
+        list-style: none;
+        padding: 0;
+        
+        li {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 16px;
+          font-size: 14px;
+          opacity: 0.9;
+          
+          .el-icon {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px;
+            border-radius: 50%;
+          }
+        }
+      }
+    }
+    
+    .waves {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100px;
+      z-index: 1;
+    }
   }
+  
+  .form-side {
+    flex: 1.2;
+    background: white;
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    .form-container {
+      width: 100%;
+      max-width: 320px;
+      
+      .header {
+        margin-bottom: 32px;
+        text-align: center;
+        
+        h3 {
+          font-size: 24px;
+          color: $text-color;
+          margin: 0 0 8px;
+        }
+        p {
+          color: #94a3b8;
+          font-size: 14px;
+        }
+      }
+      
+      .custom-form {
+        .input-group {
+          width:100%;
+          display: flex;
+          align-items: center;
+          background: #f1f5f9;
+          padding: 12px 16px;
+          border-radius: 12px;
+          border: 2px solid transparent;
+          transition: all 0.3s;
+          
+          .el-icon {
+            color: #94a3b8;
+            font-size: 18px;
+            margin-right: 12px;
+          }
+          
+          input {
+            border: none;
+            background: transparent;
+            outline: none;
+            width: 100%;
+            color: $text-color;
+            font-size: 15px;
+            
+            &::placeholder { color: #cbd5e1; }
+          }
+          
+          &:focus-within {
+            background: white;
+            border-color: $primary;
+            box-shadow: 0 4px 12px rgba($primary, 0.1);
+            
+            .el-icon { color: $primary; }
+          }
+        }
+        
+        .submit-btn {
+          width: 100%;
+          padding: 14px;
+          background: $text-color;
+          color: white;
+          border: none;
+          border-radius: 12px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          margin-top: 16px;
+          transition: all 0.3s;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          
+          &:hover {
+            background: black;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+          }
+          
+          &:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+          }
+          
+          .is-loading { animation: rotate 1s linear infinite; }
+        }
+      }
+      
+      .footer {
+        text-align: center;
+        margin-top: 24px;
+        font-size: 14px;
+        color: #64748b;
+        
+        a {
+          color: $primary;
+          font-weight: 600;
+          cursor: pointer;
+          text-decoration: none;
+          
+          &:hover { text-decoration: underline; }
+        }
+      }
+    }
+  }
+}
 
-  .login-banner {
-    padding: 40px 20px;
-  }
+@keyframes rotate {
+  100% { transform: rotate(360deg); }
+}
 
-  .banner-title {
-    font-size: 36px;
-  }
+// 过渡动画
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.4s ease;
+}
 
-  .banner-subtitle {
-    font-size: 16px;
-    margin-bottom: 30px;
-  }
-
-  .login-form-wrapper {
-    padding: 40px 30px;
-  }
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
 }
 </style>
