@@ -10,8 +10,18 @@
         <div class="logo-hexagon"><el-icon><ScaleToOriginal /></el-icon></div>
         <div class="brand-info"><span class="brand-name">FastReplace <span class="tag">AI.LAW</span></span></div>
       </div>
+      
       <div class="user-zone">
+        <button 
+          v-if="authStore.isAdmin" 
+          class="btn-cyber small admin-entry-btn" 
+          @click="handleAdminEntry"
+        >
+          <el-icon><DataBoard /></el-icon> 管理控制台
+        </button>
+
         <div class="status-indicator"><span class="dot"></span> 引擎就绪</div>
+        
         <el-dropdown trigger="click" popper-class="legal-dropdown-popper">
           <div class="user-pill">
             <el-avatar :size="32" class="avatar-glow">{{ authStore.username.charAt(0).toUpperCase() }}</el-avatar>
@@ -102,14 +112,14 @@ import { useAuthStore } from '@/stores/auth'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   ScaleToOriginal, CaretBottom, Plus, Search, FolderOpened, 
-  User, Timer, Right, House, ChatDotSquare, Money, Delete 
+  User, Timer, Right, House, ChatDotSquare, Money, Delete,
+  DataBoard // 新增图标
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const searchQuery = ref('')
 
-// 模拟“我的项目”数据
 const myProjects = ref([
   { id: 101, title: '张三诉李四离婚纠纷案', client: '张三', type: 'divorce', status: '草稿', statusType: 'info', time: '2小时前', icon: 'ChatDotSquare' },
   { id: 102, title: '滨海花园房屋买卖合同', client: '王五', type: 'house', status: '定稿', statusType: 'success', time: '1天前', icon: 'House' },
@@ -121,11 +131,15 @@ const handleLogout = () => {
   router.push('/login')
 }
 
+// 跳转到管理后台
+const handleAdminEntry = () => {
+  router.push('/admin')
+}
+
 const goToProject = (project) => {
   router.push({ path: '/project/edit', query: { id: project.id, type: project.type } })
 }
 
-// 删除处理函数
 const handleDelete = (item) => {
   ElMessageBox.confirm(
     `确定要删除案卷 "${item.title}" 吗？此操作无法撤销。`,
@@ -134,15 +148,12 @@ const handleDelete = (item) => {
       confirmButtonText: '确定删除',
       cancelButtonText: '取消',
       type: 'warning',
-      lockScroll: false, // 防止抖动
+      lockScroll: false,
     }
   ).then(() => {
-    // 模拟删除逻辑
     myProjects.value = myProjects.value.filter(p => p.id !== item.id)
     ElMessage.success('案卷已安全移除')
-  }).catch(() => {
-    // 取消删除
-  })
+  }).catch(() => {})
 }
 </script>
 
@@ -166,6 +177,22 @@ $danger: #ef4444;
 .main-stage { max-width: 1280px; margin: 0 auto; padding: 60px 20px; z-index: 1; position: relative; }
 .hero-box { display: flex; margin-bottom: 80px; .hero-text-group { flex: 1; .glitch-badge { color: $accent; border-left: 2px solid $accent; padding-left: 10px; font-family: monospace; } .hero-title { font-size: 56px; font-weight: 800; margin: 20px 0; .typing-effect { background: linear-gradient(90deg, $text-main, $primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; border-right: 4px solid $primary; } } .hero-desc { color: $text-sub; font-size: 18px; margin-bottom: 40px; } } .hologram-visual { width: 400px; position: relative; } }
 .btn-cyber { padding: 14px 32px; background: $primary; color: white; border: none; font-weight: 600; clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%); cursor: pointer; &:hover { filter: brightness(1.2); } }
+
+// 管理员入口按钮特别样式
+.admin-entry-btn {
+  background: linear-gradient(90deg, rgba($danger, 0.8), rgba($primary, 0.8)); 
+  clip-path: none; // 取消切割角，使其更像功能按钮
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 10px rgba($danger, 0.3);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba($danger, 0.5);
+  }
+}
 
 // --- My Projects 列表样式 ---
 .my-projects-section {
@@ -193,88 +220,25 @@ $danger: #ef4444;
     transition: all 0.3s;
     overflow: hidden;
 
-    .card-content {
-      padding: 24px;
-      position: relative;
-      z-index: 2;
-    }
+    .card-content { padding: 24px; position: relative; z-index: 2; }
 
     .card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 16px;
-      
-      .file-type-icon {
-        font-size: 24px;
-        color: $primary;
-        background: rgba($primary, 0.1);
-        padding: 8px;
-        border-radius: 8px;
-      }
-
-      // 右上角操作区
+      display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;
+      .file-type-icon { font-size: 24px; color: $primary; background: rgba($primary, 0.1); padding: 8px; border-radius: 8px; }
       .card-actions {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-
-        // 删除按钮样式
-        .delete-btn {
-          color: #64748b;
-          padding: 4px;
-          border-radius: 4px;
-          opacity: 0; // 默认隐藏
-          transform: translateX(10px); // 默认位移
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          &:hover {
-            background: rgba($danger, 0.1);
-            color: $danger;
-          }
-        }
+        display: flex; align-items: center; gap: 10px;
+        .delete-btn { color: #64748b; padding: 4px; border-radius: 4px; opacity: 0; transform: translateX(10px); transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; &:hover { background: rgba($danger, 0.1); color: $danger; } }
       }
     }
 
-    .project-title {
-      font-size: 18px;
-      margin: 0 0 16px 0;
-      color: $text-main;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .project-title { font-size: 18px; margin: 0 0 16px 0; color: $text-main; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .meta-info { p { margin: 0 0 8px; font-size: 13px; color: $text-sub; display: flex; align-items: center; gap: 8px; } }
+    .hover-arrow { position: absolute; bottom: 24px; right: 24px; opacity: 0; transform: translateX(-10px); transition: all 0.3s; color: $accent; }
 
-    .meta-info {
-      p { margin: 0 0 8px; font-size: 13px; color: $text-sub; display: flex; align-items: center; gap: 8px; }
-    }
-
-    .hover-arrow {
-      position: absolute;
-      bottom: 24px;
-      right: 24px;
-      opacity: 0;
-      transform: translateX(-10px);
-      transition: all 0.3s;
-      color: $accent;
-    }
-
-    // 卡片悬停效果
     &:hover {
-      transform: translateY(-5px);
-      border-color: $primary;
-      background: lighten($bg-card, 2%);
-      
+      transform: translateY(-5px); border-color: $primary; background: lighten($bg-card, 2%);
       .hover-arrow { opacity: 1; transform: translateX(0); }
-      
-      // 悬停时显示删除按钮
-      .card-actions .delete-btn {
-        opacity: 1;
-        transform: translateX(0);
-      }
+      .card-actions .delete-btn { opacity: 1; transform: translateX(0); }
     }
   }
 }

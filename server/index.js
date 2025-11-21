@@ -47,6 +47,10 @@ app.get('/api/db/test', async (req, res) => {
 // 认证路由
 app.use('/api/auth', authRoutes)
 
+// 管理员路由
+import adminRoutes from './routes/admin.js'
+app.use('/api/admin', adminRoutes)
+
 // 启动服务器
 app.listen(PORT, async () => {
   console.log(`🚀 服务器运行在 http://localhost:${PORT}`)

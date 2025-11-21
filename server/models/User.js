@@ -80,6 +80,60 @@ class User {
   static async comparePassword(plainPassword, hashedPassword) {
     return await bcrypt.compare(plainPassword, hashedPassword)
   }
+
+  /**
+   * 获取所有用户（分页）
+   * @param {number} page - 页码
+   * @param {number} pageSize - 每页数量
+   * @param {string} keyword - 搜索关键词
+   * @returns {Object} 用户列表和总数
+   */
+  static async getAll(page = 1, pageSize = 10, keyword = '') {
+    const offset = (page - 1) * pageSize
+    
+    let query = 'SELECT id, username, email, role, created_at FROM users'
+    let countQuery = 'SELECT COUNT(*) as total FROM users'
+    const params = []
+    
+    if (keyword) {
+      query += ' WHERE username LIKE ? OR email LIKE ?'
+      countQuery += ' WHERE username LIKE ? OR email LIKE ?'
+      const searchTerm = `%${keyword}%`
+      params.push(searchTerm, searchTerm)
+    }
+    
+    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?'
+    
+    const [rows] = await pool.query(query, [...params, pageSize, offset])
+    const [countResult] = await pool.query(countQuery, params)
+    
+    return {
+      list: rows,
+      total: countResult[0].total,
+      page,
+      pageSize
+    }
+  }
+
+  /**
+   * 更新用户角色
+   * @param {number} id - 用户 ID
+   * @param {string} role - 新角色
+   */
+  static async updateRole(id, role) {
+    await pool.query(
+      'UPDATE users SET role = ? WHERE id = ?',
+      [role, id]
+    )
+  }
+
+  /**
+   * 删除用户
+   * @param {number} id - 用户 ID
+   */
+  static async delete(id) {
+    await pool.query('DELETE FROM users WHERE id = ?', [id])
+  }
 }
 
 export default User
