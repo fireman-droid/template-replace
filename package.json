@@ -1,0 +1,15 @@
+{
+  "name": "fast-replace",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:all": "pnpm install",
+    "dev:server": "pnpm --filter fast-replace-server dev",
+    "dev:client": "pnpm --filter fast-replace-client dev",
+    "dev": "concurrently \"pnpm dev:server\" \"pnpm dev:client\"",
+    "build": "pnpm --filter fast-replace-client build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
