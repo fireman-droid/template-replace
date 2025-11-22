@@ -8,7 +8,7 @@
     </div>
 
     <div class="template-grid" v-loading="loading">
-      <div class="tpl-card" v-for="tpl in templateList" :key="tpl.id">
+      <div class="tpl-card" v-for="tpl in templateList" :key="tpl.id" @click="handlePreview(tpl)">
         <div class="tpl-icon"><el-icon><DocumentChecked /></el-icon></div>
         <div class="tpl-info">
           <h4>{{ tpl.name }}</h4>
@@ -16,11 +16,27 @@
           <p class="desc">{{ tpl.description }}</p>
         </div>
         <div class="tpl-actions">
-          <button class="icon-btn"><el-icon><Edit /></el-icon></button>
-          <button class="icon-btn danger" @click="handleDelete(tpl.id)"><el-icon><Delete /></el-icon></button>
+          <button class="icon-btn" @click.stop="handleEdit(tpl)"><el-icon><Edit /></el-icon></button>
+          <button class="icon-btn danger" @click.stop="handleDelete(tpl.id)"><el-icon><Delete /></el-icon></button>
         </div>
       </div>
     </div>
+
+    <!-- 模板预览弹窗 -->
+    <el-dialog
+      v-model="showPreviewDialog"
+      title="模板详情预览"
+      width="1200px"
+      class="admin-dialog preview-dialog"
+      :modal="true"
+      :append-to-body="true"
+    >
+      <TemplatePreview 
+        v-if="currentTemplate" 
+        :template="currentTemplate" 
+        @download="handleDownload"
+      />
+    </el-dialog>
 
     <el-pagination
       v-if="pagination.total > 0"
@@ -67,28 +83,49 @@
           <div class="upload-grid">
             <div class="upload-item">
               <div class="upload-label"><el-icon><Document /></el-icon> Word 模版 (.docx)</div>
-              <el-upload class="mini-upload" action="#" :auto-upload="false" :limit="1" drag>
+              <el-upload 
+                class="mini-upload" 
+                :auto-upload="false" 
+                :limit="1" 
+                accept=".docx"
+                :on-change="handleDocxChange"
+                drag
+              >
                 <div class="drop-area">
                   <el-icon><Plus /></el-icon>
-                  <span>点击上传</span>
+                  <span>{{ uploadFiles.docx ? uploadFiles.docx.name : '点击上传' }}</span>
                 </div>
               </el-upload>
             </div>
             <div class="upload-item">
               <div class="upload-label code-label"><el-icon><Connection /></el-icon> 结构表 (Schema)</div>
-              <el-upload class="mini-upload" action="#" :auto-upload="false" :limit="1" accept=".json" drag>
+              <el-upload 
+                class="mini-upload" 
+                :auto-upload="false" 
+                :limit="1" 
+                accept=".json" 
+                :on-change="handleSchemaChange"
+                drag
+              >
                 <div class="drop-area code-area">
                   <el-icon><Link /></el-icon>
-                  <span>定义表单结构</span>
+                  <span>{{ uploadFiles.schema ? uploadFiles.schema.name : '定义表单结构' }}</span>
                 </div>
               </el-upload>
             </div>
             <div class="upload-item">
               <div class="upload-label code-label"><el-icon><Link /></el-icon> 映射表 (Map)</div>
-              <el-upload class="mini-upload" action="#" :auto-upload="false" :limit="1" accept=".json" drag>
+              <el-upload 
+                class="mini-upload" 
+                :auto-upload="false" 
+                :limit="1" 
+                accept=".json" 
+                :on-change="handleMappingChange"
+                drag
+              >
                 <div class="drop-area code-area">
                   <el-icon><Link /></el-icon>
-                  <span>Tag ↔ Key 映射</span>
+                  <span>{{ uploadFiles.mapping ? uploadFiles.mapping.name : 'Tag ↔ Key 映射' }}</span>
                 </div>
               </el-upload>
             </div>
@@ -114,8 +151,11 @@ import { ref, onMounted } from 'vue'
 import { Upload, DocumentChecked, Edit, Delete, Document, Connection, Link, InfoFilled, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getTemplateList, createTemplate, deleteTemplate } from '@/api'
+import TemplatePreview from '@/components/TemplatePreview.vue'
 
 const showUploadDialog = ref(false)
+const showPreviewDialog = ref(false)
+const currentTemplate = ref(null)
 const templateList = ref([])
 const loading = ref(false)
 const pagination = ref({
@@ -129,6 +169,12 @@ const formData = ref({
   description: '',
   category: '',
   fields: []
+})
+
+const uploadFiles = ref({
+  docx: null,
+  schema: null,
+  mapping: null
 })
 
 // 获取模板列表
@@ -148,7 +194,20 @@ const fetchTemplates = async () => {
   }
 }
 
-// 创建模板
+// 文件上传处理
+const handleDocxChange = (file) => {
+  uploadFiles.value.docx = file.raw
+}
+
+const handleSchemaChange = (file) => {
+  uploadFiles.value.schema = file.raw
+}
+
+const handleMappingChange = (file) => {
+  uploadFiles.value.mapping = file.raw
+}
+
+// 创建模板（支持文件上传）
 const handleCreate = async () => {
   try {
     if (!formData.value.name || !formData.value.category) {
@@ -156,7 +215,26 @@ const handleCreate = async () => {
       return
     }
 
-    await createTemplate(formData.value)
+    // 创建 FormData 对象
+    const data = new FormData()
+    data.append('name', formData.value.name)
+    data.append('description', formData.value.description || '')
+    data.append('category', formData.value.category)
+    
+    // 添加文件
+    if (uploadFiles.value.docx) {
+      data.append('docx', uploadFiles.value.docx)
+    }
+    if (uploadFiles.value.schema) {
+      data.append('schema', uploadFiles.value.schema)
+    }
+    if (uploadFiles.value.mapping) {
+      data.append('mapping', uploadFiles.value.mapping)
+    }
+
+    // 使用封装好的 API
+    await createTemplate(data)
+
     ElMessage.success('模板创建成功')
     showUploadDialog.value = false
     resetForm()
@@ -165,6 +243,7 @@ const handleCreate = async () => {
     // 错误已在拦截器中处理
   }
 }
+
 
 // 删除模板
 const handleDelete = async (id) => {
@@ -191,6 +270,40 @@ const resetForm = () => {
     category: '',
     fields: []
   }
+  uploadFiles.value = {
+    docx: null,
+    schema: null,
+    mapping: null
+  }
+}
+
+// 预览模板
+const handlePreview = (template) => {
+  currentTemplate.value = template
+  showPreviewDialog.value = true
+}
+
+// 编辑模板
+const handleEdit = (template) => {
+  formData.value = {
+    name: template.name,
+    description: template.description,
+    category: template.category,
+    fields: template.fields || []
+  }
+  showUploadDialog.value = true
+}
+
+// 格式化日期
+const formatDate = (dateString) => {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+  return date.toLocaleString('zh-CN')
+}
+
+// 下载模板
+const handleDownload = (id) => {
+  window.open(`/api/admin/templates/${id}/download`, '_blank')
 }
 
 onMounted(() => {
@@ -269,6 +382,18 @@ $border: rgba(255,255,255,0.1);
   .el-pager li { background: rgba(255,255,255,0.05); color: $text-sub; border: 1px solid $border; &.is-active { background: $primary; color: white; } }
   button { background: rgba(255,255,255,0.05); color: $text-sub; border: 1px solid $border; }
 }
+
+
+
+.tpl-card {
+  cursor: pointer;
+  transition: all 0.3s;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba($primary, 0.2);
+  }
+}
 </style>
 
 <style lang="scss">
@@ -287,6 +412,8 @@ $border: rgba(255,255,255,0.1);
   .el-dialog__header { border-bottom: 1px solid rgba(255,255,255,0.05); margin-right: 0; padding: 20px 24px !important; .el-dialog__title { color: white !important; font-weight: 700; } }
   .el-dialog__body { padding: 0 !important; }
   .el-dialog__footer { border-top: 1px solid rgba(255,255,255,0.05); padding: 16px 24px !important; .dialog-footer { display: flex; justify-content: flex-end; gap: 12px; } }
+  
+
 }
 
 .deploy-content {

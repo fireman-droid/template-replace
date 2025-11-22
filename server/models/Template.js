@@ -10,10 +10,17 @@ class Template {
    * @param {Object} templateData - 模板数据
    * @returns {Object} 创建的模板信息
    */
-  static async create({ name, description, category, fields }) {
+  static async create({ name, description, category, fields, mapping, file_path }) {
     const [result] = await pool.query(
-      'INSERT INTO templates (name, description, category, fields) VALUES (?, ?, ?, ?)',
-      [name, description, category, JSON.stringify(fields)]
+      'INSERT INTO templates (name, description, category, fields, mapping, file_path) VALUES (?, ?, ?, ?, ?, ?)',
+      [
+        name, 
+        description, 
+        category, 
+        JSON.stringify(fields || []),
+        JSON.stringify(mapping || {}),
+        file_path || null
+      ]
     )
     
     return {
@@ -21,7 +28,9 @@ class Template {
       name,
       description,
       category,
-      fields
+      fields,
+      mapping,
+      file_path
     }
   }
 
@@ -54,21 +63,30 @@ class Template {
     // 解析 JSON 字段
     const templates = rows.map(row => {
       let parsedFields = []
+      let parsedMapping = {}
+      
       try {
-        // 如果 fields 是字符串，解析它；如果已经是对象，直接使用
+        // 解析 fields
         if (typeof row.fields === 'string') {
           parsedFields = JSON.parse(row.fields)
         } else if (Array.isArray(row.fields)) {
           parsedFields = row.fields
         }
+        
+        // 解析 mapping
+        if (typeof row.mapping === 'string') {
+          parsedMapping = JSON.parse(row.mapping)
+        } else if (typeof row.mapping === 'object' && row.mapping !== null) {
+          parsedMapping = row.mapping
+        }
       } catch (e) {
         console.error('解析模板字段失败:', e)
-        parsedFields = []
       }
       
       return {
         ...row,
-        fields: parsedFields
+        fields: parsedFields,
+        mapping: parsedMapping
       }
     })
     
@@ -92,9 +110,11 @@ class Template {
     )
     
     if (rows[0]) {
+      const row = rows[0]
       return {
-        ...rows[0],
-        fields: JSON.parse(rows[0].fields || '[]')
+        ...row,
+        fields: typeof row.fields === 'string' ? JSON.parse(row.fields || '[]') : row.fields,
+        mapping: typeof row.mapping === 'string' ? JSON.parse(row.mapping || '{}') : row.mapping
       }
     }
     
@@ -106,7 +126,7 @@ class Template {
    * @param {number} id - 模板 ID
    * @param {Object} data - 更新的数据
    */
-  static async update(id, { name, description, category, fields }) {
+  static async update(id, { name, description, category, fields, mapping, file_path }) {
     const updates = []
     const params = []
     
@@ -125,6 +145,14 @@ class Template {
     if (fields !== undefined) {
       updates.push('fields = ?')
       params.push(JSON.stringify(fields))
+    }
+    if (mapping !== undefined) {
+      updates.push('mapping = ?')
+      params.push(JSON.stringify(mapping))
+    }
+    if (file_path !== undefined) {
+      updates.push('file_path = ?')
+      params.push(file_path)
     }
     
     params.push(id)

@@ -62,18 +62,17 @@ export const getTemplateList = (params) => {
 }
 
 /**
- * 创建模板
- * @param {Object} data - 模板数据
- * @param {string} data.name - 模板名称
- * @param {string} data.description - 模板描述
- * @param {string} data.category - 模板分类
- * @param {Array} data.fields - 字段配置
+ * 创建模板（支持文件上传）
+ * @param {FormData} formData - 包含文件和表单数据的 FormData 对象
  */
-export const createTemplate = (data) => {
+export const createTemplate = (formData) => {
   return request({
     url: '/admin/templates',
     method: 'post',
-    data
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
   })
 }
 
@@ -110,4 +109,12 @@ export const getTemplateDetail = (id) => {
     url: `/admin/templates/${id}`,
     method: 'get'
   })
+}
+
+/**
+ * 下载模板文件
+ * @param {number} id - 模板 ID
+ */
+export const downloadTemplate = (id) => {
+  return `/api/admin/templates/${id}/download`
 }

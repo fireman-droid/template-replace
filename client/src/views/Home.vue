@@ -106,32 +106,98 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   ScaleToOriginal, CaretBottom, Plus, Search, FolderOpened, 
   User, Timer, Right, House, ChatDotSquare, Money, Delete,
-  DataBoard // 新增图标
+  DataBoard
 } from '@element-plus/icons-vue'
+import { getCaseList, deleteCase } from '@/api'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const searchQuery = ref('')
+const myProjects = ref([])
+const loading = ref(false)
 
-const myProjects = ref([
-  { id: 101, title: '张三诉李四离婚纠纷案', client: '张三', type: 'divorce', status: '草稿', statusType: 'info', time: '2小时前', icon: 'ChatDotSquare' },
-  { id: 102, title: '滨海花园房屋买卖合同', client: '王五', type: 'house', status: '定稿', statusType: 'success', time: '1天前', icon: 'House' },
-  { id: 103, title: '民间借贷纠纷起诉状', client: '赵六', type: 'loan', status: '审核中', statusType: 'warning', time: '3天前', icon: 'Money' },
-])
+// 状态映射
+const statusMap = {
+  draft: { label: '草稿', type: 'info' },
+  completed: { label: '定稿', type: 'success' },
+  archived: { label: '已归档', type: 'warning' }
+}
+
+// 图标映射（直接使用组件）
+const iconMap = {
+  divorce: ChatDotSquare,
+  sales: Money,
+  house: House,
+  default: ChatDotSquare
+}
+
+// 获取案卷列表
+const fetchCases = async () => {
+  try {
+    loading.value = true
+    const data = await getCaseList({
+      page: 1,
+      pageSize: 20,
+      keyword: searchQuery.value
+    })
+    
+    // 转换数据格式
+    myProjects.value = data.list.map(item => {
+      // 根据分类获取图标
+      const category = item.category || 'default'
+      return {
+        id: item.id,
+        title: item.title,
+        client: item.form_data?.husband_name || item.form_data?.buyer || item.form_data?.landlord || '未填写',
+        type: category,
+        status: statusMap[item.status]?.label || '草稿',
+        statusType: statusMap[item.status]?.type || 'info',
+        time: formatTime(item.updated_at),
+        icon: iconMap[category] || iconMap.default
+      }
+    })
+  } catch (error) {
+    // 错误已在拦截器中处理
+  } finally {
+    loading.value = false
+  }
+}
+
+// 格式化时间
+const formatTime = (dateString) => {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diff = now - date
+  const hours = Math.floor(diff / (1000 * 60 * 60))
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  
+  if (hours < 1) return '刚刚'
+  if (hours < 24) return `${hours}小时前`
+  if (days < 7) return `${days}天前`
+  return date.toLocaleDateString('zh-CN')
+}
+
+// 搜索防抖
+let searchTimer = null
+watch(searchQuery, () => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    fetchCases()
+  }, 500)
+})
 
 const handleLogout = () => {
   authStore.logout()
   router.push('/login')
 }
 
-// 跳转到管理后台
 const handleAdminEntry = () => {
   router.push('/admin')
 }
@@ -140,21 +206,32 @@ const goToProject = (project) => {
   router.push({ path: '/project/edit', query: { id: project.id, type: project.type } })
 }
 
-const handleDelete = (item) => {
-  ElMessageBox.confirm(
-    `确定要删除案卷 "${item.title}" 吗？此操作无法撤销。`,
-    '警告',
-    {
-      confirmButtonText: '确定删除',
-      cancelButtonText: '取消',
-      type: 'warning',
+const handleDelete = async (item) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除案卷 "${item.title}" 吗？此操作无法撤销。`,
+      '警告',
+      {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        type: 'warning',
       lockScroll: false,
-    }
-  ).then(() => {
-    myProjects.value = myProjects.value.filter(p => p.id !== item.id)
+        lockScroll: false
+      }
+    )
+    
+    await deleteCase(item.id)
     ElMessage.success('案卷已安全移除')
-  }).catch(() => {})
+    fetchCases()
+  } catch (error) {
+    // 用户取消或错误已在拦截器中处理
+  }
 }
+
+// 页面加载时获取案卷列表
+onMounted(() => {
+  fetchCases()
+})
 </script>
 
 <style lang="scss" scoped>

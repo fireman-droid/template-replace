@@ -51,6 +51,10 @@ app.use('/api/auth', authRoutes)
 import adminRoutes from './routes/admin.js'
 app.use('/api/admin', adminRoutes)
 
+// 案卷路由
+import casesRoutes from './routes/cases.js'
+app.use('/api/cases', casesRoutes)
+
 // 启动服务器
 app.listen(PORT, async () => {
   console.log(`🚀 服务器运行在 http://localhost:${PORT}`)
