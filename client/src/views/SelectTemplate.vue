@@ -66,38 +66,35 @@
 </template>
 
 <script setup>
+import { onMounted,ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Back, Check, UserFilled, House, Money, Right, Lock } from '@element-plus/icons-vue'
+import { Back, Check, Right, Lock } from '@element-plus/icons-vue'
+import { getTemplate } from '@/api'
 
 const router = useRouter()
 
-const templates = [
-  {
-    id: 'divorce',
-    name: '离婚纠纷协议',
-    icon: 'UserFilled',
-    desc: '适用于双方自愿离婚，需处理子女抚养及财产分割。',
-    features: ['抚养权判定', '房产分割', '债务处理']
-  },
-  {
-    id: 'sales',
-    name: '买卖合同纠纷',
-    icon: 'Money',
-    desc: '适用于动产/不动产交易违约、货款拖欠等商事纠纷。',
-    features: ['违约金计算', '风险转移', '质量异议']
-  },
-  {
-    id: 'house',
-    name: '房屋租赁/纠纷',
-    icon: 'House',
-    desc: '适用于房屋租赁违约、押金退还、腾房等居住权纠纷。',
-    features: ['装修折旧', '免租期条款', '优先购买权']
-  }
-]
+const templates = ref([])
 
 const selectTemplate = (tpl) => {
   router.push({ path: '/project/edit', query: { type: tpl.id, isNew: 'true' } })
 }
+
+const fetchTemplate = async() => {
+  const res = await getTemplate()
+  templates.value = res.templates.map(({ id, name, icon, desc, features }) => {
+    return {
+      id,
+      name,
+      icon,
+      desc,
+      features
+    }
+  })
+}
+
+onMounted(() => {
+  fetchTemplate()
+})
 </script>
 
 <style lang="scss" scoped>

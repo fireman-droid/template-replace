@@ -99,67 +99,71 @@ router.get('/templates', authenticate, requireAdmin, async (req, res) => {
  * 创建模板（支持文件上传）
  * POST /api/admin/templates
  */
-router.post('/templates', authenticate, requireAdmin, upload.fields([
-  { name: 'docx', maxCount: 1 },
-  { name: 'schema', maxCount: 1 },
-  { name: 'mapping', maxCount: 1 }
-]), async (req, res) => {
+router.post('/templates', authenticate, requireAdmin, upload.single('docx'), async (req, res) => {
   try {
-    const { name, description, category } = req.body
-    const files = req.files
+    console.log('=== 接收到的请求数据 ===')
+    console.log('req.body:', req.body)
+    console.log('req.file:', req.file)
+    
+    const { name, description, fields, mapping } = req.body
+    const file = req.file
 
-    if (!name || !category) {
-      return res.status(400).json({ message: '模板名称和分类为必填项' })
+    console.log('提取的字段:')
+    console.log('- name:', name)
+    console.log('- fields (原始):', fields, '类型:', typeof fields)
+    console.log('- mapping (原始):', mapping, '类型:', typeof mapping)
+
+    if (!name) {
+      return res.status(400).json({ message: '模板名称为必填项' })
     }
 
-    let fields = []
-    let mapping = {}
+    let parsedFields = {}
+    let parsedMapping = {}
     let file_path = null
 
     // 处理 Word 文件
-    if (files.docx && files.docx[0]) {
-      file_path = files.docx[0].filename
+    if (file) {
+      file_path = file.filename
+      console.log('Word 文件已上传:', file_path)
     }
 
-    // 处理 Schema JSON
-    if (files.schema && files.schema[0]) {
+    // 解析 fields（从字符串解析为对象）
+    if (fields) {
       try {
-        const schemaContent = fs.readFileSync(files.schema[0].path, 'utf-8').trim()
-        if (schemaContent) {
-          fields = JSON.parse(schemaContent)
-        }
-        // 删除临时 JSON 文件
-        fs.unlinkSync(files.schema[0].path)
+        parsedFields = typeof fields === 'string' ? JSON.parse(fields) : fields
+        console.log('解析后的 fields:', parsedFields, 'keys:', Object.keys(parsedFields).length)
       } catch (err) {
-        console.error('解析 Schema JSON 失败:', err)
-        return res.status(400).json({ message: 'Schema JSON 格式错误' })
+        console.error('解析 fields 失败:', err)
+        return res.status(400).json({ message: 'Fields 格式错误', error: err.message })
       }
+    } else {
+      console.log('fields 字段为空或未定义')
     }
 
-    // 处理 Mapping JSON
-    if (files.mapping && files.mapping[0]) {
+    // 解析 mapping（从字符串解析为对象）
+    if (mapping) {
       try {
-        const mappingContent = fs.readFileSync(files.mapping[0].path, 'utf-8').trim()
-        if (mappingContent) {
-          mapping = JSON.parse(mappingContent)
-        }
-        // 删除临时 JSON 文件
-        fs.unlinkSync(files.mapping[0].path)
+        parsedMapping = typeof mapping === 'string' ? JSON.parse(mapping) : mapping
+        console.log('解析后的 mapping:', parsedMapping, 'keys:', Object.keys(parsedMapping).length)
       } catch (err) {
-        console.error('解析 Mapping JSON 失败:', err)
-        return res.status(400).json({ message: 'Mapping JSON 格式错误' })
+        console.error('解析 mapping 失败:', err)
+        return res.status(400).json({ message: 'Mapping 格式错误', error: err.message })
       }
+    } else {
+      console.log('mapping 字段为空或未定义')
     }
 
+    console.log('准备创建模板，数据:', { name, description, fields: parsedFields, mapping: parsedMapping, file_path })
+    
     const template = await Template.create({
       name,
       description,
-      category,
-      fields,
-      mapping,
+      fields: parsedFields,
+      mapping: parsedMapping,
       file_path
     })
 
+    console.log('模板创建成功:', template)
     res.status(201).json({ message: '模板创建成功', template })
   } catch (error) {
     console.error('创建模板错误:', error)
@@ -174,9 +178,9 @@ router.post('/templates', authenticate, requireAdmin, upload.fields([
 router.put('/templates/:id', authenticate, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params
-    const { name, description, category, fields } = req.body
+    const { name, description, fields } = req.body
 
-    await Template.update(id, { name, description, category, fields })
+    await Template.update(id, { name, description, fields })
     res.json({ message: '模板更新成功' })
   } catch (error) {
     console.error('更新模板错误:', error)

@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
     cb(null, uploadDir)
   },
   filename: (req, file, cb) => {
-    // 生成唯一文件名：时间戳-随机数-原文件名
+    // 生成唯一文件名：原文件名-时间戳-随机数.扩展名
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
     const ext = path.extname(file.originalname)
     const basename = path.basename(file.originalname, ext)
@@ -30,15 +30,14 @@ const storage = multer.diskStorage({
   }
 })
 
-// 文件过滤
+// 文件过滤 - 只允许 .docx 文件
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['.docx', '.json']
   const ext = path.extname(file.originalname).toLowerCase()
   
-  if (allowedTypes.includes(ext)) {
+  if (ext === '.docx') {
     cb(null, true)
   } else {
-    cb(new Error(`只允许上传 ${allowedTypes.join(', ')} 文件`))
+    cb(new Error('只允许上传 .docx 文件'))
   }
 }
 

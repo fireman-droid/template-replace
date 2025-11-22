@@ -4,6 +4,7 @@
  */
 import express from 'express'
 import Case from '../models/Case.js'
+import Template from '../models/Template.js'
 import { authenticate } from '../middleware/auth.js'
 
 const router = express.Router()
@@ -12,11 +13,39 @@ const router = express.Router()
 router.use(authenticate)
 
 /**
+ * 获取可用的起草模板列表
+ * GET /api/cases/templates
+ */
+router.get('/templates', async (req, res) => {
+  try {
+    console.log('[GET /api/cases/templates] 开始获取模板列表')
+    
+    // 从数据库获取启用的模板
+    const templates = await Template.getEnabled()
+    
+    console.log('[GET /api/cases/templates] 查询到模板数量:', templates.length)
+    
+    res.json({
+      templates,
+      total: templates.length
+    })
+  } catch (error) {
+    console.error('[GET /api/cases/templates] 错误:', error)
+    console.error('[GET /api/cases/templates] 错误堆栈:', error.stack)
+    res.status(500).json({ message: '获取模板列表失败', error: error.message, stack: error.stack })
+  }
+})
+
+/**
  * 获取当前用户的案卷列表
  * GET /api/cases
  */
 router.get('/', async (req, res) => {
   try {
+    console.log('[GET /api/cases] 开始获取案卷列表')
+    console.log('[GET /api/cases] 查询参数:', req.query)
+    console.log('[GET /api/cases] 当前用户 ID:', req.user.id)
+    
     const { page = 1, pageSize = 10, keyword = '', status = '' } = req.query
     const result = await Case.getUserCases(
       req.user.id,
@@ -25,10 +54,13 @@ router.get('/', async (req, res) => {
       keyword,
       status
     )
+    
+    console.log('[GET /api/cases] 查询结果:', { total: result.total, count: result.list.length })
     res.json(result)
   } catch (error) {
-    console.error('获取案卷列表错误:', error)
-    res.status(500).json({ message: '获取案卷列表失败', error: error.message })
+    console.error('[GET /api/cases] 错误:', error)
+    console.error('[GET /api/cases] 错误堆栈:', error.stack)
+    res.status(500).json({ message: '获取案卷列表失败', error: error.message, stack: error.stack })
   }
 })
 
@@ -38,9 +70,14 @@ router.get('/', async (req, res) => {
  */
 router.post('/', async (req, res) => {
   try {
+    console.log('[POST /api/cases] 开始创建案卷')
+    console.log('[POST /api/cases] 请求体:', req.body)
+    console.log('[POST /api/cases] 当前用户 ID:', req.user.id)
+    
     const { title, template_id, status, form_data } = req.body
 
     if (!title) {
+      console.log('[POST /api/cases] 验证失败: 缺少标题')
       return res.status(400).json({ message: '案卷标题为必填项' })
     }
 
@@ -52,10 +89,12 @@ router.post('/', async (req, res) => {
       form_data: form_data || {}
     })
 
+    console.log('[POST /api/cases] 案卷创建成功:', caseData)
     res.status(201).json({ message: '案卷创建成功', case: caseData })
   } catch (error) {
-    console.error('创建案卷错误:', error)
-    res.status(500).json({ message: '创建案卷失败', error: error.message })
+    console.error('[POST /api/cases] 错误:', error)
+    console.error('[POST /api/cases] 错误堆栈:', error.stack)
+    res.status(500).json({ message: '创建案卷失败', error: error.message, stack: error.stack })
   }
 })
 
@@ -66,22 +105,32 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params
+    console.log(`[PUT /api/cases/${id}] 开始更新案卷`)
+    console.log(`[PUT /api/cases/${id}] 请求体:`, req.body)
+    console.log(`[PUT /api/cases/${id}] 当前用户 ID:`, req.user.id)
+    
     const { title, template_id, status, form_data } = req.body
 
     // 验证案卷是否属于当前用户
     const existingCase = await Case.findById(id)
+    console.log(`[PUT /api/cases/${id}] 查询到的案卷:`, existingCase)
+    
     if (!existingCase) {
+      console.log(`[PUT /api/cases/${id}] 案卷不存在`)
       return res.status(404).json({ message: '案卷不存在' })
     }
     if (existingCase.user_id !== req.user.id) {
+      console.log(`[PUT /api/cases/${id}] 权限验证失败`)
       return res.status(403).json({ message: '无权修改此案卷' })
     }
 
     await Case.update(id, { title, template_id, status, form_data })
+    console.log(`[PUT /api/cases/${id}] 案卷更新成功`)
     res.json({ message: '案卷更新成功' })
   } catch (error) {
-    console.error('更新案卷错误:', error)
-    res.status(500).json({ message: '更新案卷失败', error: error.message })
+    console.error(`[PUT /api/cases/${req.params.id}] 错误:`, error)
+    console.error(`[PUT /api/cases/${req.params.id}] 错误堆栈:`, error.stack)
+    res.status(500).json({ message: '更新案卷失败', error: error.message, stack: error.stack })
   }
 })
 
@@ -92,46 +141,84 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params
+    console.log(`[DELETE /api/cases/${id}] 开始删除案卷`)
+    console.log(`[DELETE /api/cases/${id}] 当前用户 ID:`, req.user.id)
 
     // 验证案卷是否属于当前用户
     const existingCase = await Case.findById(id)
+    console.log(`[DELETE /api/cases/${id}] 查询到的案卷:`, existingCase)
+    
     if (!existingCase) {
+      console.log(`[DELETE /api/cases/${id}] 案卷不存在`)
       return res.status(404).json({ message: '案卷不存在' })
     }
     if (existingCase.user_id !== req.user.id) {
+      console.log(`[DELETE /api/cases/${id}] 权限验证失败`)
       return res.status(403).json({ message: '无权删除此案卷' })
     }
 
     await Case.delete(id)
+    console.log(`[DELETE /api/cases/${id}] 案卷删除成功`)
     res.json({ message: '案卷删除成功' })
   } catch (error) {
-    console.error('删除案卷错误:', error)
-    res.status(500).json({ message: '删除案卷失败', error: error.message })
+    console.error(`[DELETE /api/cases/${req.params.id}] 错误:`, error)
+    console.error(`[DELETE /api/cases/${req.params.id}] 错误堆栈:`, error.stack)
+    res.status(500).json({ message: '删除案卷失败', error: error.message, stack: error.stack })
   }
 })
 
 /**
- * 获取案卷详情
+ * 获取案卷详情（包含模板信息）
  * GET /api/cases/:id
  */
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params
+    console.log(`[GET /api/cases/${id}] 开始获取案卷详情`)
+    console.log(`[GET /api/cases/${id}] 当前用户 ID:`, req.user.id)
+    
     const caseData = await Case.findById(id)
+    console.log(`[GET /api/cases/${id}] 查询结果:`, caseData)
     
     if (!caseData) {
+      console.log(`[GET /api/cases/${id}] 案卷不存在`)
       return res.status(404).json({ message: '案卷不存在' })
     }
     
     // 验证案卷是否属于当前用户
+    console.log(`[GET /api/cases/${id}] 案卷所属用户 ID:`, caseData.user_id)
     if (caseData.user_id !== req.user.id) {
+      console.log(`[GET /api/cases/${id}] 权限验证失败`)
       return res.status(403).json({ message: '无权访问此案卷' })
     }
 
-    res.json(caseData)
+    // 如果案卷有关联的模板，获取模板详细信息
+    let templateData = null
+    if (caseData.template_id) {
+      console.log(`[GET /api/cases/${id}] 获取关联模板信息, template_id:`, caseData.template_id)
+      templateData = await Template.findById(caseData.template_id)
+      console.log(`[GET /api/cases/${id}] 模板信息:`, templateData)
+    }
+
+    // 组合返回数据
+    const response = {
+      ...caseData,
+      template: templateData ? {
+        id: templateData.id,
+        name: templateData.name,
+        description: templateData.description,
+        fields: templateData.fields,
+        mapping: templateData.mapping,
+        file_path: templateData.file_path
+      } : null
+    }
+
+    console.log(`[GET /api/cases/${id}] 成功返回案卷详情（含模板信息）`)
+    res.json(response)
   } catch (error) {
-    console.error('获取案卷详情错误:', error)
-    res.status(500).json({ message: '获取案卷详情失败', error: error.message })
+    console.error(`[GET /api/cases/${req.params.id}] 错误:`, error)
+    console.error(`[GET /api/cases/${req.params.id}] 错误堆栈:`, error.stack)
+    res.status(500).json({ message: '获取案卷详情失败', error: error.message, stack: error.stack })
   }
 })
 

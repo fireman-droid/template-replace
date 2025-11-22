@@ -10,14 +10,13 @@ class Template {
    * @param {Object} templateData - 模板数据
    * @returns {Object} 创建的模板信息
    */
-  static async create({ name, description, category, fields, mapping, file_path }) {
+  static async create({ name, description, fields, mapping, file_path }) {
     const [result] = await pool.query(
-      'INSERT INTO templates (name, description, category, fields, mapping, file_path) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT INTO templates (name, description, fields, mapping, file_path) VALUES (?, ?, ?, ?, ?)',
       [
         name, 
         description, 
-        category, 
-        JSON.stringify(fields || []),
+        JSON.stringify(fields || {}),
         JSON.stringify(mapping || {}),
         file_path || null
       ]
@@ -27,11 +26,26 @@ class Template {
       id: result.insertId,
       name,
       description,
-      category,
       fields,
       mapping,
       file_path
     }
+  }
+
+  /**
+   * 获取所有启用的模板（用于前端选择）
+   * @returns {Array} 启用的模板列表
+   */
+  static async getEnabled() {
+    const [rows] = await pool.query(
+      'SELECT id, name, description as `desc`, icon, features, enabled FROM templates WHERE enabled = TRUE ORDER BY created_at DESC'
+    )
+    
+    // 解析 JSON 字段
+    return rows.map(row => ({
+      ...row,
+      features: typeof row.features === 'string' ? JSON.parse(row.features || '[]') : row.features
+    }))
   }
 
   /**
@@ -49,10 +63,10 @@ class Template {
     const params = []
     
     if (keyword) {
-      query += ' WHERE name LIKE ? OR description LIKE ? OR category LIKE ?'
-      countQuery += ' WHERE name LIKE ? OR description LIKE ? OR category LIKE ?'
+      query += ' WHERE name LIKE ? OR description LIKE ?'
+      countQuery += ' WHERE name LIKE ? OR description LIKE ?'
       const searchTerm = `%${keyword}%`
-      params.push(searchTerm, searchTerm, searchTerm)
+      params.push(searchTerm, searchTerm)
     }
     
     query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?'
@@ -62,14 +76,14 @@ class Template {
     
     // 解析 JSON 字段
     const templates = rows.map(row => {
-      let parsedFields = []
+      let parsedFields = {}
       let parsedMapping = {}
       
       try {
         // 解析 fields
         if (typeof row.fields === 'string') {
           parsedFields = JSON.parse(row.fields)
-        } else if (Array.isArray(row.fields)) {
+        } else if (typeof row.fields === 'object' && row.fields !== null) {
           parsedFields = row.fields
         }
         
@@ -113,7 +127,7 @@ class Template {
       const row = rows[0]
       return {
         ...row,
-        fields: typeof row.fields === 'string' ? JSON.parse(row.fields || '[]') : row.fields,
+        fields: typeof row.fields === 'string' ? JSON.parse(row.fields || '{}') : row.fields,
         mapping: typeof row.mapping === 'string' ? JSON.parse(row.mapping || '{}') : row.mapping
       }
     }
@@ -126,7 +140,7 @@ class Template {
    * @param {number} id - 模板 ID
    * @param {Object} data - 更新的数据
    */
-  static async update(id, { name, description, category, fields, mapping, file_path }) {
+  static async update(id, { name, description, fields, mapping, file_path }) {
     const updates = []
     const params = []
     
@@ -137,10 +151,6 @@ class Template {
     if (description !== undefined) {
       updates.push('description = ?')
       params.push(description)
-    }
-    if (category !== undefined) {
-      updates.push('category = ?')
-      params.push(category)
     }
     if (fields !== undefined) {
       updates.push('fields = ?')

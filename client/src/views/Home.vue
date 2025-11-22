@@ -203,7 +203,7 @@ const handleAdminEntry = () => {
 }
 
 const goToProject = (project) => {
-  router.push({ path: '/project/edit', query: { id: project.id, type: project.type } })
+  router.push({ path: '/project/edit', query: { id: project.id } })
 }
 
 const handleDelete = async (item) => {

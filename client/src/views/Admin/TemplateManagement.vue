@@ -12,7 +12,7 @@
         <div class="tpl-icon"><el-icon><DocumentChecked /></el-icon></div>
         <div class="tpl-info">
           <h4>{{ tpl.name }}</h4>
-          <p>分类: {{ tpl.category }} | 字段: {{ tpl.fields?.length || 0 }}个</p>
+          <p>字段: {{ Object.keys(tpl.fields || {}).length }}个</p>
           <p class="desc">{{ tpl.description }}</p>
         </div>
         <div class="tpl-actions">
@@ -59,22 +59,9 @@
     >
       <div class="deploy-content">
         <el-form label-position="top" class="cyber-form">
-          <el-row :gutter="20">
-            <el-col :span="16">
-              <el-form-item label="模版名称">
-                <el-input v-model="formData.name" placeholder="例如：股权转让协议书(标准版)" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="8">
-              <el-form-item label="案由分类">
-                <el-select v-model="formData.category" placeholder="选择分类">
-                  <el-option label="离婚纠纷" value="divorce" />
-                  <el-option label="买卖合同" value="sales" />
-                  <el-option label="房屋租赁" value="house" />
-                </el-select>
-              </el-form-item>
-            </el-col>
-          </el-row>
+          <el-form-item label="模版名称">
+            <el-input v-model="formData.name" placeholder="例如：股权转让协议书(标准版)" />
+          </el-form-item>
 
           <el-form-item label="模版描述">
             <el-input v-model="formData.description" type="textarea" rows="3" placeholder="简要描述模板用途..." />
@@ -167,8 +154,8 @@ const pagination = ref({
 const formData = ref({
   name: '',
   description: '',
-  category: '',
-  fields: []
+  fields: {},
+  mapping: {}
 })
 
 const uploadFiles = ref({
@@ -199,37 +186,100 @@ const handleDocxChange = (file) => {
   uploadFiles.value.docx = file.raw
 }
 
-const handleSchemaChange = (file) => {
+const handleSchemaChange = async (file) => {
   uploadFiles.value.schema = file.raw
+  
+  // 直接读取 JSON 文件内容
+  try {
+    const text = await file.raw.text()
+    console.log('Schema 文件内容:', text)
+    console.log('Schema 文件内容长度:', text.length)
+    console.log('Schema 文件前100个字符:', text.substring(0, 100))
+    
+    const json = JSON.parse(text)
+    console.log('Schema 解析结果:', json)
+    console.log('Schema 类型:', typeof json, Array.isArray(json) ? '数组' : '对象')
+    
+    formData.value.fields = json
+    console.log('formData.fields 已更新:', formData.value.fields)
+    ElMessage.success('Schema 文件读取成功')
+  } catch (error) {
+    console.error('Schema JSON 解析错误:', error)
+    console.error('错误位置:', error.message)
+    ElMessage.error(`Schema JSON 格式错误: ${error.message}`)
+    uploadFiles.value.schema = null
+    formData.value.fields = {}
+  }
 }
 
-const handleMappingChange = (file) => {
+const handleMappingChange = async (file) => {
   uploadFiles.value.mapping = file.raw
+  
+  // 直接读取 JSON 文件内容
+  try {
+    const text = await file.raw.text()
+    console.log('Mapping 文件内容:', text)
+    console.log('Mapping 文件内容长度:', text.length)
+    console.log('Mapping 文件前100个字符:', text.substring(0, 100))
+    
+    const json = JSON.parse(text)
+    console.log('Mapping 解析结果:', json)
+    console.log('Mapping 类型:', typeof json, Array.isArray(json) ? '数组' : '对象')
+    
+    formData.value.mapping = json
+    console.log('formData.mapping 已更新:', formData.value.mapping)
+    ElMessage.success('Mapping 文件读取成功')
+  } catch (error) {
+    console.error('Mapping JSON 解析错误:', error)
+    console.error('错误位置:', error.message)
+    ElMessage.error(`Mapping JSON 格式错误: ${error.message}`)
+    uploadFiles.value.mapping = null
+    formData.value.mapping = {}
+  }
 }
 
 // 创建模板（支持文件上传）
 const handleCreate = async () => {
   try {
-    if (!formData.value.name || !formData.value.category) {
-      ElMessage.warning('请填写模板名称和分类')
+    if (!formData.value.name) {
+      ElMessage.warning('请填写模板名称')
       return
     }
+
+    console.log('准备提交的数据:', formData.value)
 
     // 创建 FormData 对象
     const data = new FormData()
     data.append('name', formData.value.name)
     data.append('description', formData.value.description || '')
-    data.append('category', formData.value.category)
     
-    // 添加文件
+    // 添加 Word 文件
     if (uploadFiles.value.docx) {
       data.append('docx', uploadFiles.value.docx)
+      console.log('已添加 Word 文件')
     }
-    if (uploadFiles.value.schema) {
-      data.append('schema', uploadFiles.value.schema)
+    
+    // 将 JSON 数据作为字符串发送，而不是文件
+    if (formData.value.fields && Object.keys(formData.value.fields).length > 0) {
+      const fieldsStr = JSON.stringify(formData.value.fields)
+      data.append('fields', fieldsStr)
+      console.log('已添加 fields:', fieldsStr)
+    } else {
+      console.log('fields 为空，未添加', formData.value.fields)
     }
-    if (uploadFiles.value.mapping) {
-      data.append('mapping', uploadFiles.value.mapping)
+    
+    if (formData.value.mapping && Object.keys(formData.value.mapping).length > 0) {
+      const mappingStr = JSON.stringify(formData.value.mapping)
+      data.append('mapping', mappingStr)
+      console.log('已添加 mapping:', mappingStr)
+    } else {
+      console.log('mapping 为空，未添加', formData.value.mapping)
+    }
+    
+    // 打印 FormData 内容（调试用）
+    console.log('FormData 内容:')
+    for (let pair of data.entries()) {
+      console.log(pair[0] + ':', pair[1])
     }
 
     // 使用封装好的 API
@@ -240,6 +290,7 @@ const handleCreate = async () => {
     resetForm()
     fetchTemplates()
   } catch (error) {
+    console.error('创建模板失败:', error)
     // 错误已在拦截器中处理
   }
 }
@@ -267,8 +318,8 @@ const resetForm = () => {
   formData.value = {
     name: '',
     description: '',
-    category: '',
-    fields: []
+    fields: {},
+    mapping: {}
   }
   uploadFiles.value = {
     docx: null,
@@ -288,8 +339,7 @@ const handleEdit = (template) => {
   formData.value = {
     name: template.name,
     description: template.description,
-    category: template.category,
-    fields: template.fields || []
+    fields: template.fields || {}
   }
   showUploadDialog.value = true
 }
@@ -302,8 +352,52 @@ const formatDate = (dateString) => {
 }
 
 // 下载模板
-const handleDownload = (id) => {
-  window.open(`/api/admin/templates/${id}/download`, '_blank')
+const handleDownload = async (id) => {
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      ElMessage.error('请先登录')
+      return
+    }
+
+    // 使用 fetch 下载文件，可以带上 token
+    const response = await fetch(`/api/admin/templates/${id}/download`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('下载失败')
+    }
+
+    // 获取文件名
+    const contentDisposition = response.headers.get('Content-Disposition')
+    let filename = 'template.docx'
+    if (contentDisposition) {
+      const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(contentDisposition)
+      if (matches != null && matches[1]) {
+        filename = matches[1].replace(/['"]/g, '')
+      }
+    }
+
+    // 创建 Blob 并下载
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+
+    ElMessage.success('下载成功')
+  } catch (error) {
+    console.error('下载模板失败:', error)
+    ElMessage.error('下载失败')
+  }
 }
 
 onMounted(() => {

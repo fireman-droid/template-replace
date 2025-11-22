@@ -26,13 +26,15 @@ CREATE TABLE IF NOT EXISTS templates (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL COMMENT '模板名称',
   description TEXT COMMENT '模板描述',
-  category VARCHAR(50) NOT NULL COMMENT '模板分类',
+  icon VARCHAR(50) DEFAULT 'Document' COMMENT '图标名称',
+  features JSON COMMENT '特性列表 JSON',
   fields JSON COMMENT '字段配置 JSON (Schema)',
   mapping JSON COMMENT '映射配置 JSON (Tag ↔ Key)',
   file_path VARCHAR(255) COMMENT 'Word 模板文件路径',
+  enabled BOOLEAN DEFAULT TRUE COMMENT '是否启用',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_category (category)
+  INDEX idx_enabled (enabled)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 插入测试账号
@@ -61,10 +63,10 @@ CREATE TABLE IF NOT EXISTS cases (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 插入示例模板
-INSERT INTO templates (name, description, category, fields) VALUES 
-('离婚协议书', '标准离婚协议书模板', 'divorce', '[{"name":"husband_name","label":"男方姓名","type":"text"},{"name":"wife_name","label":"女方姓名","type":"text"},{"name":"marriage_date","label":"结婚日期","type":"date"}]'),
-('买卖合同', '商品买卖合同模板', 'sales', '[{"name":"buyer","label":"买方","type":"text"},{"name":"seller","label":"卖方","type":"text"},{"name":"amount","label":"金额","type":"number"}]'),
-('租赁合同', '房屋租赁合同模板', 'house', '[{"name":"landlord","label":"出租方","type":"text"},{"name":"tenant","label":"承租方","type":"text"},{"name":"address","label":"房屋地址","type":"text"}]')
+INSERT INTO templates (name, description, icon, features, fields, enabled) VALUES 
+('离婚纠纷协议', '适用于双方自愿离婚，需处理子女抚养及财产分割。', 'UserFilled', '["抚养权判定", "房产分割", "债务处理"]', '{}', TRUE),
+('买卖合同纠纷', '适用于动产/不动产交易违约、货款拖欠等商事纠纷。', 'Money', '["违约金计算", "风险转移", "质量异议"]', '{}', TRUE),
+('房屋租赁/纠纷', '适用于房屋租赁违约、押金退还、腾房等居住权纠纷。', 'House', '["装修折旧", "免租期条款", "优先购买权"]', '{}', TRUE)
 ON DUPLICATE KEY UPDATE name=name;
 
 -- 插入示例案卷数据

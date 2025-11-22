@@ -69,3 +69,13 @@ export const getCaseDetail = (id) => {
     method: 'get'
   })
 }
+
+/**
+ * 获取模版列表
+ */
+export const getTemplate = () => {
+  return request({
+    url: `/cases/templates`,
+    method:'get'
+  })
+}

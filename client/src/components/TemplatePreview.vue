@@ -1,79 +1,65 @@
 <template>
-  <div class="template-preview">
-    <!-- 基本信息区域 -->
+  <div class="template-preview-container">
     <div class="preview-header">
-      <h2 class="template-name">{{ template.name }}</h2>
-      <div class="meta-info">
-        <span class="meta-tag">{{ template.category }}</span>
-        <span class="meta-text">创建于 {{ formatDate(template.created_at) }}</span>
+      <div class="header-left">
+        <h2 class="template-name">{{ template.name }}</h2>
+        <div class="meta-row">
+          <span class="category-badge">{{ formatCategory(template.category) }}</span>
+          <span class="time-text">创建于 {{ formatDate(template.created_at) }}</span>
+        </div>
       </div>
-      <p class="template-desc">{{ template.description || '暂无描述' }}</p>
+      <div class="header-right">
+        <el-button type="primary" plain @click="handleDownload">
+          <el-icon><Download /></el-icon> 下载源文件
+        </el-button>
+      </div>
+    </div>
+    
+    <div class="preview-desc">
+      <p>{{ template.description || '暂无描述' }}</p>
     </div>
 
-    <!-- 三栏内容区域 -->
-    <div class="preview-grid">
-      <!-- Word 模板 -->
-      <div class="preview-item">
-        <div class="item-header">
-          <el-icon><Document /></el-icon>
-          <span>Word 模版 (.docx)</span>
+    <div class="preview-body">
+      <div class="preview-col">
+        <div class="col-header">
+          <el-icon><Document /></el-icon> Word 模版
         </div>
-        <div class="item-content">
-          <div v-if="template.file_path" class="file-info">
+        <div class="col-content file-mode">
+          <div v-if="template.file_path" class="file-card">
             <div class="file-icon">
-              <el-icon size="48"><Document /></el-icon>
+              <el-icon><Document /></el-icon>
             </div>
-            <p class="file-name">{{ template.file_path }}</p>
-            <el-button size="small" type="primary" @click="handleDownload">
-              <el-icon><Download /></el-icon> 下载模板
-            </el-button>
+            <div class="file-info">
+              <span class="filename">{{ template.file_path }}</span>
+              <span class="filesize">DOCX 文档</span>
+            </div>
           </div>
           <div v-else class="empty-state">
-            <el-icon size="48"><Document /></el-icon>
-            <p>未上传 Word 模板</p>
+            <el-icon><DocumentDelete /></el-icon>
+            <span>未上传模版文件</span>
           </div>
         </div>
       </div>
 
-      <!-- 结构表 (Schema) -->
-      <div class="preview-item">
-        <div class="item-header">
-          <el-icon><Connection /></el-icon>
-          <span>结构表 (Schema)</span>
-          <span class="header-badge" v-if="template.fields && template.fields.length > 0">
-            {{ template.fields.length }} 个字段
-          </span>
+      <div class="preview-col">
+        <div class="col-header">
+          <el-icon><Connection /></el-icon> 结构表 (Schema)
+          <span class="count-badge">{{ Object.keys(template.fields || {}).length }}</span>
         </div>
-        <div class="item-content scrollable">
-          <div v-if="template.fields && template.fields.length > 0" class="json-preview">
-            <pre>{{ JSON.stringify(template.fields, null, 2) }}</pre>
-          </div>
-          <div v-else class="empty-state">
-            <el-icon size="48"><Connection /></el-icon>
-            <p>暂无字段配置</p>
-            <span class="empty-hint">用于定义表单结构</span>
-          </div>
+        <div class="col-content code-mode">
+          <pre v-if="template.fields && Object.keys(template.fields).length">{{ JSON.stringify(template.fields, null, 2) }}</pre>
+          <div v-else class="empty-state">暂无字段定义</div>
         </div>
       </div>
 
-      <!-- 映射表 (Map) -->
-      <div class="preview-item">
-        <div class="item-header">
-          <el-icon><Link /></el-icon>
-          <span>映射表 (Map)</span>
-          <span class="header-badge" v-if="template.mapping && Object.keys(template.mapping).length > 0">
-            {{ Object.keys(template.mapping).length }} 个映射
-          </span>
+      <div class="preview-col">
+        <div class="col-header">
+          <el-icon><Link /></el-icon> 映射表 (Map)
+          <span class="count-badge">{{ Object.keys(template.mapping || {}).length }}</span>
         </div>
-        <div class="item-content scrollable">
-          <div v-if="template.mapping && Object.keys(template.mapping).length > 0" class="json-preview">
-            <pre>{{ JSON.stringify(template.mapping, null, 2) }}</pre>
-          </div>
-          <div v-else class="empty-state">
-            <el-icon size="48"><Link /></el-icon>
-            <p>暂无映射配置</p>
-            <span class="empty-hint">Tag ↔ Key 映射关系</span>
-          </div>
+        <div class="col-content code-mode">
+          <pre v-if="template.mapping && Object.keys(template.mapping).length">{{ JSON.stringify(template.mapping, null, 2) }}</pre>
+          <div v-else class="empty-state">暂无映射关系</div>
         </div>
       </div>
     </div>
@@ -81,21 +67,22 @@
 </template>
 
 <script setup>
-import { Document, Connection, Link, Download } from '@element-plus/icons-vue'
+import { Document, Connection, Link, Download, DocumentDelete } from '@element-plus/icons-vue'
 
 const props = defineProps({
-  template: {
-    type: Object,
-    required: true
-  }
+  template: { type: Object, required: true }
 })
 
 const emit = defineEmits(['download'])
 
 const formatDate = (dateString) => {
   if (!dateString) return '-'
-  const date = new Date(dateString)
-  return date.toLocaleString('zh-CN')
+  return new Date(dateString).toLocaleDateString('zh-CN')
+}
+
+const formatCategory = (val) => {
+  const map = { divorce: '离婚纠纷', sales: '买卖合同', house: '房屋租赁' }
+  return map[val] || val
 }
 
 const handleDownload = () => {
@@ -104,223 +91,128 @@ const handleDownload = () => {
 </script>
 
 <style lang="scss" scoped>
-$primary: #3b82f6;
-$accent: #06b6d4;
-$text-main: #f8fafc;
-$text-sub: #94a3b8;
+$bg-deep: #050b14;
 $border: rgba(255,255,255,0.1);
+$primary: #3b82f6;
+$text-main: #e2e8f0;
+$text-sub: #94a3b8;
 
-.template-preview {
+.template-preview-container {
+  height: 70vh; // 控制整体高度，适应弹窗
+  display: flex;
+  flex-direction: column;
+  color: $text-main;
+
   .preview-header {
-    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     border-bottom: 1px solid $border;
-    background: rgba(255,255,255,0.02);
-    
+    padding: 10px 0;
     .template-name {
+      margin: 0 0 8px 0;
       font-size: 20px;
-      color: $text-main;
-      margin: 0 0 10px;
-      font-weight: 700;
+      color: white;
     }
     
-    .meta-info {
+    .meta-row {
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 8px;
-      
-      .meta-tag {
-        display: inline-block;
-        padding: 3px 10px;
-        background: rgba($primary, 0.2);
+      font-size: 12px;
+      .category-badge {
+        background: rgba($primary, 0.15);
         color: $primary;
+        padding: 2px 8px;
         border-radius: 4px;
-        font-size: 11px;
-        font-weight: 600;
+        border: 1px solid rgba($primary, 0.3);
       }
       
-      .meta-text {
-        font-size: 12px;
-        color: $text-sub;
-      }
-    }
-    
-    .template-desc {
-      font-size: 13px;
-      color: $text-sub;
-      margin: 0;
-      line-height: 1.5;
+      .time-text { color: $text-sub; }
     }
   }
-  
-  .preview-grid {
+
+  .preview-desc {
+    padding: 16px 0;
+    font-size: 13px;
+    color: $text-sub;
+    line-height: 1.5;
+  }
+
+  .preview-body {
+    flex: 1;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0;
-    height: 450px;
+    grid-template-columns: 1fr 1fr 1fr; // Word 窄一点，代码宽一点
+    gap: 16px;
+    min-height: 0; // 关键：允许 Flex 子项收缩
     
-    .preview-item {
-      border-right: 1px solid $border;
+    .preview-col {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid $border;
+      border-radius: 8px;
       display: flex;
       flex-direction: column;
-      height: 100%;
-      
-      &:last-child {
-        border-right: none;
-      }
-      
-      .item-header {
-        background: rgba(255,255,255,0.03);
-        padding: 12px 16px;
+      overflow: hidden;
+
+      .col-header {
+        padding: 12px;
+        background: rgba(255,255,255,0.05);
+        border-bottom: 1px solid $border;
+        font-size: 13px;
+        font-weight: 600;
         display: flex;
         align-items: center;
         gap: 8px;
-        font-size: 13px;
-        color: $text-main;
-        font-weight: 600;
-        border-bottom: 1px solid $border;
-        flex-shrink: 0;
         
-        .el-icon {
-          font-size: 16px;
-          color: $accent;
-        }
-        
-        .header-badge {
+        .count-badge {
           margin-left: auto;
-          padding: 2px 8px;
-          background: rgba($accent, 0.2);
-          color: $accent;
+          font-size: 11px;
+          background: rgba(0,0,0,0.3);
+          padding: 1px 6px;
           border-radius: 10px;
-          font-size: 10px;
-          font-weight: 500;
+          color: $text-sub;
         }
       }
-      
-      .item-content {
-        padding: 16px;
+
+      .col-content {
         flex: 1;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        min-height: 0;
+        overflow-y: auto; // 独立滚动条
+        padding: 12px;
         
-        &.scrollable {
-          overflow-y: auto;
-          
-          &::-webkit-scrollbar {
-            width: 6px;
-          }
-          
-          &::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.05);
-            border-radius: 3px;
-          }
-          
-          &::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.2);
-            border-radius: 3px;
-            
-            &:hover {
-              background: rgba(255,255,255,0.3);
-            }
-          }
+        // 滚动条样式
+        &::-webkit-scrollbar { width: 6px; }
+        &::-webkit-scrollbar-track { background: transparent; }
+        &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; &:hover { background: rgba(255,255,255,0.2); } }
+
+        &.code-mode {
+          font-family: 'Consolas', monospace;
+          font-size: 12px;
+          color: #a5d6ff; // 代码高亮色
+          white-space: pre-wrap;
+          word-break: break-all;
         }
-        
-        .file-info {
-          text-align: center;
+
+        &.file-mode {
           display: flex;
-          flex-direction: column;
           align-items: center;
-          gap: 12px;
-          padding-top: 20px;
-          
-          .file-icon {
-            width: 64px;
-            height: 64px;
-            background: rgba($primary, 0.1);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: $primary;
-          }
-          
-          .file-name {
-            font-size: 11px;
-            color: $text-sub;
-            margin: 0;
-            word-break: break-all;
-            padding: 6px 10px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 4px;
-            width: 100%;
-            max-height: 60px;
-            overflow-y: auto;
-            line-height: 1.4;
-            
-            &::-webkit-scrollbar {
-              width: 4px;
-            }
-            
-            &::-webkit-scrollbar-track {
-              background: rgba(255,255,255,0.05);
-            }
-            
-            &::-webkit-scrollbar-thumb {
-              background: rgba(255,255,255,0.2);
-              border-radius: 2px;
-            }
-          }
-          
-          .el-button {
-            width: 100%;
-          }
+          justify-content: center;
         }
-        
+
+        .file-card {
+          text-align: center;
+          .file-icon { font-size: 48px; color: $primary; margin-bottom: 8px; }
+          .filename { display: block; font-size: 12px; margin-bottom: 4px; word-break: break-all; }
+          .filesize { font-size: 11px; color: $text-sub; }
+        }
+
         .empty-state {
-          text-align: center;
           color: $text-sub;
-          padding: 30px 20px;
-          font-size: 13px;
+          font-size: 12px;
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 10px;
-          
-          .el-icon {
-            color: rgba(255,255,255,0.1);
-          }
-          
-          p {
-            margin: 0;
-            font-size: 13px;
-            color: $text-sub;
-          }
-          
-          .empty-hint {
-            font-size: 11px;
-            color: rgba(255,255,255,0.3);
-          }
-        }
-        
-        .json-preview {
-          background: rgba(0, 0, 0, 0.4);
-          border: 1px solid $border;
-          border-radius: 6px;
-          padding: 16px;
-          height: 100%;
-          overflow: hidden;
-          
-          pre {
-            margin: 0;
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            font-size: 11px;
-            color: #a9dc76;
-            line-height: 1.6;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-          }
+          gap: 8px;
+          opacity: 0.6;
         }
       }
     }

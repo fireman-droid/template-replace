@@ -3,6 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import pool, { testConnection } from './config/db.js'
 import authRoutes from './routes/auth.js'
+import { requestLogger, errorHandler, notFoundHandler } from './middleware/errorLogger.js'
 
 dotenv.config()
 
@@ -13,6 +14,9 @@ const PORT = process.env.PORT || 5000
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+
+// 请求日志中间件
+app.use(requestLogger)
 
 // 路由
 app.get('/api/test', (req, res) => {
@@ -55,8 +59,19 @@ app.use('/api/admin', adminRoutes)
 import casesRoutes from './routes/cases.js'
 app.use('/api/cases', casesRoutes)
 
+// 404 处理
+app.use(notFoundHandler)
+
+// 错误处理中间件（必须放在最后）
+app.use(errorHandler)
+
 // 启动服务器
 app.listen(PORT, async () => {
-  console.log(`🚀 服务器运行在 http://localhost:${PORT}`)
+  console.log(`\n${'='.repeat(50)}`)
+  console.log(`🚀 FastReplace 服务器启动成功`)
+  console.log(`📍 地址: http://localhost:${PORT}`)
+  console.log(`⏰ 时间: ${new Date().toLocaleString('zh-CN')}`)
+  console.log(`🌍 环境: ${process.env.NODE_ENV || 'development'}`)
+  console.log(`${'='.repeat(50)}\n`)
   await testConnection()
 })
