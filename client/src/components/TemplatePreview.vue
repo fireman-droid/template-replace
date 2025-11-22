@@ -203,6 +203,7 @@ $border: rgba(255,255,255,0.1);
         display: flex;
         flex-direction: column;
         overflow: hidden;
+        min-height: 0;
         
         &.scrollable {
           overflow-y: auto;
@@ -308,7 +309,8 @@ $border: rgba(255,255,255,0.1);
           border: 1px solid $border;
           border-radius: 6px;
           padding: 16px;
-          flex: 1;
+          height: 100%;
+          overflow: hidden;
           
           pre {
             margin: 0;
