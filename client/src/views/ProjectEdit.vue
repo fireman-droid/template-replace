@@ -31,7 +31,7 @@
       </div>
       <div class="right">
         <button class="btn-ghost">保存草稿</button>
-        <button class="btn-primary">生成文书 <el-icon><Cpu /></el-icon></button>
+        <button class="btn-primary" @click="buildTemplate()">生成文书 <el-icon><Cpu /></el-icon></button>
       </div>
     </header>
 
@@ -41,7 +41,7 @@
       </div>
 
       <div class="right-pane">
-        <ProjectPreview />
+        <ProjectPreview :caseId="caseId"/>
       </div>
     </div>
   </div>
@@ -55,7 +55,7 @@ import ProjectForm from '@/components/project/ProjectForm.vue'
 import ProjectPreview from '@/components/project/ProjectPreview.vue'
 import { createCase, getCaseDetail, updateCase } from '@/api'
 import { ElMessage } from 'element-plus'
-
+import { useTemplateStore } from '@/stores'
 
 const route = useRoute()
 const router = useRouter()
@@ -67,6 +67,7 @@ const originalCaseName = ref('') // 保存原始名称，用于对比
 const isEditingName = ref(false)
 const nameInput = ref(null)
 const isSavingName = ref(false)
+const templateStore = useTemplateStore()
 
 onMounted(async () => {
   // 优先检查是否有 id 参数（已存在的案卷）
@@ -173,6 +174,11 @@ const handleNameBlur = () => {
 // 按下回车键处理
 const handleNameEnter = () => {
   nameInput.value?.blur() // 触发失焦事件
+}
+
+// 下载文件
+const buildTemplate = () => {
+  templateStore.download()
 }
 </script>
 
@@ -311,12 +317,12 @@ $text-gray: #94a3b8;
   overflow: hidden;
 
   .left-pane {
-    flex: 4; // 40%
+    flex: 5; 
     overflow: hidden;
   }
 
   .right-pane {
-    flex: 6; // 60%
+    flex: 5;
     overflow: hidden;
   }
 }

@@ -3,9 +3,15 @@
  * 处理案卷相关的请求
  */
 import express from 'express'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import Case from '../models/Case.js'
 import Template from '../models/Template.js'
 import { authenticate } from '../middleware/auth.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const router = express.Router()
 
@@ -164,6 +170,73 @@ router.delete('/:id', async (req, res) => {
     console.error(`[DELETE /api/cases/${req.params.id}] 错误:`, error)
     console.error(`[DELETE /api/cases/${req.params.id}] 错误堆栈:`, error.stack)
     res.status(500).json({ message: '删除案卷失败', error: error.message, stack: error.stack })
+  }
+})
+
+/**
+ * 获取案卷的模板文件内容
+ * GET /api/cases/:id/template-file
+ */
+router.get('/:id/template-file', async (req, res) => {
+  try {
+    const { id } = req.params
+    console.log(`[GET /api/cases/${id}/template-file] 开始获取模板文件`)
+    console.log(`[GET /api/cases/${id}/template-file] 当前用户 ID:`, req.user.id)
+    
+    // 1. 获取案卷信息
+    const caseData = await Case.findById(id)
+    
+    if (!caseData) {
+      console.log(`[GET /api/cases/${id}/template-file] 案卷不存在`)
+      return res.status(404).json({ message: '案卷不存在' })
+    }
+    
+    // 2. 验证权限
+    if (caseData.user_id !== req.user.id) {
+      console.log(`[GET /api/cases/${id}/template-file] 权限验证失败`)
+      return res.status(403).json({ message: '无权访问此案卷' })
+    }
+    
+    // 3. 检查是否有关联模板
+    if (!caseData.template_id) {
+      console.log(`[GET /api/cases/${id}/template-file] 案卷没有关联模板`)
+      return res.status(404).json({ message: '该案卷没有关联模板' })
+    }
+    
+    // 4. 获取模板信息
+    const templateData = await Template.findById(caseData.template_id)
+    
+    if (!templateData || !templateData.file_path) {
+      console.log(`[GET /api/cases/${id}/template-file] 模板文件不存在`)
+      return res.status(404).json({ message: '模板文件不存在' })
+    }
+    
+    // 5. 构建文件路径
+    const filePath = path.join(__dirname, '../uploads/templates', templateData.file_path)
+    console.log(`[GET /api/cases/${id}/template-file] 文件路径:`, filePath)
+    
+    // 6. 检查文件是否存在
+    if (!fs.existsSync(filePath)) {
+      console.log(`[GET /api/cases/${id}/template-file] 文件不存在于服务器`)
+      return res.status(404).json({ message: '文件不存在于服务器' })
+    }
+    
+    // 7. 读取文件
+    const fileBuffer = fs.readFileSync(filePath)
+    console.log(`[GET /api/cases/${id}/template-file] 文件读取成功，大小:`, fileBuffer.length, 'bytes')
+    
+    // 8. 设置响应头
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(templateData.name)}.docx"`)
+    res.setHeader('Content-Length', fileBuffer.length)
+    
+    // 9. 返回文件内容
+    console.log(`[GET /api/cases/${id}/template-file] 成功返回文件内容`)
+    res.send(fileBuffer)
+  } catch (error) {
+    console.error(`[GET /api/cases/${req.params.id}/template-file] 错误:`, error)
+    console.error(`[GET /api/cases/${req.params.id}/template-file] 错误堆栈:`, error.stack)
+    res.status(500).json({ message: '获取模板文件失败', error: error.message, stack: error.stack })
   }
 })
 

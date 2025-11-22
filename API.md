@@ -620,7 +620,44 @@ formData.append('mapping', JSON.stringify({
 
 ---
 
-### 3.6 获取案卷详情
+### 3.6 获取案卷的模板文件
+
+**接口**: `GET /cases/:id/template-file`
+
+**描述**: 获取指定案卷关联的模板 Word 文件内容
+
+**请求头**: 需要 `Authorization: Bearer {token}`
+
+**响应**: 返回 Word 文件的二进制内容（Buffer）
+
+**响应头**:
+- `Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document`
+- `Content-Disposition: inline; filename="模板名称.docx"`
+- `Content-Length: 文件大小（字节）`
+
+**使用示例**:
+```javascript
+// 前端调用示例
+const response = await fetch(`/api/cases/${caseId}/template-file`, {
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+})
+const blob = await response.blob()
+
+// 使用 docx-preview 库预览
+import { renderAsync } from 'docx-preview'
+await renderAsync(blob, document.getElementById('preview'))
+```
+
+**错误码**:
+- `403`: 无权访问此案卷
+- `404`: 案卷不存在 / 案卷没有关联模板 / 模板文件不存在
+- `500`: 服务器错误
+
+---
+
+### 3.7 获取案卷详情
 
 **接口**: `GET /cases/:id`
 

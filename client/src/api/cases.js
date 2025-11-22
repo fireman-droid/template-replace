@@ -79,3 +79,14 @@ export const getTemplate = () => {
     method:'get'
   })
 }
+
+/**
+ * 获取word文档内容
+ */
+export const getCaseTemplateFile = (id) => {
+  return request({
+    url: `/cases/${id}/template-file`,
+    method: 'get',
+    responseType: 'blob'  // 重要！
+  })
+}
