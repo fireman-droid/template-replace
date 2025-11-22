@@ -113,7 +113,7 @@
 import { ref, onMounted } from 'vue'
 import { Upload, DocumentChecked, Edit, Delete, Document, Connection, Link, InfoFilled, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import axios from 'axios'
+import { getTemplateList, createTemplate, deleteTemplate } from '@/api'
 
 const showUploadDialog = ref(false)
 const templateList = ref([])
@@ -135,16 +135,14 @@ const formData = ref({
 const fetchTemplates = async () => {
   try {
     loading.value = true
-    const response = await axios.get('/api/admin/templates', {
-      params: {
-        page: pagination.value.page,
-        pageSize: pagination.value.pageSize
-      }
+    const data = await getTemplateList({
+      page: pagination.value.page,
+      pageSize: pagination.value.pageSize
     })
-    templateList.value = response.data.list
-    pagination.value.total = response.data.total
+    templateList.value = data.list
+    pagination.value.total = data.total
   } catch (error) {
-    ElMessage.error(error.response?.data?.message || '获取模板列表失败')
+    // 错误已在拦截器中处理
   } finally {
     loading.value = false
   }
@@ -158,13 +156,13 @@ const handleCreate = async () => {
       return
     }
 
-    await axios.post('/api/admin/templates', formData.value)
+    await createTemplate(formData.value)
     ElMessage.success('模板创建成功')
     showUploadDialog.value = false
     resetForm()
     fetchTemplates()
   } catch (error) {
-    ElMessage.error(error.response?.data?.message || '创建模板失败')
+    // 错误已在拦截器中处理
   }
 }
 
@@ -177,13 +175,11 @@ const handleDelete = async (id) => {
       type: 'warning'
     })
 
-    await axios.delete(`/api/admin/templates/${id}`)
+    await deleteTemplate(id)
     ElMessage.success('删除成功')
     fetchTemplates()
   } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error(error.response?.data?.message || '删除失败')
-    }
+    // 错误已在拦截器中处理（除了取消操作）
   }
 }
 

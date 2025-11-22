@@ -3,7 +3,7 @@
  * 管理用户登录状态、token 和用户信息
  */
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import { register as registerApi, login as loginApi, getCurrentUser } from '@/api'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -28,12 +28,8 @@ export const useAuthStore = defineStore('auth', {
      * @param {Object} userData - 注册数据
      */
     async register(userData) {
-      try {
-        const response = await axios.post('/api/auth/register', userData)
-        return response.data
-      } catch (error) {
-        throw new Error(error.response?.data?.message || '注册失败')
-      }
+      const data = await registerApi(userData)
+      return data
     },
 
     /**
@@ -41,23 +37,16 @@ export const useAuthStore = defineStore('auth', {
      * @param {Object} credentials - 登录凭证
      */
     async login(credentials) {
-      try {
-        const response = await axios.post('/api/auth/login', credentials)
-        const { token, user } = response.data
+      const data = await loginApi(credentials)
+      const { token, user } = data
 
-        // 保存 token 和用户信息
-        this.token = token
-        this.user = user
-        localStorage.setItem('token', token)
-        localStorage.setItem('user', JSON.stringify(user))
+      // 保存 token 和用户信息
+      this.token = token
+      this.user = user
+      localStorage.setItem('token', token)
+      localStorage.setItem('user', JSON.stringify(user))
 
-        // 设置 axios 默认 header
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-
-        return response.data
-      } catch (error) {
-        throw new Error(error.response?.data?.message || '登录失败')
-      }
+      return data
     },
 
     /**
@@ -68,23 +57,16 @@ export const useAuthStore = defineStore('auth', {
       this.user = null
       localStorage.removeItem('token')
       localStorage.removeItem('user')
-      delete axios.defaults.headers.common['Authorization']
     },
 
     /**
      * 获取当前用户信息
      */
     async fetchUser() {
-      try {
-        const response = await axios.get('/api/auth/me')
-        this.user = response.data.user
-        localStorage.setItem('user', JSON.stringify(response.data.user))
-        return response.data.user
-      } catch (error) {
-        // token 失效，清除登录状态
-        this.logout()
-        throw new Error('获取用户信息失败')
-      }
+      const data = await getCurrentUser()
+      this.user = data.user
+      localStorage.setItem('user', JSON.stringify(data.user))
+      return data.user
     },
 
     /**
@@ -92,9 +74,7 @@ export const useAuthStore = defineStore('auth', {
      * 在应用启动时调用，恢复登录状态
      */
     initAuth() {
-      if (this.token) {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
-      }
+      // token 会在 request.js 的拦截器中自动添加
     }
   }
 })
