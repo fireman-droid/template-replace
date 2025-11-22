@@ -17,8 +17,10 @@
 import { DocumentChecked } from '@element-plus/icons-vue'
 import { watch, ref } from 'vue'
 import { useTemplateStore } from '@/stores'
-import { ElMessage } from 'element-plus'
 import { renderAsync } from 'docx-preview' // 引入库
+import testData from "@/utils/test.json"; // 引入测试数据
+import { debounce } from '@/utils/debounce' // 引入你项目里的防抖工具
+const currentFormData = ref(testData)
 
 const props = defineProps({
   caseId: Number
@@ -28,45 +30,60 @@ const templateStore = useTemplateStore()
 const docxRef = ref(null)
 const loading = ref(true)
 
-const renderDocx = async () => {
+// 核心渲染函数
+const renderPreview = async (data) => {
   if (!docxRef.value) return
-  loading.value = true
+  
+  // 如果没有数据，渲染原文件；如果有数据，渲染填充后的文件
+  const hasData = data && Object.keys(data).length > 0
+  
   try {
-    docxRef.value.innerHTML = ''
-    await renderAsync(templateStore.templateFile, docxRef.value, undefined, {
-      className: 'docx-content', // 给生成的文档内容加类名，方便写 CSS
-      inWrapper: true,           // 启用包装器模式
-      ignoreWidth: false,        // 是否忽略文档宽度
-      experimental: true         // 开启实验性功能（渲染效果更好）
-    })
-    console.log('文档渲染成功')  // ← 添加成功日志
+    let blobToRender = null
+    
+    if (hasData) {
+      // 实时生成填充后的 Blob - 如果 data 是 ref，传递 .value
+      const actualData = data?.value !== undefined ? data.value : data;
+      blobToRender = await templateStore.generateFilledBlob(actualData)
+    } else {
+      // 使用原始文件
+      blobToRender = templateStore.templateFile
+    }
+
+    if (blobToRender) {
+      docxRef.value.innerHTML = '' // 清空旧内容
+      await renderAsync(blobToRender, docxRef.value, undefined, {
+        className: 'docx-content',
+        inWrapper: true,
+        ignoreWidth: false
+      })
+    }
   } catch (error) {
-    console.error('预览失败', error)
-    ElMessage.error('无法加载模版文件')
+    console.error('预览渲染失败', error)
   } finally {
-    loading.value=false
+    loading.value = false
   }
 }
 
-// 监听 caseId 变化，加载和解析模板
-watch(() => props.caseId, async (newCaseId) => {
-  if (!newCaseId) return
-  
-  try {
-    console.log('开始加载模板，caseId:', newCaseId)
-    
-    // 1. 先加载模板文件
-    await templateStore.loadFile(newCaseId)
-    console.log('模板文件加载成功')
-    
-    // // 2. 再解析 XML（如果需要的话）
-    // await templateStore.parseXml()
-    // console.log('模板解析成功')
-    await renderDocx()
-  } catch (error) {
-    console.error('加载模板失败:', error)
-    ElMessage.error('加载模板失败: ' + error.message)
-    loading.value = false
+// 创建防抖版本的渲染函数，延迟 500ms 执行，避免打字时卡顿
+const debouncedRender = debounce((newData) => {
+  loading.value = true
+  renderPreview(newData)
+}, 800)
+
+// 监听表单数据变化
+watch(() => props.formData, (newData) => {
+  if(newData) {
+    debouncedRender(newData)
+  }
+}, { deep: true }) // 开启深度监听
+
+// 监听 caseId 加载模版（初始化）
+watch(() => props.caseId, async (newId) => {
+  if (newId) {
+    loading.value = true
+    await templateStore.loadFile(newId)
+    // 初始渲染一次（使用当前已有的 formData）
+    renderPreview(currentFormData.value)
   }
 }, { immediate: true })
 </script>

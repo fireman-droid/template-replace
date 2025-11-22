@@ -269,6 +269,83 @@ export const useTemplateStore = defineStore("template", () => {
       alert("生成出错: " + e.message);
     }
   };
+  
+  /**
+   * 【新增/修改】生成填充后的文档 Blob
+   * @param {Object} data - 数据对象，如果不传则默认使用 testData
+   */
+  async function generateFilledBlob(data) {
+    if (!templateFile.value) return null;
+
+    try {
+      // 1. 获取原始文件的 ArrayBuffer (基于原始文件创建，不修改原件)
+      const arrayBuffer = await templateFile.value.arrayBuffer();
+      const zip = new PizZip(arrayBuffer);
+
+      // 2. 解析 document.xml
+      const docXml = zip.file("word/document.xml").asText();
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(docXml, "application/xml");
+
+      // 3. 填充数据 - 如果没有传入 data，使用 testData
+      const formData = data || testData;
+      
+      console.log("📝 开始填充数据，共有", Object.keys(formData).length, "个字段");
+      
+      const sdts = getNodes(xmlDoc, "sdt");
+      
+      let filledCount = 0;
+      for (let i = 0; i < sdts.length; i++) {
+        const sdt = sdts[i];
+        const tagNode = getNodes(sdt, "tag")[0];
+        if (!tagNode) {
+          console.log(`⚠️ 控件 ${i} 没有 tag 节点`);
+          continue;
+        }
+
+        const key = tagNode.getAttribute("w:val");
+        
+        // 只有当 formData 中有这个 key 时才替换
+        if (formData[key] !== undefined) {
+          const val = formData[key];
+          const content = getNodes(sdt, "sdtContent")[0];
+          if (content) {
+            const tNodes = getNodes(content, "t");
+            if (tNodes.length > 0) {
+              const newText = typeof val === 'boolean' 
+                ? (val ? "☑" : "□") 
+                : String(val);
+              
+              tNodes[0].textContent = newText;
+              filledCount++;
+              
+              // 清理后续多余文本节点
+              for (let j = 1; j < tNodes.length; j++) {
+                tNodes[j].textContent = "";
+              }
+            }
+          }
+        }
+      }
+
+      console.log(`✅ 总共填充了 ${filledCount} 个字段`);
+
+      // 4. 序列化并写入 zip
+      const serializer = new XMLSerializer();
+      const newXml = serializer.serializeToString(xmlDoc);
+      zip.file("word/document.xml", newXml);
+
+      // 5. 返回 Blob
+      return zip.generate({
+        type: "blob",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
+
+    } catch (e) {
+      console.error("生成预览 Blob 失败:", e);
+      return null;
+    }
+  }
 
   /**
    * 清空所有模板数据
@@ -317,5 +394,6 @@ export const useTemplateStore = defineStore("template", () => {
     clear,
     reload,
     getNodes,
+    generateFilledBlob
   };
 });
