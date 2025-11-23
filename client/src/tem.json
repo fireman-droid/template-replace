@@ -1,0 +1,596 @@
+{
+  "template_name": "房屋买卖合同纠纷民事起诉状",
+  "version": "1.0.0",
+  "//_comment": "=== 全局字段定义库 ===",
+  "field_config": {
+    "//_parties_natural": "=== 自然人字段 (原告p/被告d/第三人t) ===",
+    "p_name": { "label": "姓名", "type": "input", "props": { "placeholder": "请输入姓名" } },
+    "p_gender_m": { "label": "男", "type": "checkbox" },
+    "p_gender_f": { "label": "女", "type": "checkbox" },
+    "p_birth_y": { "label": "出生年", "type": "input", "props": { "type": "number", "placeholder": "YYYY", "min": 1900, "max": 2100 } },
+    "p_birth_m": { "label": "出生月", "type": "input", "props": { "type": "number", "placeholder": "MM", "min": 1, "max": 12 } },
+    "p_birth_d": { "label": "出生日", "type": "input", "props": { "type": "number", "placeholder": "DD", "min": 1, "max": 31 } },
+    "p_ethnic": { "label": "民族", "type": "input", "props": { "placeholder": "例如：汉族" } },
+    "p_company": { "label": "工作单位", "type": "input" },
+    "p_position": { "label": "职务", "type": "input" },
+    "p_phone": { "label": "联系电话", "type": "input", "props": { "maxlength": 11 } },
+    "p_reg_addr": { "label": "户籍所在地", "type": "input" },
+    "p_res_addr": { "label": "经常居住地", "type": "input" },
+    "p_id_type": { "label": "证件类型", "type": "select", "options": [{"label":"身份证","value":"身份证"}, {"label":"护照","value":"护照"}, {"label":"港澳台通行证","value":"港澳台通行证"}] },
+    "p_id_num": { "label": "证件号码", "type": "input" },
+
+    "d_name": { "label": "姓名", "type": "input" },
+    "d_gender_m": { "label": "男", "type": "checkbox" },
+    "d_gender_f": { "label": "女", "type": "checkbox" },
+    "d_birth_y": { "label": "出生年", "type": "input", "props": { "type": "number" } },
+    "d_birth_m": { "label": "出生月", "type": "input", "props": { "type": "number" } },
+    "d_birth_d": { "label": "出生日", "type": "input", "props": { "type": "number" } },
+    "d_ethnic": { "label": "民族", "type": "input" },
+    "d_company": { "label": "工作单位", "type": "input" },
+    "d_position": { "label": "职务", "type": "input" },
+    "d_phone": { "label": "联系电话", "type": "input" },
+    "d_reg_addr": { "label": "户籍所在地", "type": "input" },
+    "d_res_addr": { "label": "经常居住地", "type": "input" },
+    "d_id_type": { "label": "证件类型", "type": "select", "options": [{"label":"身份证","value":"身份证"}] },
+    "d_id_num": { "label": "证件号码", "type": "input" },
+
+    "t_name": { "label": "姓名", "type": "input" },
+    "t_gender_m": { "label": "男", "type": "checkbox" },
+    "t_gender_f": { "label": "女", "type": "checkbox" },
+    "t_birth_y": { "label": "出生年", "type": "input", "props": { "type": "number" } },
+    "t_birth_m": { "label": "出生月", "type": "input", "props": { "type": "number" } },
+    "t_birth_d": { "label": "出生日", "type": "input", "props": { "type": "number" } },
+    "t_ethnic": { "label": "民族", "type": "input" },
+    "t_company": { "label": "工作单位", "type": "input" },
+    "t_position": { "label": "职务", "type": "input" },
+    "t_phone": { "label": "联系电话", "type": "input" },
+    "t_reg_addr": { "label": "户籍所在地", "type": "input" },
+    "t_res_addr": { "label": "经常居住地", "type": "input" },
+    "t_id_type": { "label": "证件类型", "type": "select", "options": [{"label":"身份证","value":"身份证"}] },
+    "t_id_num": { "label": "证件号码", "type": "input" },
+
+    "//_parties_legal": "=== 法人/非法人组织字段 ===",
+    "pc_name": { "label": "名称", "type": "input", "props": { "placeholder": "请输入企业/组织全称" } },
+    "pc_addr": { "label": "住所地", "type": "input" },
+    "pc_reg_addr": { "label": "注册/登记地", "type": "input" },
+    "pc_legal_rep": { "label": "法定代表人/负责人", "type": "input" },
+    "pc_position": { "label": "职务", "type": "input" },
+    "pc_phone": { "label": "联系电话", "type": "input" },
+    "pc_credit_code": { "label": "统一社会信用代码", "type": "input" },
+
+    "dc_name": { "label": "名称", "type": "input" },
+    "dc_addr": { "label": "住所地", "type": "input" },
+    "dc_reg_addr": { "label": "注册/登记地", "type": "input" },
+    "dc_legal_rep": { "label": "法定代表人/负责人", "type": "input" },
+    "dc_position": { "label": "职务", "type": "input" },
+    "dc_phone": { "label": "联系电话", "type": "input" },
+    "dc_credit_code": { "label": "统一社会信用代码", "type": "input" },
+
+    "tc_name": { "label": "名称", "type": "input" },
+    "tc_addr": { "label": "住所地", "type": "input" },
+    "tc_reg_addr": { "label": "注册/登记地", "type": "input" },
+    "tc_legal_rep": { "label": "法定代表人/负责人", "type": "input" },
+    "tc_position": { "label": "职务", "type": "input" },
+    "tc_phone": { "label": "联系电话", "type": "input" },
+    "tc_credit_code": { "label": "统一社会信用代码", "type": "input" },
+
+    "//_entity_types": "=== 单位类型 (Checkbox) ===",
+    "pc_type_llc": { "label": "有限责任公司", "type": "checkbox" },
+    "pc_type_jsc": { "label": "股份有限公司", "type": "checkbox" },
+    "pc_type_listed": { "label": "上市公司", "type": "checkbox" },
+    "pc_type_other_ent": { "label": "其他企业法人", "type": "checkbox" },
+    "pc_type_inst": { "label": "事业单位", "type": "checkbox" },
+    "pc_type_org": { "label": "社会团体", "type": "checkbox" },
+    "pc_type_fund": { "label": "基金会", "type": "checkbox" },
+    "pc_type_service": { "label": "社会服务机构", "type": "checkbox" },
+    "pc_type_gov": { "label": "机关法人", "type": "checkbox" },
+    "pc_type_rural": { "label": "农村集体经济组织法人", "type": "checkbox" },
+    "pc_type_coop": { "label": "城镇农村合作经济组织", "type": "checkbox" },
+    "pc_type_community": { "label": "基层群众性自治组织", "type": "checkbox" },
+    "pc_type_sole": { "label": "个人独资企业", "type": "checkbox" },
+    "pc_type_partner": { "label": "合伙企业", "type": "checkbox" },
+    "pc_type_prof": { "label": "不具有法人资格专业机构", "type": "checkbox" },
+
+    "dc_type_llc": { "label": "有限责任公司", "type": "checkbox" },
+    "dc_type_jsc": { "label": "股份有限公司", "type": "checkbox" },
+    "dc_type_listed": { "label": "上市公司", "type": "checkbox" },
+    "dc_type_other_ent": { "label": "其他企业法人", "type": "checkbox" },
+    "dc_type_inst": { "label": "事业单位", "type": "checkbox" },
+    "dc_type_org": { "label": "社会团体", "type": "checkbox" },
+    "dc_type_fund": { "label": "基金会", "type": "checkbox" },
+    "dc_type_service": { "label": "社会服务机构", "type": "checkbox" },
+    "dc_type_gov": { "label": "机关法人", "type": "checkbox" },
+    "dc_type_rural": { "label": "农村集体经济组织法人", "type": "checkbox" },
+    "dc_type_coop": { "label": "城镇农村合作经济组织", "type": "checkbox" },
+    "dc_type_community": { "label": "基层群众性自治组织", "type": "checkbox" },
+    "dc_type_sole": { "label": "个人独资企业", "type": "checkbox" },
+    "dc_type_partner": { "label": "合伙企业", "type": "checkbox" },
+    "dc_type_prof": { "label": "不具有法人资格专业机构", "type": "checkbox" },
+
+    "tc_type_llc": { "label": "有限责任公司", "type": "checkbox" },
+    "tc_type_jsc": { "label": "股份有限公司", "type": "checkbox" },
+    "tc_type_listed": { "label": "上市公司", "type": "checkbox" },
+    "tc_type_other_ent": { "label": "其他企业法人", "type": "checkbox" },
+    "tc_type_inst": { "label": "事业单位", "type": "checkbox" },
+    "tc_type_org": { "label": "社会团体", "type": "checkbox" },
+    "tc_type_fund": { "label": "基金会", "type": "checkbox" },
+    "tc_type_service": { "label": "社会服务机构", "type": "checkbox" },
+    "tc_type_gov": { "label": "机关法人", "type": "checkbox" },
+    "tc_type_rural": { "label": "农村集体经济组织法人", "type": "checkbox" },
+    "tc_type_coop": { "label": "城镇农村合作经济组织", "type": "checkbox" },
+    "tc_type_community": { "label": "基层群众性自治组织", "type": "checkbox" },
+    "tc_type_sole": { "label": "个人独资企业", "type": "checkbox" },
+    "tc_type_partner": { "label": "合伙企业", "type": "checkbox" },
+    "tc_type_prof": { "label": "不具有法人资格专业机构", "type": "checkbox" },
+
+    "//_ownership": "=== 所有制性质 ===",
+    "pc_own_state": { "label": "国有", "type": "checkbox" },
+    "pc_own_state_ctrl": { "label": "国有控股", "type": "checkbox" },
+    "pc_own_state_share": { "label": "国有参股", "type": "checkbox" },
+    "pc_own_private": { "label": "民营", "type": "checkbox" },
+    "pc_own_other": { "label": "其他", "type": "checkbox" },
+
+    "dc_own_state": { "label": "国有", "type": "checkbox" },
+    "dc_own_state_ctrl": { "label": "国有控股", "type": "checkbox" },
+    "dc_own_state_share": { "label": "国有参股", "type": "checkbox" },
+    "dc_own_private": { "label": "民营", "type": "checkbox" },
+    "dc_own_other": { "label": "其他", "type": "checkbox" },
+
+    "tc_own_state": { "label": "国有", "type": "checkbox" },
+    "tc_own_state_ctrl": { "label": "国有控股", "type": "checkbox" },
+    "tc_own_state_share": { "label": "国有参股", "type": "checkbox" },
+    "tc_own_private": { "label": "民营", "type": "checkbox" },
+    "tc_own_other": { "label": "其他", "type": "checkbox" },
+
+    "//_agent": "=== 代理人 ===",
+    "pa_has": { "label": "有委托代理人", "type": "checkbox" },
+    "pa_none": { "label": "无委托代理人", "type": "checkbox" },
+    "pa_name": { "label": "姓名", "type": "input" },
+    "pa_company": { "label": "单位", "type": "input" },
+    "pa_position": { "label": "职务", "type": "input" },
+    "pa_phone": { "label": "联系电话", "type": "input" },
+    "pa_auth_general": { "label": "一般授权", "type": "checkbox" },
+    "pa_auth_special": { "label": "特别授权", "type": "checkbox" },
+
+    "//_claims": "=== 诉讼请求 ===",
+    "claim_content": { "label": "诉讼请求总述", "type": "textarea", "props": { "rows": 6, "placeholder": "例如：1. 请求判令被告..." } },
+    "total_amount": { "label": "标的总额", "type": "input", "props": { "placeholder": "元" } },
+    "litigation_cost_yes": { "label": "主张诉讼费用", "type": "checkbox" },
+    "litigation_cost_no": { "label": "不主张诉讼费用", "type": "checkbox" },
+    "other_request": { "label": "其他请求", "type": "input" },
+
+    "//_claim_details": "=== 具体诉讼请求细节 ===",
+    "contract_has_issue": { "label": "有此问题", "type": "checkbox" },
+    "contract_no_issue": { "label": "无此问题", "type": "checkbox" },
+    "contract_claim_invalid": { "label": "确认合同无效", "type": "checkbox" },
+    "contract_claim_not_formed": { "label": "确认合同未成立", "type": "checkbox" },
+    "contract_claim_terminate": { "label": "主张解除", "type": "checkbox" },
+    "contract_claim_revoke": { "label": "主张撤销", "type": "checkbox" },
+    "contract_claim_continue": { "label": "主张继续履行", "type": "checkbox" },
+    "contract_claim_formal": { "label": "订立正式合同", "type": "checkbox" },
+    "contract_claim_detail": { "label": "具体主张", "type": "input" },
+
+    "payment_has_issue": { "label": "有此问题", "type": "checkbox" },
+    "payment_no_issue": { "label": "无此问题", "type": "checkbox" },
+    "payment_return_down": { "label": "返还首付款", "type": "checkbox" },
+    "payment_return_deposit": { "label": "返还定金", "type": "checkbox" },
+    "payment_return_paid": { "label": "返还已付款", "type": "checkbox" },
+    "payment_pay_owed": { "label": "支付欠款", "type": "checkbox" },
+    "payment_penalty": { "label": "支付违约金", "type": "checkbox" },
+    "payment_interest": { "label": "支付利息", "type": "checkbox" },
+    "payment_compensation": { "label": "赔偿损失", "type": "checkbox" },
+    "payment_amount_detail": { "label": "金额及明细", "type": "textarea", "props": { "rows": 2 } },
+
+    "delivery_has_issue": { "label": "有此问题", "type": "checkbox" },
+    "delivery_no_issue": { "label": "无此问题", "type": "checkbox" },
+    "delivery_claim_yes": { "label": "主张交付房屋", "type": "checkbox" },
+    "delivery_claim_no": { "label": "不主张交付房屋", "type": "checkbox" },
+    "return_claim_yes": { "label": "主张返还房屋", "type": "checkbox" },
+    "return_claim_no": { "label": "不主张返还房屋", "type": "checkbox" },
+    "delay_penalty_yes": { "label": "主张逾期交房违约金", "type": "checkbox" },
+    "delay_penalty_no": { "label": "不主张逾期交房违约金", "type": "checkbox" },
+
+    "registration_has_issue": { "label": "有此问题", "type": "checkbox" },
+    "registration_no_issue": { "label": "无此问题", "type": "checkbox" },
+    "registration_assist_yes": { "label": "协助办证", "type": "checkbox" },
+    "registration_assist_no": { "label": "不协助办证", "type": "checkbox" },
+    "registration_penalty_yes": { "label": "逾期办证违约金", "type": "checkbox" },
+    "registration_penalty_no": { "label": "无逾期办证违约金", "type": "checkbox" },
+
+    "agency_fee_has_issue": { "label": "有此问题", "type": "checkbox" },
+    "agency_fee_no_issue": { "label": "无此问题", "type": "checkbox" },
+    "agency_fee_return_yes": { "label": "返还中介费", "type": "checkbox" },
+    "agency_fee_return_no": { "label": "不返还中介费", "type": "checkbox" },
+    "agency_fee_bear_yes": { "label": "被告承担", "type": "checkbox" },
+    "agency_fee_bear_no": { "label": "被告不承担", "type": "checkbox" },
+    "agency_fee_amount_detail": { "label": "金额及明细", "type": "textarea", "props": { "rows": 2 } },
+
+    "quality_has_issue": { "label": "有此问题", "type": "checkbox" },
+    "quality_no_issue": { "label": "无此问题", "type": "checkbox" },
+    "quality_repair_yes": { "label": "被告维修", "type": "checkbox" },
+    "quality_repair_no": { "label": "被告不维修", "type": "checkbox" },
+    "quality_cost_yes": { "label": "承担维修费", "type": "checkbox" },
+    "quality_cost_no": { "label": "不承担维修费", "type": "checkbox" },
+    "quality_amount_detail": { "label": "金额及明细", "type": "textarea", "props": { "rows": 2 } },
+
+    "mortgage_has_issue": { "label": "有此问题", "type": "checkbox" },
+    "mortgage_no_issue": { "label": "无此问题", "type": "checkbox" },
+    "mortgage_requirement": { "label": "具体要求", "type": "input" },
+
+    "appraisal_has_issue": { "label": "有此问题", "type": "checkbox" },
+    "appraisal_no_issue": { "label": "无此问题", "type": "checkbox" },
+    "appraisal_request_yes": { "label": "请求鉴定", "type": "checkbox" },
+    "appraisal_request_no": { "label": "不请求鉴定", "type": "checkbox" },
+    "appraisal_cost_detail": { "label": "费用明细", "type": "input" },
+
+    "//_jurisdiction": "=== 管辖与保全 ===",
+    "jurisdiction_has": { "label": "有约定", "type": "checkbox" },
+    "jurisdiction_none": { "label": "无约定", "type": "checkbox" },
+    "jurisdiction_content": { "label": "条款内容", "type": "textarea", "props": { "rows": 2 } },
+    
+    "preservation_yes": { "label": "已申请", "type": "checkbox" },
+    "preservation_no": { "label": "未申请", "type": "checkbox" },
+    "preservation_court": { "label": "保全法院", "type": "input" },
+    "preservation_time": { "label": "保全时间", "type": "date", "props": { "valueFormat": "YYYY-MM-DD" } },
+    "preservation_case_no": { "label": "保全案号", "type": "input" },
+
+    "//_facts": "=== 事实与理由 ===",
+    "facts_and_reasons": { "label": "事实与理由概述", "type": "textarea", "props": { "rows": 8, "placeholder": "请在此处填写完整的案件事实与理由..." } },
+    
+    "contract_date": { "label": "合同订立时间", "type": "date", "props": { "type": "date", "valueFormat": "YYYY年MM月DD日" } },
+    "house_type_commercial": { "label": "商品房", "type": "checkbox" },
+    "house_type_affordable": { "label": "经济适用房", "type": "checkbox" },
+    "house_type_self_built": { "label": "自建房", "type": "checkbox" },
+    "house_type_other": { "label": "其他", "type": "checkbox" },
+    
+    "house_location": { "label": "房屋位置", "type": "input" },
+    "house_area": { "label": "房屋面积 (㎡)", "type": "input" },
+    "house_unit_price": { "label": "房屋单价", "type": "input" },
+    "house_total_price": { "label": "房屋总价", "type": "input" },
+    
+    "house_first_sale_yes": { "label": "是", "type": "checkbox" },
+    "house_first_sale_no": { "label": "否", "type": "checkbox" },
+    "house_presale_yes": { "label": "是", "type": "checkbox" },
+    "house_presale_no": { "label": "否", "type": "checkbox" },
+    "presale_registered_yes": { "label": "是", "type": "checkbox" },
+    "presale_registered_no": { "label": "否", "type": "checkbox" },
+    "online_signed_yes": { "label": "是", "type": "checkbox" },
+    "online_signed_no": { "label": "否", "type": "checkbox" },
+    "advance_registered_yes": { "label": "是", "type": "checkbox" },
+    "advance_registered_no": { "label": "否", "type": "checkbox" },
+    
+    "contract_nature_formal": { "label": "本约", "type": "checkbox" },
+    "contract_nature_preliminary": { "label": "预约", "type": "checkbox" },
+    "termination_notice_yes": { "label": "是 (填写时间)", "type": "checkbox" },
+    "termination_notice_no": { "label": "否", "type": "checkbox" },
+    "termination_reason": { "label": "解除/撤销事由", "type": "textarea", "props": { "rows": 2 } },
+
+    "payment_method_mortgage": { "label": "按揭贷款", "type": "checkbox" },
+    "payment_method_cash": { "label": "支付现金", "type": "checkbox" },
+    "payment_method_house": { "label": "以房抵债", "type": "checkbox" },
+    "payment_method_other": { "label": "其他", "type": "checkbox" },
+    "payment_amount": { "label": "已付/欠付金额", "type": "input" },
+    "deposit_paid_yes": { "label": "是", "type": "checkbox" },
+    "deposit_paid_no": { "label": "否", "type": "checkbox" },
+    "deposit_amount": { "label": "定金数额", "type": "input" },
+    "decoration_yes": { "label": "是", "type": "checkbox" },
+    "decoration_no": { "label": "否", "type": "checkbox" },
+    "payment_agreement": { "label": "支付约定", "type": "textarea", "props": { "rows": 2 } },
+    "payment_other_reason": { "label": "其他事由", "type": "input" },
+
+    "delivery_agreed_time": { "label": "约定交房时间", "type": "date", "props": { "valueFormat": "YYYY年MM月DD日" } },
+    "delivery_actual_yes": { "label": "是", "type": "checkbox" },
+    "delivery_actual_no": { "label": "否", "type": "checkbox" },
+    "area_diff_yes": { "label": "是", "type": "checkbox" },
+    "area_diff_no": { "label": "否", "type": "checkbox" },
+    "parking_yes": { "label": "是", "type": "checkbox" },
+    "parking_no": { "label": "否", "type": "checkbox" },
+
+    "first_registration_yes": { "label": "是", "type": "checkbox" },
+    "first_registration_no": { "label": "否", "type": "checkbox" },
+    "transfer_registration_yes": { "label": "是", "type": "checkbox" },
+    "transfer_registration_no": { "label": "否", "type": "checkbox" },
+    "overdue_cert_penalty": { "label": "约定违约金", "type": "input" },
+    "penalty_calculation": { "label": "计算标准", "type": "input" },
+
+    "agency_fee_return": { "label": "返还", "type": "checkbox" },
+    "agency_fee_bear": { "label": "承担", "type": "checkbox" },
+    "agency_fee_reason": { "label": "中介服务费事由", "type": "input" },
+
+    "quality_serious": { "label": "严重影响居住", "type": "checkbox" },
+    "quality_repairable": { "label": "可修复", "type": "checkbox" },
+    "warranty_yes": { "label": "是", "type": "checkbox" },
+    "warranty_no": { "label": "否", "type": "checkbox" },
+    "repair_action_yes": { "label": "是", "type": "checkbox" },
+    "repair_action_no": { "label": "否", "type": "checkbox" },
+    "repair_notice_yes": { "label": "是", "type": "checkbox" },
+    "repair_notice_no": { "label": "否", "type": "checkbox" },
+    "compensation_amount": { "label": "赔偿数额", "type": "input" },
+
+    "mortgage_contract_yes": { "label": "是", "type": "checkbox" },
+    "mortgage_contract_no": { "label": "否", "type": "checkbox" },
+    "mortgage_contract_detail": { "label": "具体情况", "type": "textarea", "props": { "rows": 2 } },
+
+    "appraisal_fact_yes": { "label": "是", "type": "checkbox" },
+    "appraisal_fact_no": { "label": "否", "type": "checkbox" },
+    "appraisal_fact_detail": { "label": "具体情况", "type": "textarea", "props": { "rows": 2 } },
+
+    "legal_basis_contract": { "label": "合同约定", "type": "textarea", "props": { "rows": 3 } },
+    "legal_basis_law": { "label": "法律规定", "type": "textarea", "props": { "rows": 3 } },
+    "evidence_list": { "label": "证据清单", "type": "textarea", "props": { "rows": 6, "placeholder": "1. ...\n2. ..." } },
+
+    "//_mediation": "=== 调解意愿 ===",
+    "mediation_understand": { "label": "了解", "type": "checkbox" },
+    "mediation_not_understand": { "label": "不了解", "type": "checkbox" },
+    "mediation_benefit1_understand": { "label": "了解", "type": "checkbox" },
+    "mediation_benefit1_not_understand": { "label": "不了解", "type": "checkbox" },
+    "mediation_benefit2_understand": { "label": "了解", "type": "checkbox" },
+    "mediation_benefit2_not_understand": { "label": "不了解", "type": "checkbox" },
+    "mediation_benefit3_understand": { "label": "了解", "type": "checkbox" },
+    "mediation_benefit3_not_understand": { "label": "不了解", "type": "checkbox" },
+    "mediation_benefit4_understand": { "label": "了解", "type": "checkbox" },
+    "mediation_benefit4_not_understand": { "label": "不了解", "type": "checkbox" },
+    "mediation_benefit5_understand": { "label": "了解", "type": "checkbox" },
+    "mediation_benefit5_not_understand": { "label": "不了解", "type": "checkbox" },
+    
+    "consider_mediation_yes": { "label": "是", "type": "checkbox" },
+    "consider_mediation_no": { "label": "否", "type": "checkbox" },
+    "consider_mediation_uncertain": { "label": "暂不确定", "type": "checkbox" }
+  },
+  "section_parties":{
+    "id": "section_parties",
+    "title": "一、当事人信息",
+    "description": "请准确填写原告、被告及第三人的身份信息，支持添加多个当事人。",
+    "groups": [
+      {
+        "id": "group_plaintiff",
+        "title": "1. 原告信息",
+        "ui_mode": "dynamic_list",
+        "allow_add": true,
+        "fields_mapping": {
+          "type_selector": {
+            "label": "主体类型",
+            "options": [
+              {
+                "label": "自然人",
+                "value": "natural",
+                "fields": [
+                  "p_name",
+                  "p_gender_m",
+                  "p_gender_f",
+                  "p_birth_y",
+                  "p_birth_m",
+                  "p_birth_d",
+                  "p_ethnic",
+                  "p_company",
+                  "p_position",
+                  "p_phone",
+                  "p_reg_addr",
+                  "p_res_addr",
+                  "p_id_type",
+                  "p_id_num"
+                ]
+              },
+              {
+                "label": "法人/非法人组织",
+                "value": "legal",
+                "fields": [
+                  "pc_name",
+                  "pc_addr",
+                  "pc_reg_addr",
+                  "pc_legal_rep",
+                  "pc_position",
+                  "pc_phone",
+                  "pc_credit_code",
+                  {
+                    "label": "单位类型",
+                    "ui_mode": "radio_group_boolean",
+                    "fields": [
+                      "pc_type_llc",
+                      "pc_type_jsc",
+                      "pc_type_listed",
+                      "pc_type_other_ent",
+                      "pc_type_inst",
+                      "pc_type_org",
+                      "pc_type_fund",
+                      "pc_type_service",
+                      "pc_type_gov",
+                      "pc_type_rural",
+                      "pc_type_coop",
+                      "pc_type_community",
+                      "pc_type_sole",
+                      "pc_type_partner",
+                      "pc_type_prof"
+                    ]
+                  },
+                  {
+                    "label": "所有制性质",
+                    "ui_mode": "radio_group_boolean",
+                    "fields": [
+                      "pc_own_state",
+                      "pc_own_state_ctrl",
+                      "pc_own_state_share",
+                      "pc_own_private",
+                      "pc_own_other"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "group_agent",
+        "title": "2. 委托诉讼代理人",
+        "ui_mode": "conditional_section",
+        "trigger_field_true": "pa_has",
+        "trigger_field_false": "pa_none",
+        "fields": [
+          "pa_name",
+          "pa_company",
+          "pa_position",
+          "pa_phone",
+          "pa_auth_general",
+          "pa_auth_special"
+        ]
+      },
+      {
+        "id": "group_defendant",
+        "title": "3. 被告信息",
+        "ui_mode": "dynamic_list",
+        "allow_add": true,
+        "fields_mapping": {
+          "type_selector": {
+            "label": "主体类型",
+            "options": [
+              {
+                "label": "自然人",
+                "value": "natural",
+                "fields": [
+                  "d_name",
+                  "d_gender_m",
+                  "d_gender_f",
+                  "d_birth_y",
+                  "d_birth_m",
+                  "d_birth_d",
+                  "d_ethnic",
+                  "d_company",
+                  "d_position",
+                  "d_phone",
+                  "d_reg_addr",
+                  "d_res_addr",
+                  "d_id_type",
+                  "d_id_num"
+                ]
+              },
+              {
+                "label": "法人/非法人组织",
+                "value": "legal",
+                "fields": [
+                  "dc_name",
+                  "dc_addr",
+                  "dc_reg_addr",
+                  "dc_legal_rep",
+                  "dc_position",
+                  "dc_phone",
+                  "dc_credit_code",
+                  {
+                    "label": "单位类型",
+                    "ui_mode": "radio_group_boolean",
+                    "fields": [
+                      "dc_type_llc",
+                      "dc_type_jsc",
+                      "dc_type_listed",
+                      "dc_type_other_ent",
+                      "dc_type_inst",
+                      "dc_type_org",
+                      "dc_type_fund",
+                      "dc_type_service",
+                      "dc_type_gov",
+                      "dc_type_rural",
+                      "dc_type_coop",
+                      "dc_type_community",
+                      "dc_type_sole",
+                      "dc_type_partner",
+                      "dc_type_prof"
+                    ]
+                  },
+                  {
+                    "label": "所有制性质",
+                    "ui_mode": "radio_group_boolean",
+                    "fields": [
+                      "dc_own_state",
+                      "dc_own_state_ctrl",
+                      "dc_own_state_share",
+                      "dc_own_private",
+                      "dc_own_other"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "group_third_party",
+        "title": "4. 第三人信息",
+        "ui_mode": "dynamic_list",
+        "allow_add": true,
+        "fields_mapping": {
+          "type_selector": {
+            "label": "主体类型",
+            "options": [
+              {
+                "label": "自然人",
+                "value": "natural",
+                "fields": [
+                  "t_name",
+                  "t_gender_m",
+                  "t_gender_f",
+                  "t_birth_y",
+                  "t_birth_m",
+                  "t_birth_d",
+                  "t_ethnic",
+                  "t_company",
+                  "t_position",
+                  "t_phone",
+                  "t_reg_addr",
+                  "t_res_addr",
+                  "t_id_type",
+                  "t_id_num"
+                ]
+              },
+              {
+                "label": "法人/非法人组织",
+                "value": "legal",
+                "fields": [
+                  "tc_name",
+                  "tc_addr",
+                  "tc_reg_addr",
+                  "tc_legal_rep",
+                  "tc_position",
+                  "tc_phone",
+                  "tc_credit_code",
+                  {
+                    "label": "单位类型",
+                    "ui_mode": "radio_group_boolean",
+                    "fields": [
+                      "tc_type_llc",
+                      "tc_type_jsc",
+                      "tc_type_listed",
+                      "tc_type_other_ent",
+                      "tc_type_inst",
+                      "tc_type_org",
+                      "tc_type_fund",
+                      "tc_type_service",
+                      "tc_type_gov",
+                      "tc_type_rural",
+                      "tc_type_coop",
+                      "tc_type_community",
+                      "tc_type_sole",
+                      "tc_type_partner",
+                      "tc_type_prof"
+                    ]
+                  },
+                  {
+                    "label": "所有制性质",
+                    "ui_mode": "radio_group_boolean",
+                    "fields": [
+                      "tc_own_state",
+                      "tc_own_state_ctrl",
+                      "tc_own_state_share",
+                      "tc_own_private",
+                      "tc_own_other"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

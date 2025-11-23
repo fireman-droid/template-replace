@@ -9,7 +9,7 @@
       </div>
     </div>
     
-    <el-form label-position="top" class="cyber-form">
+    <!-- <el-form label-position="top" class="cyber-form">
       <template v-if="currentType === 'divorce'">
         <div class="form-group">
           <h4>基础信息</h4>
@@ -64,7 +64,9 @@
           <el-form-item label="诉求描述"><el-input type="textarea" rows="4" placeholder="请输入具体诉求..." /></el-form-item>
         </div>
       </template>
-    </el-form>
+    </el-form> -->
+    
+    
 
     <el-dialog
       v-model="showAiDialog"

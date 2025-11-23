@@ -37,7 +37,7 @@
 
     <div class="workspace">
       <div class="left-pane">
-        <ProjectForm :current-type="currentType" />
+        <ProjectForm :current-type="currentType"/>
       </div>
 
       <div class="right-pane">
@@ -67,6 +67,8 @@ const originalCaseName = ref('') // 保存原始名称，用于对比
 const isEditingName = ref(false)
 const nameInput = ref(null)
 const isSavingName = ref(false)
+
+// 引入状态管理
 const templateStore = useTemplateStore()
 
 onMounted(async () => {
@@ -178,7 +180,7 @@ const handleNameEnter = () => {
 
 // 下载文件
 const buildTemplate = () => {
-  templateStore.download()
+  templateStore.download
 }
 </script>
 

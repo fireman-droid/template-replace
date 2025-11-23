@@ -198,7 +198,7 @@ const handleSchemaChange = async (file) => {
     
     const json = JSON.parse(text)
     console.log('Schema 解析结果:', json)
-    console.log('Schema 类型:', typeof json, Array.isArray(json) ? '数组' : '对象')
+    // console.log('Schema 类型:', typeof json, Array.isArray(json) ? '数组' : '对象')
     
     formData.value.fields = json
     console.log('formData.fields 已更新:', formData.value.fields)

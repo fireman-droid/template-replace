@@ -12,7 +12,9 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  // 增加最大数据包大小限制，支持大型 JSON 数据（64MB）
+  maxAllowedPacket: 67108864
 })
 
 // 测试数据库连接
