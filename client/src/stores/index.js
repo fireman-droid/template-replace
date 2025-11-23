@@ -5,5 +5,5 @@
 
 export { useAuthStore } from './auth'
 export { useTemplateStore } from './template'
-export { useCaseStore } from './case'
+export { useEditorStore } from './editor'
 export { useAppStore } from './app'

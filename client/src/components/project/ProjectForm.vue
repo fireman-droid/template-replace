@@ -131,7 +131,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { MagicStick, UploadFilled, Cpu, Connection, Opportunity, Rank } from '@element-plus/icons-vue'
+import { MagicStick, UploadFilled, Cpu } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 // 接收父组件传来的模版类型
@@ -144,7 +144,6 @@ const props = defineProps({
 
 const showAiDialog = ref(false)
 const selectedModel = ref('gpt4')
-const houseDisputeType = ref('')
 
 const models = [
   { id: 'gpt4', name: 'GPT-4o (通用)', icon: 'Connection' },
