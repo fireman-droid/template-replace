@@ -2,134 +2,179 @@
   <div class="simple-fields">
     <h4 v-if="config.title" class="widget-title">{{ config.title }}</h4>
     
-    <el-row :gutter="20">
-      <el-col 
-        v-for="fieldKey in config.fields" 
-        :key="fieldKey" 
-        :span="isFullWidth(fieldKey) ? 24 : 12"
-      >
-        <el-form-item :label="getFieldLabel(fieldKey)">
+    <el-form-item>
+      <el-row :gutter="24" style="width: 100%">
+        <template v-for="fieldKey in config.fields" :key="fieldKey">
           
-          <component 
-            :is="getFieldComponent(fieldKey)"
-            v-model="formData[fieldKey]"
-            v-bind="getFieldProps(fieldKey)"
-            style="width: 100%"
+          <el-col 
+            v-if="isSeparator(fieldKey)" 
+            :span="24" 
+            class="separator-col"
           >
-            <template v-if="hasOptions(fieldKey)">
-              <component 
-                :is="getOptionComponent(fieldKey)"
-                v-for="opt in getFieldOptions(fieldKey)" 
-                :key="opt.value" 
-                :label="opt.value"
-              >
-                {{ opt.label }}
-              </component>
-            </template>
-          </component>
+            <div class="section-divider">
+              <span class="label">{{ getSeparatorLabel(fieldKey) }}</span>
+              <div class="line"></div>
+            </div>
+          </el-col>
 
-        </el-form-item>
-      </el-col>
-    </el-row>
+          <el-col 
+            v-else 
+            :span="getColSpan(fieldKey)"
+          >
+            <el-form-item :label="getFieldLabel(fieldKey)">
+              <component 
+                :is="getFieldComponent(fieldKey)"
+                v-model="formData[fieldKey]"
+                v-bind="getFieldProps(fieldKey)"
+                style="width: 100%"
+              >
+                <template v-if="hasOptions(fieldKey)">
+                  <component 
+                    :is="getOptionComponent(fieldKey)"
+                    v-for="opt in getFieldOptions(fieldKey)" 
+                    :key="opt.value" 
+                    :label="opt.value"
+                  >
+                    {{ opt.label }}
+                  </component>
+                </template>
+              </component>
+            </el-form-item>
+          </el-col>
+
+        </template>
+      </el-row>
+    </el-form-item>
   </div>
 </template>
 
 <script setup>
-import { getComponentType } from '../fieldRegistry' // 引入映射工具
+import { getComponentType } from '../fieldRegistry'
 
 const props = defineProps({
-  config: { type: Object, required: true },      // 当前组配置 (JSON中的 group)
-  modelValue: { type: Object, required: true },  // 表单数据 (formData)
-  globalConfig: { type: Object, required: true } // 全局配置 (含 types, presets, mapping)
+  config: { type: Object, required: true },
+  modelValue: { type: Object, required: true },
+  globalConfig: { type: Object, required: true }
 })
 
-// 直接使用引用，实现双向绑定
 const formData = props.modelValue
 
-// === 辅助函数：从全局配置中提取信息 ===
-
-// 1. 获取字段定义 (合并 field_config 和 presets 的逻辑)
-const getFieldDef = (key) => {
-  // A. 先看 field_config 里有没有定义
-  let def = props.globalConfig.types[key]
+// === 核心：智能宽度计算 ===
+const getColSpan = (key) => {
+  // 1. 获取字段定义
+  const def = getFieldDef(key)
   
-  // B. 如果定义是字符串 (如 "std_date")，说明引用了 preset，去 presets 里找
-  if (typeof def === 'string') {
-    def = props.globalConfig.presets[def]
+  // 2. 【最高优先级】JSON 显式配置
+  // 如果你在 field_config 里写了 "span": 24，那就听你的
+  if (def.span) {
+    return def.span
   }
+
+  // 3. 【智能判断】根据字段类型自动调整
+  const type = def.type || 'input'
   
-  // C. 如果没定义，给个空对象 (后续会回退到默认 input)
+  // A. 文本域 (textarea)：内容多，占一行
+  if (type === 'textarea') return 24
+  
+  // B. 多选/单选组 (checkbox/radio)：选项多，占一行
+  // hasOptions 检查它是否有 options 数组
+  if (hasOptions(key)) return 24
+  
+  // C. 地址类字段：通常很长，占一行
+  if (key.includes('addr') || key.includes('address')) return 24
+
+  // 4. 【默认兜底】其他普通输入框、日期等，一行两个
+  return 12 
+}
+
+// === 其他辅助函数 (保持不变) ===
+const isSeparator = (key) => typeof key === 'string' && key.startsWith('//_')
+
+const getSeparatorLabel = (key) => {
+  const map = {
+    '//_unit_types': '单位类型',
+    '//_ownership': '所有制性质',
+    '//_natural_person_title': '基本信息',
+    '//_legal_entity_title': '基本信息',
+    '//_legal_type': '单位类型'
+  }
+  return map[key] || props.globalConfig.mapping[key] || key.replace('//_', '')
+}
+
+const getFieldDef = (key) => {
+  let def = props.globalConfig.types[key]
+  if (typeof def === 'string') def = props.globalConfig.presets[def]
   return def || {}
 }
 
-// 2. 获取显示名称 (优先用 Mapping，没有则用 Key)
-const getFieldLabel = (key) => {
-  // 优先顺序：mapping.json -> field_config.label -> 字段名本身
-  return props.globalConfig.mapping[key] || getFieldDef(key).label || key
-}
+const getFieldLabel = (key) => props.globalConfig.mapping[key] || getFieldDef(key).label || key
+const getFieldType = (key) => getFieldDef(key).type || 'input'
 
-// 3. 获取组件类型字符串 (如 'date', 'input')
-const getFieldType = (key) => {
-  return getFieldDef(key).type || 'input'
-}
-
-// 4. 获取 Element 组件名 (如 'el-date-picker')
 const getFieldComponent = (key) => {
   const type = getFieldType(key)
-  
-  // 特殊处理：checkbox_input (带输入的勾选框)，暂时先当普通 checkbox 渲染
   if (type === 'checkbox_input') return 'el-checkbox'
-  
-  // 特殊处理：如果是 checkbox 且没有 options，说明是单个布尔值开关 (如“是否”)
-  // 这种情况下我们用 el-checkbox 即可，不需要 el-checkbox-group
-  if (type === 'checkbox' && !getFieldOptions(key).length) {
-    return 'el-checkbox'
-  }
-  
+  // 单个 checkbox (如"是否") 不视为组，保持默认宽度，除非显式设置 span
+  if (type === 'checkbox' && !getFieldOptions(key).length) return 'el-checkbox'
   return getComponentType(type)
 }
 
-// 5. 获取组件属性 (placeholder, rows 等)
-const getFieldProps = (key) => {
-  return getFieldDef(key).props || {}
-}
+const getFieldProps = (key) => getFieldDef(key).props || {}
+const getFieldOptions = (key) => getFieldDef(key).options || []
 
-// 6. 获取选项 (用于 radio/checkbox group)
-const getFieldOptions = (key) => {
-  return getFieldDef(key).options || []
-}
-
-// 7. 判断是否有子选项
 const hasOptions = (key) => {
   const type = getFieldType(key)
   return ['radio', 'checkbox'].includes(type) && getFieldOptions(key).length > 0
 }
 
-// 8. 获取子选项组件名
-const getOptionComponent = (key) => {
-  return getFieldType(key) === 'radio' ? 'el-radio' : 'el-checkbox'
-}
-
-// 9. 判断是否占满一行
-const isFullWidth = (key) => {
-  // 如果是 textarea，或者是当前组显式设置为全宽
-  const type = getFieldType(key)
-  return type === 'textarea' || props.config.ui_mode === 'textarea_full_width'
-}
+const getOptionComponent = (key) => getFieldType(key) === 'radio' ? 'el-radio' : 'el-checkbox'
 </script>
 
-<style scoped>
-.simple-fields {
-  /* 保持清爽，不需要太多样式 */
+<style scoped lang="scss">
+.simple-fields{
+  padding:0 5%;
 }
 
 .widget-title {
-  font-size: 14px;
-  color: #3b82f6; /* 科技蓝 */
-  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #ffffff;
+  margin: 0 0 24px 0; /* 增加标题下边距 */
   font-weight: 600;
-  border-left: 3px solid #3b82f6;
-  padding-left: 8px;
-  line-height: 1;
+  padding-left: 10px;
+  border-left: 4px solid #3b82f6;
+}
+
+// 1. 增加每个表单项的垂直间距
+:deep(.el-form-item) {
+  margin-bottom: 24px !important; /* 强制增加下边距 */
+}
+
+// 2. 增加分隔符的上下间距，让它更像一个独立的段落
+.separator-col {
+  margin-top: 32px;    /* 上边距加大 */
+  margin-bottom: 24px; /* 下边距保持一致 */
+}
+
+.section-divider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  
+  .label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #06b6d4;
+    white-space: nowrap;
+    margin-right: 12px;
+    background: rgba(6, 182, 212, 0.15);
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+  }
+  
+  .line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(6, 182, 212, 0.3), rgba(255, 255, 255, 0.05)); // 渐变线，更高级
+  }
 }
 </style>

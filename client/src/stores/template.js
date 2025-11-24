@@ -291,28 +291,52 @@ export const useTemplateStore = defineStore("template", () => {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(docXml, "application/xml");
 
-      // 3. 数据预处理 (关键步骤！)
-      // ----------------------------------------------------------------
-      // 如果传入的是 ref 对象，取其 value；否则直接使用；如果没有传，用测试数据兜底
+      // ==================== 3. 数据预处理 (关键步骤！) ====================
+      
+      // A. 获取原始数据 (兼容 ref 或普通对象)
       const rawInput = (data && typeof data === 'object' && 'value' in data) ? data.value : (data || testData);
       
-      // 浅拷贝一份，避免修改原始数据
+      // B. 浅拷贝一份，避免修改原始数据
       const formData = { ...rawInput };
 
-      // 🔥 处理 Checkbox Group (数组 -> 多个布尔值)
-      // 场景：前端是 ['pc_type_llc', 'pc_type_listed']，Word 需要 pc_type_llc=true, pc_type_listed=true
+      // C. 🔥 处理 Checkbox Group (数组 -> 多个布尔值)
+      // 场景：前端是 ['pc_type_llc', 'pc_type_listed']，Word 需要 pc_type_llc=true
       Object.keys(formData).forEach(key => {
         const value = formData[key];
         if (Array.isArray(value)) {
           value.forEach(tag => {
-            // 只要数组里出现了这个 tag，就把它对应的值设为 true
-            formData[tag] = true;
+            formData[tag] = true; // 只要数组里出现了这个 tag，就把它对应的值设为 true
           });
         }
       });
 
-      console.log("📝 [预览生成] 数据预处理完成:", formData);
-      // ----------------------------------------------------------------
+      // D. 🔥 处理日期自动拆分 (YYYY-MM-DD -> 年, 月, 日)
+      // 场景：前端选了 "1990-05-20"，Word 需要 p_birth_y=1990, p_birth_m=05, p_birth_d=20
+      const dateFieldsToSplit = [
+        'p_birth_date', // 原告出生日期
+        'd_birth_date', // 被告出生日期
+        't_birth_date'  // 第三人出生日期
+      ];
+
+      dateFieldsToSplit.forEach(field => {
+        if (formData[field]) {
+          // 假设格式是 "1990-05-20" (Element Plus 默认格式)
+          const parts = String(formData[field]).split('-');
+          if (parts.length === 3) {
+            const prefix = field.split('_')[0]; // 获取前缀 p, d, t (例如 p_birth_date -> p)
+            
+            // 自动生成 Word 需要的三个字段
+            formData[`${prefix}_birth_y`] = parts[0]; // 1990
+            formData[`${prefix}_birth_m`] = parts[1]; // 05
+            formData[`${prefix}_birth_d`] = parts[2]; // 20
+            
+            console.log(`📅 日期已拆分 [${field}]:`, parts);
+          }
+        }
+      });
+
+      console.log("📝 [预览生成] 数据预处理完成，准备填充...");
+      // ==================================================================
 
       // 4. 遍历 Word 内容控件 (sdt) 进行替换
       const sdts = getNodes(xmlDoc, "sdt");
