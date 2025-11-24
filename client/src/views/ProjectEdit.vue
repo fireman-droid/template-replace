@@ -92,7 +92,7 @@ onMounted(async () => {
     isNew.value = true
     await handleCreateNewCase()
   }
-  console.log(editorStore.currentCase,editorStore.formData,editorStore.templateConfig)
+  // console.log(editorStore.currentCase,editorStore.formData,editorStore.templateConfig)
 })
 
 // === 2. 页面销毁清理 ===

@@ -271,55 +271,87 @@ export const useTemplateStore = defineStore("template", () => {
   };
   
   /**
-   * 【新增/修改】生成填充后的文档 Blob
-   * @param {Object} data - 数据对象，如果不传则默认使用 testData
+   * 【核心】生成填充后的文档 Blob (用于预览和下载)
+   * @param {Object} data - 表单数据对象
    */
   async function generateFilledBlob(data) {
-    if (!templateFile.value) return null;
+    // 如果没有加载模板文件，直接返回 null
+    if (!templateFile.value) {
+      console.warn("⚠️ 无法生成预览：尚未加载模板文件");
+      return null;
+    }
 
     try {
-      // 1. 获取原始文件的 ArrayBuffer (基于原始文件创建，不修改原件)
+      // 1. 获取原始文件的 ArrayBuffer (每次都基于原件创建一个新的 zip，确保不污染原数据)
       const arrayBuffer = await templateFile.value.arrayBuffer();
       const zip = new PizZip(arrayBuffer);
 
-      // 2. 解析 document.xml
+      // 2. 解析 word/document.xml (Word 的核心内容文件)
       const docXml = zip.file("word/document.xml").asText();
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(docXml, "application/xml");
 
-      // 3. 填充数据 - 如果没有传入 data，使用 testData
-      const formData = data || testData;
+      // 3. 数据预处理 (关键步骤！)
+      // ----------------------------------------------------------------
+      // 如果传入的是 ref 对象，取其 value；否则直接使用；如果没有传，用测试数据兜底
+      const rawInput = (data && typeof data === 'object' && 'value' in data) ? data.value : (data || testData);
       
-      console.log("📝 开始填充数据，共有", Object.keys(formData).length, "个字段");
-      
+      // 浅拷贝一份，避免修改原始数据
+      const formData = { ...rawInput };
+
+      // 🔥 处理 Checkbox Group (数组 -> 多个布尔值)
+      // 场景：前端是 ['pc_type_llc', 'pc_type_listed']，Word 需要 pc_type_llc=true, pc_type_listed=true
+      Object.keys(formData).forEach(key => {
+        const value = formData[key];
+        if (Array.isArray(value)) {
+          value.forEach(tag => {
+            // 只要数组里出现了这个 tag，就把它对应的值设为 true
+            formData[tag] = true;
+          });
+        }
+      });
+
+      console.log("📝 [预览生成] 数据预处理完成:", formData);
+      // ----------------------------------------------------------------
+
+      // 4. 遍历 Word 内容控件 (sdt) 进行替换
       const sdts = getNodes(xmlDoc, "sdt");
-      
       let filledCount = 0;
+
       for (let i = 0; i < sdts.length; i++) {
         const sdt = sdts[i];
+        
+        // 获取 Tag 节点 (存储了字段名，如 p_name)
         const tagNode = getNodes(sdt, "tag")[0];
-        if (!tagNode) {
-          console.log(`⚠️ 控件 ${i} 没有 tag 节点`);
-          continue;
-        }
+        if (!tagNode) continue;
 
         const key = tagNode.getAttribute("w:val");
-        
-        // 只有当 formData 中有这个 key 时才替换
+
+        // 只有当 formData 中有这个 key 时才替换 (undefined 跳过，false 也要处理)
         if (formData[key] !== undefined) {
           const val = formData[key];
+          
+          // 获取内容区域
           const content = getNodes(sdt, "sdtContent")[0];
           if (content) {
-            const tNodes = getNodes(content, "t");
+            const tNodes = getNodes(content, "t"); // 获取所有文本节点
             if (tNodes.length > 0) {
-              const newText = typeof val === 'boolean' 
-                ? (val ? "☑" : "□") 
-                : String(val);
               
+              // 根据数据类型决定显示什么
+              let newText = "";
+              if (typeof val === 'boolean') {
+                // 布尔值：true 显示打钩框，false 显示空框
+                newText = val ? "☑" : "□";
+              } else {
+                // 其他值：转字符串显示
+                newText = String(val);
+              }
+
+              // 修改第一个文本节点
               tNodes[0].textContent = newText;
               filledCount++;
-              
-              // 清理后续多余文本节点
+
+              // 清空后续多余的文本节点 (防止 Word 把一个长单词拆成多个 <t> 标签导致残留)
               for (let j = 1; j < tNodes.length; j++) {
                 tNodes[j].textContent = "";
               }
@@ -328,21 +360,23 @@ export const useTemplateStore = defineStore("template", () => {
         }
       }
 
-      console.log(`✅ 总共填充了 ${filledCount} 个字段`);
+      console.log(`✅ [预览生成] 已填充 ${filledCount} 个控件`);
 
-      // 4. 序列化并写入 zip
+      // 5. 将修改后的 XML 序列化回字符串
       const serializer = new XMLSerializer();
       const newXml = serializer.serializeToString(xmlDoc);
+      
+      // 6. 替换 Zip 包中的 document.xml
       zip.file("word/document.xml", newXml);
 
-      // 5. 返回 Blob
+      // 7. 生成新的 Blob 并返回
       return zip.generate({
         type: "blob",
         mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       });
 
     } catch (e) {
-      console.error("生成预览 Blob 失败:", e);
+      console.error("❌ [预览生成] 失败:", e);
       return null;
     }
   }

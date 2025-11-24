@@ -9,64 +9,18 @@
       </div>
     </div>
     
-    <!-- <el-form label-position="top" class="cyber-form">
-      <template v-if="currentType === 'divorce'">
-        <div class="form-group">
-          <h4>基础信息</h4>
-          <el-row :gutter="20">
-            <el-col :span="12"><el-form-item label="男方姓名"><el-input placeholder="请输入" /></el-form-item></el-col>
-            <el-col :span="12"><el-form-item label="女方姓名"><el-input placeholder="请输入" /></el-form-item></el-col>
-          </el-row>
-          <el-form-item label="结婚登记日期"><el-date-picker type="date" placeholder="选择日期" style="width: 100%" /></el-form-item>
-        </div>
-        <div class="form-group">
-          <h4>财产分割</h4>
-          <el-form-item label="房产处理方案">
-            <el-input type="textarea" rows="4" placeholder="例如：位于...的房产归女方所有，剩余贷款由..." />
-          </el-form-item>
-        </div>
-      </template>
-
-      <template v-if="currentType === 'sales'">
-        <div class="form-group">
-          <h4>合同主体</h4>
-          <el-row :gutter="20">
-            <el-col :span="12"><el-form-item label="买方(甲方)"><el-input placeholder="公司/个人名称" /></el-form-item></el-col>
-            <el-col :span="12"><el-form-item label="卖方(乙方)"><el-input placeholder="公司/个人名称" /></el-form-item></el-col>
-          </el-row>
-        </div>
-        <div class="form-group">
-          <h4>交易标的</h4>
-          <el-form-item label="标的物名称"><el-input placeholder="例如：精密机床" /></el-form-item>
-          <el-form-item label="合同总金额 (元)"><el-input placeholder="0.00" /></el-form-item>
-          <el-form-item label="违约责任"><el-input type="textarea" rows="4" placeholder="描述违约条款..." /></el-form-item>
-        </div>
-      </template>
-
-      <template v-if="currentType === 'house'">
-        <div class="form-group">
-          <h4>房产信息</h4>
-          <el-form-item label="房屋地址"><el-input placeholder="请输入详细地址" /></el-form-item>
-          <el-row :gutter="20">
-            <el-col :span="12"><el-form-item label="出租方"><el-input /></el-form-item></el-col>
-            <el-col :span="12"><el-form-item label="承租方"><el-input /></el-form-item></el-col>
-          </el-row>
-        </div>
-        <div class="form-group">
-          <h4>纠纷要点</h4>
-          <el-form-item label="纠纷类型">
-            <el-radio-group v-model="houseDisputeType">
-              <el-radio label="欠租">欠租</el-radio>
-              <el-radio label="设施损坏">设施损坏</el-radio>
-              <el-radio label="提前退租">提前退租</el-radio>
-            </el-radio-group>
-          </el-form-item>
-          <el-form-item label="诉求描述"><el-input type="textarea" rows="4" placeholder="请输入具体诉求..." /></el-form-item>
-        </div>
-      </template>
-    </el-form> -->
+    <div class="renderer-container" v-if="editorStore.isLoaded">
+      <FormRenderer 
+        :schema="editorStore.templateConfig" 
+        :mapping="editorStore.templateMapping"
+        v-model="editorStore.formData" 
+      />
+    </div>
     
-    
+    <div v-else class="loading-state">
+      <el-icon class="is-loading"><Loading /></el-icon> 
+      <span>正在初始化表单...</span>
+    </div>
 
     <el-dialog
       v-model="showAiDialog"
@@ -131,8 +85,14 @@
 
 <script setup>
 import { ref } from 'vue'
-import { MagicStick, UploadFilled, Cpu } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+// 引入 Store
+import { useEditorStore } from '@/stores'
+// 引入渲染引擎
+import FormRenderer from '@/components/form-engine/FormRenderer.vue'
+import { MagicStick, UploadFilled, Cpu, Connection, Opportunity, Rank, Loading } from '@element-plus/icons-vue'
+
+const editorStore = useEditorStore()
 
 // 接收父组件传来的模版类型
 const props = defineProps({
@@ -175,12 +135,16 @@ $text-gray: #94a3b8;
   overflow-y: auto;
   background: $bg-deep;
   border-right: 1px solid $border;
+  display: flex;
+  flex-direction: column;
 
   .panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
+    flex-shrink: 0; // 防止头部被压缩
+    
     h3 { margin: 0; font-size: 18px; color: $text-white; font-weight: 700; letter-spacing: 0.5px; }
     
     .ai-trigger {
@@ -206,22 +170,30 @@ $text-gray: #94a3b8;
       }
     }
   }
-
-  .form-group {
-    margin-bottom: 30px;
-    h4 { 
-      font-size: 14px; 
-      color: $primary; 
-      margin-bottom: 16px; 
-      border-left: 3px solid $primary; 
-      padding-left: 10px; 
-      text-transform: uppercase;
-      letter-spacing: 1px;
+  
+  // 渲染容器
+  .renderer-container {
+    flex: 1;
+  }
+  
+  // 加载状态样式
+  .loading-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: $text-gray;
+    gap: 16px;
+    
+    .el-icon {
+      font-size: 32px;
+      color: $primary;
     }
   }
 }
 
-// 强制覆盖 Element Plus 样式 (Scoped)
+// 强制覆盖 Element Plus 样式 (保持你原有的样式)
 :deep(.cyber-form) {
   .el-form-item__label {
     color: #ffffff !important;
@@ -231,7 +203,6 @@ $text-gray: #94a3b8;
     text-shadow: 0 0 2px rgba(0,0,0,0.5);
   }
 
-  // 输入框样式修正
   .el-input__wrapper, .el-textarea__inner {
     background-color: rgba(255, 255, 255, 0.05) !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -267,9 +238,20 @@ $text-gray: #94a3b8;
       .el-radio__label { color: $primary; }
     }
   }
+  
+  // 新增 Checkbox 样式覆盖
+  .el-checkbox {
+    color: #e2e8f0;
+    .el-checkbox__label { color: #e2e8f0; }
+    .el-checkbox__inner { background: transparent; border-color: rgba(255,255,255,0.4); }
+    &.is-checked {
+      .el-checkbox__inner { background: $primary; border-color: $primary; }
+      .el-checkbox__label { color: $primary; }
+    }
+  }
 }
 
-// AI 弹窗内容样式
+// AI 弹窗样式 (保持不变)
 .ai-card-content {
   padding: 10px 0;
   .config-section {
