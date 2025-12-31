@@ -9,10 +9,10 @@ import ProjectEdit from '../views/ProjectEdit.vue'
 
 // 引入管理后台组件 (建议按需加载，这里为了演示直接引入)
 import AdminLayout from '../views/Admin/Admin.vue'
-import Dashboard from '../views/admin/Dashboard.vue'
-import UserManagement from '../views/admin/UserManagement.vue'
-import TemplateManagement from '../views/admin/TemplateManagement.vue'
-import SystemLogs from '../views/admin/SystemLogs.vue'
+import Dashboard from '../views/Admin/Dashboard.vue'
+import UserManagement from '../views/Admin/UserManagement.vue'
+import TemplateManagement from '../views/Admin/TemplateManagement.vue'
+import SystemLogs from '../views/Admin/SystemLogs.vue'
 
 const routes = [
   {

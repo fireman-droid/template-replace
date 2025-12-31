@@ -105,20 +105,18 @@ router.post('/templates', authenticate, requireAdmin, upload.single('docx'), asy
     console.log('req.body:', req.body)
     console.log('req.file:', req.file)
     
-    const { name, description, fields, mapping } = req.body
+    const { name, description, markData } = req.body
     const file = req.file
 
     console.log('提取的字段:')
     console.log('- name:', name)
-    console.log('- fields (原始):', fields, '类型:', typeof fields)
-    console.log('- mapping (原始):', mapping, '类型:', typeof mapping)
+    console.log('- markData (原始):', markData, '类型:', typeof markData)
 
     if (!name) {
       return res.status(400).json({ message: '模板名称为必填项' })
     }
 
-    let parsedFields = {}
-    let parsedMapping = {}
+    let parsedMarkData = {}
     let file_path = null
 
     // 处理 Word 文件
@@ -127,39 +125,25 @@ router.post('/templates', authenticate, requireAdmin, upload.single('docx'), asy
       console.log('Word 文件已上传:', file_path)
     }
 
-    // 解析 fields（从字符串解析为对象）
-    if (fields) {
+    // 解析 markData（从字符串解析为对象）
+    if (markData) {
       try {
-        parsedFields = typeof fields === 'string' ? JSON.parse(fields) : fields
-        console.log('解析后的 fields:', parsedFields, 'keys:', Object.keys(parsedFields).length)
+        parsedMarkData = typeof markData === 'string' ? JSON.parse(markData) : markData
+        console.log('解析后的 markData:', parsedMarkData, 'keys:', Object.keys(parsedMarkData).length)
       } catch (err) {
-        console.error('解析 fields 失败:', err)
-        return res.status(400).json({ message: 'Fields 格式错误', error: err.message })
+        console.error('解析 markData 失败:', err)
+        return res.status(400).json({ message: 'MarkData 格式错误', error: err.message })
       }
     } else {
-      console.log('fields 字段为空或未定义')
+      console.log('markData 字段为空或未定义')
     }
 
-    // 解析 mapping（从字符串解析为对象）
-    if (mapping) {
-      try {
-        parsedMapping = typeof mapping === 'string' ? JSON.parse(mapping) : mapping
-        console.log('解析后的 mapping:', parsedMapping, 'keys:', Object.keys(parsedMapping).length)
-      } catch (err) {
-        console.error('解析 mapping 失败:', err)
-        return res.status(400).json({ message: 'Mapping 格式错误', error: err.message })
-      }
-    } else {
-      console.log('mapping 字段为空或未定义')
-    }
-
-    console.log('准备创建模板，数据:', { name, description, fields: parsedFields, mapping: parsedMapping, file_path })
+    console.log('准备创建模板，数据:', { name, description, markData: parsedMarkData, file_path })
     
     const template = await Template.create({
       name,
       description,
-      fields: parsedFields,
-      mapping: parsedMapping,
+      markData: parsedMarkData,
       file_path
     })
 
@@ -178,9 +162,9 @@ router.post('/templates', authenticate, requireAdmin, upload.single('docx'), asy
 router.put('/templates/:id', authenticate, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params
-    const { name, description, fields } = req.body
+    const { name, description, markData } = req.body
 
-    await Template.update(id, { name, description, fields })
+    await Template.update(id, { name, description, markData })
     res.json({ message: '模板更新成功' })
   } catch (error) {
     console.error('更新模板错误:', error)

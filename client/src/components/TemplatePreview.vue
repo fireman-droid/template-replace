@@ -41,25 +41,14 @@
         </div>
       </div>
 
-      <div class="preview-col">
+      <div class="preview-col wide">
         <div class="col-header">
-          <el-icon><Connection /></el-icon> 结构表 (Schema)
-          <span class="count-badge">{{ Object.keys(template.fields || {}).length }}</span>
+          <el-icon><Connection /></el-icon> MarkData 配置
+          <span class="count-badge" v-if="template.markData">已配置</span>
         </div>
         <div class="col-content code-mode">
-          <pre v-if="template.fields && Object.keys(template.fields).length">{{ JSON.stringify(template.fields, null, 2) }}</pre>
-          <div v-else class="empty-state">暂无字段定义</div>
-        </div>
-      </div>
-
-      <div class="preview-col">
-        <div class="col-header">
-          <el-icon><Link /></el-icon> 映射表 (Map)
-          <span class="count-badge">{{ Object.keys(template.mapping || {}).length }}</span>
-        </div>
-        <div class="col-content code-mode">
-          <pre v-if="template.mapping && Object.keys(template.mapping).length">{{ JSON.stringify(template.mapping, null, 2) }}</pre>
-          <div v-else class="empty-state">暂无映射关系</div>
+          <pre v-if="template.markData && Object.keys(template.markData).length">{{ JSON.stringify(template.markData, null, 2) }}</pre>
+          <div v-else class="empty-state">暂无配置数据</div>
         </div>
       </div>
     </div>
@@ -68,7 +57,6 @@
 
 <script setup>
 import { Document, Connection, Link, Download, DocumentDelete } from '@element-plus/icons-vue'
-
 const props = defineProps({
   template: { type: Object, required: true }
 })
@@ -142,7 +130,7 @@ $text-sub: #94a3b8;
   .preview-body {
     flex: 1;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr; // Word 窄一点，代码宽一点
+    grid-template-columns: 1fr 2fr; // Word 窄一点，MarkData 宽一点
     gap: 16px;
     min-height: 0; // 关键：允许 Flex 子项收缩
     

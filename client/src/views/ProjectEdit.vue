@@ -60,6 +60,9 @@ import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { HomeFilled, Cpu, Edit } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { getCaseDetail } from '@/api/cases'
+// 引入测试数据
+import userData from '@/utils/userData.json'
 
 // 引入 Store
 import { useEditorStore, useTemplateStore } from '@/stores'
@@ -92,7 +95,6 @@ onMounted(async () => {
     isNew.value = true
     await handleCreateNewCase()
   }
-  // console.log(editorStore.currentCase,editorStore.formData,editorStore.templateConfig)
 })
 
 // === 2. 页面销毁清理 ===
@@ -108,7 +110,7 @@ const initEditor = async (id) => {
   // 1. 让 Editor Store 加载数据 (JSON配置 + 表单数据)
   await editorStore.enterEditor(id)
   // 2. 让 Template Store 加载预览用的 Word 文件
-  templateStore.loadFile(id)
+  await templateStore.loadFile(id)
 }
 
 // 处理新建案卷
@@ -133,7 +135,6 @@ const handleCreateNewCase = async () => {
     isNew.value = false
     ElMessage.success('创建案卷成功!')
   } catch (error) {
-    // 错误已在 store 中打印，这里无需重复处理或仅做兜底
   }
 }
 
@@ -160,19 +161,13 @@ const saveTitle = () => {
 }
 
 // 生成/下载文书
-const handleGenerate = () => {
-  // 直接从 Store 获取最新的表单数据
-  const data = editorStore.formData
-  
-  // 调用 Template Store 生成并下载
-  templateStore.generateFilledBlob(data).then(blob => {
-    if (blob) {
-      const link = document.createElement('a')
-      link.href = URL.createObjectURL(blob)
-      link.download = `${editorStore.currentCase.title}.docx`
-      link.click()
-    }
-  })
+const handleGenerate = async () => {
+  const res = await getCaseDetail(route.query.id)
+  const markData = res.template.markData
+  // 采用测试数据
+  const data = userData
+  // // 调用 Template Store 生成并下载
+  templateStore.download(data)
 }
 </script>
 

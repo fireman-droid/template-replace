@@ -28,8 +28,7 @@ CREATE TABLE IF NOT EXISTS templates (
   description TEXT COMMENT '模板描述',
   icon VARCHAR(50) DEFAULT 'Document' COMMENT '图标名称',
   features JSON COMMENT '特性列表 JSON',
-  fields LONGTEXT COMMENT '字段配置 JSON (Schema) - 使用 LONGTEXT 支持大型 JSON',
-  mapping LONGTEXT COMMENT '映射配置 JSON (Tag ↔ Key) - 使用 LONGTEXT 支持大型 JSON',
+  mark_data LONGTEXT COMMENT '标记数据 JSON (包含表单结构和映射配置)',
   file_path VARCHAR(255) COMMENT 'Word 模板文件路径',
   enabled BOOLEAN DEFAULT TRUE COMMENT '是否启用',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -63,7 +62,7 @@ CREATE TABLE IF NOT EXISTS cases (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 插入示例模板
-INSERT INTO templates (name, description, icon, features, fields, enabled) VALUES 
+INSERT INTO templates (name, description, icon, features, mark_data, enabled) VALUES 
 ('离婚纠纷协议', '适用于双方自愿离婚，需处理子女抚养及财产分割。', 'UserFilled', '["抚养权判定", "房产分割", "债务处理"]', '{}', TRUE),
 ('买卖合同纠纷', '适用于动产/不动产交易违约、货款拖欠等商事纠纷。', 'Money', '["违约金计算", "风险转移", "质量异议"]', '{}', TRUE),
 ('房屋租赁/纠纷', '适用于房屋租赁违约、押金退还、腾房等居住权纠纷。', 'House', '["装修折旧", "免租期条款", "优先购买权"]', '{}', TRUE)

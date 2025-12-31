@@ -16,6 +16,9 @@ export { default as request } from './request'
 export { debounce } from './debounce'
 export { throttle } from './throttle'
 
+// markData的操作
+export { countSpace } from "./markDataParser";
+
 // 格式化
 export {
   formatDate,

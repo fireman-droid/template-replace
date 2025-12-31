@@ -4,11 +4,12 @@
  * 包括：加载、解析、预览、下载等操作
  */
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { getCaseTemplateFile } from "@/api";
-import PizZip from "pizzip"; // 引入解压库
+import JSZip from "jszip";
 import { saveAs } from "file-saver"; // 引入文件保存库
-import testData from "@/utils/test.json"; // 引入测试数据
+import { formatDateCN, formatMoney } from "@/utils/format"; // 引入格式化函数
+// import testData from "@/utils/test.json"; // 引入测试数据
 export const useTemplateStore = defineStore("template", () => {
   // ==================== State ====================
   // 模板文件（Blob 对象）
@@ -17,64 +18,49 @@ export const useTemplateStore = defineStore("template", () => {
   // 模板信息（从案卷详情中获取）
   const templateInfo = ref(null);
 
-  // 解析后的 XML 内容（如果需要编辑模板）
-  const parsedXml = ref(null);
-
-  // 模板中的占位符列表
-  const placeholders = ref([]);
-
   // 加载状态
   const loading = ref(false);
 
   // 错误信息
   const error = ref(null);
 
-  // zip 对象（用于操作 docx 文件）
-  const zip = ref(null);
-
   // ==================== Getters ====================
 
-  // 是否已加载模板文件
-  const hasFile = computed(() => !!templateFile.value);
-
-  // 是否有模板信息
-  const hasInfo = computed(() => !!templateInfo.value);
-
-  // 是否已解析
-  const isParsed = computed(() => !!parsedXml.value);
-
-  // 模板文件大小（格式化）
-  const fileSize = computed(() => {
-    if (!templateFile.value) return "0 KB";
-    const bytes = templateFile.value.size;
-    const kb = bytes / 1024;
-    return kb < 1024 ? `${kb.toFixed(2)} KB` : `${(kb / 1024).toFixed(2)} MB`;
-  });
-
-  // 占位符数量
-  const placeholderCount = computed(() => placeholders.value.length);
+  // 用于操作word模版
+  const NS = {
+    // word命名空间
+    w: "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
+    // 标记兼容性 - 处理不同版本的兼容性
+    mc: "http://schemas.openxmlformats.org/markup-compatibility/2006",
+    // wps的标记
+    wpsCustomData: "http://www.wps.cn/officeDocument/2020/wpsCustomData",
+  };
 
   // ==================== Actions ====================
-
   /**
-   * 加载模板文件
+   * 加载模板文件，用于预览
    * @param {number} caseId - 案卷 ID
-   * @returns {Promise<Blob>} 模板文件 Blob
    */
   async function loadFile(caseId) {
-    try {
-      loading.value = true;
-      error.value = null;
+    loading.value = true;
+    error.value = null;
 
-      const blob = await getCaseTemplateFile(caseId);
-      // console.log(blob)
+    try {
+      // 1. 调用 API 获取模板文件
+      const response = await getCaseTemplateFile(caseId);
+
+      // 2. 将响应转换为 Blob
+      const blob = new Blob([response], {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
+
+      // 3. 存储到 state
       templateFile.value = blob;
 
-      console.log("模板文件加载成功:", fileSize.value);
       return blob;
     } catch (err) {
       error.value = err.message || "加载模板文件失败";
-      console.error("加载模板文件失败:", err);
+      ElMessage.error(error.value);
       throw err;
     } finally {
       loading.value = false;
@@ -82,376 +68,382 @@ export const useTemplateStore = defineStore("template", () => {
   }
 
   /**
-   * 设置模板信息
-   * @param {Object} info - 模板信息（从案卷详情中获取）
+   * 填充templateInfo，获取模版信息
+   * @param {*} data
+   * @returns
    */
-  function setInfo(info) {
-    templateInfo.value = info;
-    console.log("模板信息已设置:", info?.name);
+  function setTemplateInfo(data) {
+    if (!data) {
+      templateInfo.value = null;
+      markData.value = null;
+      return;
+    }
+    templateInfo.value = data;
   }
 
   /**
-   * 解析模板文件（提取 XML 内容）
-   * 用于需要编辑模板内容的场景
-   * @returns {Promise<string>} XML 内容
+   * 清空所有模板数据
+   * 用于离开编辑器或切换案卷时重置状态
    */
-  async function parseXml() {
-    if (!templateFile.value) {
-      throw new Error("没有可解析的模板文件");
-    }
-
-    try {
-      loading.value = true;
-
-      // 1. 将 Blob 转为 ArrayBuffer
-      const arrayBuffer = await templateFile.value.arrayBuffer();
-
-      // 2. 使用 PizZip 加载 ArrayBuffer
-      zip.value = new PizZip(arrayBuffer);
-
-      // 3. 获取 word/document.xml 文件
-      const documentXml = zip.value.file("word/document.xml");
-
-      if (!documentXml) {
-        throw new Error("无效的 Word 文档：找不到 document.xml");
-      }
-
-      // 4. 读取 XML 内容
-      parsedXml.value = documentXml.asText();
-
-      console.log("模板 XML 解析成功，长度:", parsedXml.value);
-      return parsedXml.value;
-    } catch (err) {
-      error.value = "解析模板失败";
-      console.error("解析模板失败:", err);
-      throw err;
-    } finally {
-      loading.value = false;
-    }
+  function clear() {
+    templateFile.value = null;
+    templateInfo.value = null;
+    loading.value = false;
+    error.value = null;
   }
 
-  /**
-   * 获取文件的 ArrayBuffer
-   * 用于某些库需要 ArrayBuffer 格式的场景
-   * @returns {Promise<ArrayBuffer>}
-   */
-  async function getArrayBuffer() {
-    if (!templateFile.value) {
-      throw new Error("没有可用的模板文件");
-    }
-
-    return await templateFile.value.arrayBuffer();
-  }
-
-  /**
-   * 获取文件的 Base64 编码
-   * 用于需要传输或存储的场景
-   * @returns {Promise<string>}
-   */
-  async function getBase64() {
-    if (!templateFile.value) {
-      throw new Error("没有可用的模板文件");
-    }
-
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result.split(",")[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(templateFile.value);
-    });
-  }
-
-  /**
-   * 兼容性节点查找函数
-   * @param {Element} parent - 父节点
-   * @param {string} tagName - 要查找的标签名（不含命名空间前缀）
-   * @returns {HTMLCollection} 找到的节点列表
-   * 功能：在 Word XML 中查找节点，兼容带命名空间和不带命名空间的情况
-   */
-  const getNodes = (parent, tagName) => {
-    // 先尝试查找带 w: 命名空间的标签
-    let list = parent.getElementsByTagName("w:" + tagName);
-    // 如果没找到，尝试不带命名空间的标签
-    if (list.length === 0) list = parent.getElementsByTagName(tagName);
-    return list;
-  };
-
-  /**
-   * 下载填充的文件
-   * @param {string} filename - 文件名（可选）
-   */
-  const download = async () => {
-    try {
-      // 如果还没有解析 XML，先解析
-      if (!parsedXml.value) {
-        await parseXml();
-      }
-
-      // 使用导入的测试数据
-      const data = testData;
-
-      // 2. 提取 word/document.xml（Word 文档的主要内容）
-      const docXml = parsedXml.value;
-      
-      if (!docXml) {
-        throw new Error("无法获取模板 XML 内容");
-      }
-
-      // 3. 解析 XML 文档
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(docXml, "application/xml");
-      // 4. 查找所有内容控件（sdt = Structured Document Tag）
-      const sdts = getNodes(xmlDoc, "sdt");
-      // 如果没有找到控件，说明模板格式不对
-      if (sdts.length === 0) {
-        console.warn("未找到任何内容控件");
-        return;
-      }
-
-      // 5. 遍历所有控件，填充数据
-      let count = 0;
-      for (let i = 0; i < sdts.length; i++) {
-        const sdt = sdts[i];
-
-        // 获取控件的标签（tag），标签的 w:val 属性存储了字段名
-        const tagNode = getNodes(sdt, "tag")[0];
-        if (!tagNode) continue;
-
-        // 获取字段名（如 "p_name", "p_phone" 等）
-        const key = tagNode.getAttribute("w:val");
-        if (data[key] === undefined) continue; // 如果 JSON 中没有这个字段，跳过
-
-        count++;
-        const val = data[key];
-
-        // 获取控件的内容区域
-        const content = getNodes(sdt, "sdtContent")[0];
-        if (content) {
-          // 获取所有文本节点（t = text）
-          const tNodes = getNodes(content, "t");
-          if (tNodes.length > 0) {
-            // 根据数据类型填充内容
-            if (typeof val === "boolean") {
-              // 布尔值：true 显示 ■（选中），false 显示 □（未选中）
-              tNodes[0].textContent = val ? "■" : "□";
-            } else {
-              // 其他类型：转为字符串填充
-              tNodes[0].textContent = String(val);
-            }
-            // 清空其他多余的文本节点
-            for (let j = 1; j < tNodes.length; j++) {
-              tNodes[j].textContent = "";
-            }
-          }
-        }
-      }
-
-      // 6. 将修改后的 XML 序列化回字符串
-      const serializer = new XMLSerializer();
-      const newXml = serializer.serializeToString(xmlDoc);
-
-      // 7. 替换 zip 中的 document.xml
-      zip.value.file("word/document.xml", newXml);
-
-      // 8. 生成新的 docx 文件（Blob 格式）
-      const blob = zip.value.generate({
-        type: "blob",
-        mimeType:
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      });
-
-      // 9. 触发浏览器下载
-      saveAs(blob, '生成的模版.docx');
-
-      console.log(`✅ 成功！已填充 ${count} 个字段`);
-    } catch (e) {
-      console.error("生成出错:", e);
-      alert("生成出错: " + e.message);
-    }
-  };
-  
   /**
    * 【核心】生成填充后的文档 Blob (用于预览和下载)
    * @param {Object} data - 表单数据对象
    */
   async function generateFilledBlob(data) {
+    const markData = templateInfo.value.markData;
     // 如果没有加载模板文件，直接返回 null
     if (!templateFile.value) {
       console.warn("⚠️ 无法生成预览：尚未加载模板文件");
       return null;
     }
+    // 2. 构建映射 (核心步骤)
+    const markKeyMap = buildMarkKeyToFieldKeyMap(markData);
 
-    try {
-      // 1. 获取原始文件的 ArrayBuffer (每次都基于原件创建一个新的 zip，确保不污染原数据)
-      const arrayBuffer = await templateFile.value.arrayBuffer();
-      const zip = new PizZip(arrayBuffer);
+    // 3. 解析 document.xml
+    const zip = await JSZip.loadAsync(templateFile.value);
+    const xmlContent = await zip.file("word/document.xml").async("string");
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xmlContent, "text/xml");
+    // console.log(doc);
 
-      // 2. 解析 word/document.xml (Word 的核心内容文件)
-      const docXml = zip.file("word/document.xml").asText();
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(docXml, "application/xml");
+    // 4.实现填充
+    const fillCount = replaceDocFieldsInDocx(doc, data, markKeyMap);
+    // console.log(fillCount);
+    // 6. 序列化并重新打包
+    const serializer = new XMLSerializer();
+    const newXmlContent = serializer.serializeToString(doc);
+    zip.file("word/document.xml", newXmlContent);
 
-      // ==================== 3. 数据预处理 (关键步骤！) ====================
+    // 7. 生成并下载
+    const blob = await zip.generateAsync({ type: "blob" });
+    return blob;
+  }
+
+  // ==========================================
+  // 逻辑函数 2: 替换字段 (Vue/Browser 版)
+  // ==========================================
+  function replaceDocFieldsInDocx(doc, fieldValues, markKeyMap) {
+    let fillCount = 0;
+
+    // 浏览器原生获取标签
+    const docfieldStarts = Array.from(
+      doc.getElementsByTagName("wpsCustomData:docfieldStart")
+    );
+    const docfieldEnds = Array.from(
+      doc.getElementsByTagName("wpsCustomData:docfieldEnd")
+    );
+
+    // 构建 End 节点映射
+    const endMap = new Map();
+    docfieldEnds.forEach((node) => {
+      const id = node.getAttribute("id");
+      if (id) endMap.set(id, node);
+    });
+
+    docfieldStarts.forEach((startNode) => {
+      // 1. 解析 markKey
+      const docfieldname = startNode.getAttribute("docfieldname");
+      // docfieldname = '{"key":"plaintiff_name"}'
+      // 用于多个相同字段
+      const subindex = Number(startNode.getAttribute("subindex") || "0");
+      if (!docfieldname) return;
+
+      let markKey = "";
+      try {
+        markKey = JSON.parse(docfieldname).key;
+      } catch (e) {
+        return;
+      }
+
+      // 2. 获取映射
+      const mapping = markKeyMap.get(markKey);
+      if (!mapping) return;
+
+      // 3. 确定 UserData 中的 key
+      const fieldKey =
+        subindex === 0 ? mapping.fieldKey : `${mapping.fieldKey}_${subindex}`;
       
-      // A. 获取原始数据 (兼容 ref 或普通对象)
-      const rawInput = (data && typeof data === 'object' && 'value' in data) ? data.value : (data || testData);
-      
-      // B. 浅拷贝一份，避免修改原始数据
-      const formData = { ...rawInput };
+      // 4. 检查是否有数据
+      if (!(fieldKey in fieldValues)) {
+        // 没数据，删除占位符
+        const id = startNode.getAttribute("id");
+        const endNode = endMap.get(id);
+        removeNode(startNode);
+        if (endNode) removeNode(endNode);
+        return;
+      }   
 
-      // C. 🔥 处理 Checkbox Group (数组 -> 多个布尔值)
-      // 场景：前端是 ['pc_type_llc', 'pc_type_listed']，Word 需要 pc_type_llc=true
-      Object.keys(formData).forEach(key => {
-        const value = formData[key];
-        if (Array.isArray(value)) {
-          value.forEach(tag => {
-            formData[tag] = true; // 只要数组里出现了这个 tag，就把它对应的值设为 true
-          });
-        }
-      });
+      let value = fieldValues[fieldKey];
 
-      // D. 🔥 处理日期自动拆分 (YYYY-MM-DD -> 年, 月, 日)
-      // 场景：前端选了 "1990-05-20"，Word 需要 p_birth_y=1990, p_birth_m=05, p_birth_d=20
-      const dateFieldsToSplit = [
-        'p_birth_date', // 原告出生日期
-        'd_birth_date', // 被告出生日期
-        't_birth_date'  // 第三人出生日期
-      ];
+      // 🔥 4.5 根据字段类型格式化值
+      if (mapping.fieldType && value !== true) {
+        value = formatValue(value, mapping.fieldType);
+      }
 
-      dateFieldsToSplit.forEach(field => {
-        if (formData[field]) {
-          // 假设格式是 "1990-05-20" (Element Plus 默认格式)
-          const parts = String(formData[field]).split('-');
-          if (parts.length === 3) {
-            const prefix = field.split('_')[0]; // 获取前缀 p, d, t (例如 p_birth_date -> p)
-            
-            // 自动生成 Word 需要的三个字段
-            formData[`${prefix}_birth_y`] = parts[0]; // 1990
-            formData[`${prefix}_birth_m`] = parts[1]; // 05
-            formData[`${prefix}_birth_d`] = parts[2]; // 20
-            
-            console.log(`📅 日期已拆分 [${field}]:`, parts);
-          }
-        }
-      });
-
-      console.log("📝 [预览生成] 数据预处理完成，准备填充...");
-      // ==================================================================
-
-      // 4. 遍历 Word 内容控件 (sdt) 进行替换
-      const sdts = getNodes(xmlDoc, "sdt");
-      let filledCount = 0;
-
-      for (let i = 0; i < sdts.length; i++) {
-        const sdt = sdts[i];
-        
-        // 获取 Tag 节点 (存储了字段名，如 p_name)
-        const tagNode = getNodes(sdt, "tag")[0];
-        if (!tagNode) continue;
-
-        const key = tagNode.getAttribute("w:val");
-
-        // 只有当 formData 中有这个 key 时才替换 (undefined 跳过，false 也要处理)
-        if (formData[key] !== undefined) {
-          const val = formData[key];
-          
-          // 获取内容区域
-          const content = getNodes(sdt, "sdtContent")[0];
-          if (content) {
-            const tNodes = getNodes(content, "t"); // 获取所有文本节点
-            if (tNodes.length > 0) {
-              
-              // 根据数据类型决定显示什么
-              let newText = "";
-              if (typeof val === 'boolean') {
-                // 布尔值：true 显示打钩框，false 显示空框
-                newText = val ? "☑" : "□";
-              } else {
-                // 其他值：转字符串显示
-                newText = String(val);
-              }
-
-              // 修改第一个文本节点
-              tNodes[0].textContent = newText;
-              filledCount++;
-
-              // 清空后续多余的文本节点 (防止 Word 把一个长单词拆成多个 <t> 标签导致残留)
-              for (let j = 1; j < tNodes.length; j++) {
-                tNodes[j].textContent = "";
-              }
-            }
+      // 5. 处理选项 (Checkbox)
+      if (mapping.optionValue) {
+        const shouldCheck =
+          value === mapping.optionValue ||
+          (Array.isArray(value) && value.includes(mapping.optionValue));
+        if (mapping.optionReplaceMode === "check") {
+          if (shouldCheck) value = true;
+          else {
+            // 不选中的删掉
+            const id = startNode.getAttribute("id");
+            const endNode = endMap.get(id);
+            removeNode(startNode);
+            if (endNode) removeNode(endNode);
+            return;
           }
         }
       }
 
-      console.log(`✅ [预览生成] 已填充 ${filledCount} 个控件`);
+      // 6. 查找容器 (AlternateContent)
+      const altContent = findParentByNodeName(startNode, "mc:AlternateContent");
+      if (!altContent) return;
 
-      // 5. 将修改后的 XML 序列化回字符串
-      const serializer = new XMLSerializer();
-      const newXml = serializer.serializeToString(xmlDoc);
+      // 7. 创建新节点
+      const fillNode = createFillNode(doc, value);
+
+      // 8. 插入 DOM
+      if (altContent.parentNode) {
+        if (altContent.parentNode.nodeName === "w:tc") {
+          // 表格内
+          if (altContent.previousSibling) {
+            altContent.previousSibling.appendChild(fillNode);
+          } else {
+            // 如果它是第一个节点，可能需要更复杂的处理，这里简化为追加到父级
+            altContent.parentNode.appendChild(fillNode);
+          }
+        } else {
+          // 普通段落，插入到 AlternateContent 前面
+          altContent.parentNode.insertBefore(fillNode, altContent);
+        }
+        fillCount++;
+      }
+
+      // 9. 清理旧节点
+      const id = startNode.getAttribute("id");
+      const endNode = endMap.get(id);
+      const endAltContent = findParentByNodeName(
+        endNode,
+        "mc:AlternateContent"
+      );
+
+      if (altContent && endAltContent) {
+        removeContentBetween(altContent, endAltContent);
+      }
+    });
+
+    return fillCount;
+  }
+  // ==========================================
+  // 辅助工具函数
+  // ==========================================
+
+  // 创建节点
+  function createFillNode(doc, value) {
+    const run = doc.createElementNS(NS.w, "w:r");
+    const rPr = doc.createElementNS(NS.w, "w:rPr");
+
+    // 设置中文字体
+    const rFonts = doc.createElementNS(NS.w, "w:rFonts");
+    rFonts.setAttributeNS(NS.w, "w:eastAsia", "SimSun");
+    rPr.appendChild(rFonts);
+    run.appendChild(rPr);
+
+    if (value === true) {
+      // Checkbox 符号
+      const sym = doc.createElementNS(NS.w, "w:sym");
+      sym.setAttributeNS(NS.w, "w:font", "Wingdings 2");
+      sym.setAttributeNS(NS.w, "w:char", "0052");
+      run.appendChild(sym);
+    } else {
+      // 文本
+      const t = doc.createElementNS(NS.w, "w:t");
+      t.textContent = String(value);
+      run.appendChild(t);
+    }
+    return run;
+  }
+
+  function findParentByNodeName(node, nodeName) {
+    let current = node;
+    while (current) {
+      // 浏览器 DOM nodeName 可能是大写或保留原样，XML通常大小写敏感
+      if (current.nodeName === nodeName) return current;
+      current = current.parentNode;
+    }
+    return null;
+  }
+  
+  // 删除不需要的节点
+  function removeNode(node) {
+    if (node && node.parentNode) node.parentNode.removeChild(node);
+  }
+
+  function removeContentBetween(startNode, endNode) {
+    const parent = startNode.parentNode;
+    if (!parent || endNode.parentNode !== parent) return;
+
+    let current = startNode;
+    while (current) {
+      const next = current.nextSibling;
+      removeNode(current);
+      if (current === endNode) break;
+      current = next;
+    }
+  }
+
+  // 触发下载
+  function saveFile(blob, filename) {
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+  
+  // 进行map构建
+  const buildMarkKeyToFieldKeyMap = (mData) => {
+    const map = new Map();
+    if (!mData || !mData.data) return map;
+    function traverse(node) {
+      if (!node) return;
+      if (Array.isArray(node)) {
+        node.forEach((item) => traverse(item));
+        return;
+      }
+      if (typeof node === "object") {
+        // 处理 field
+        if (node.type === "field" && node.data) {
+          const { fieldKey, marks, fieldType } = node.data;
+          if (marks && Array.isArray(marks) && fieldKey) {
+            marks.forEach((mark) => {
+              if (mark.markKey) {
+                const info = { fieldKey };
+                // 保存字段类型信息（用于格式化）
+                if (fieldType) {
+                  info.fieldType = fieldType;
+                }
+                if (mark.markProps?.optionValue) {
+                  info.optionValue = mark.markProps.optionValue;
+                  info.optionReplaceMode = mark.markProps.optionReplaceMode;
+                }
+                map.set(mark.markKey, info);
+              }
+            });
+          }
+        }
+        // 处理 inline-fields
+        else if (node.type === "inline-fields" && node.data?.fields) {
+          node.data.fields.forEach((field) => {
+            if (field.fieldKey && field.marks) {
+              field.marks.forEach((mark) => {
+                if (mark.markKey) {
+                  const info = { fieldKey: field.fieldKey };
+                  // 保存字段类型信息
+                  if (field.fieldType) {
+                    info.fieldType = field.fieldType;
+                  }
+                  if (mark.markProps?.optionValue) {
+                    info.optionValue = mark.markProps.optionValue;
+                    info.optionReplaceMode = mark.markProps.optionReplaceMode;
+                  }
+                  map.set(mark.markKey, info);
+                }
+              });
+            }
+          });
+        }
+        Object.values(node).forEach((value) => traverse(value));
+      }
+    }
+    traverse(mData);
+    // console.log(map);
+    return map;
+  };
+
+  /**
+   * 根据字段类型格式化值
+   * @param {any} value - 原始值
+   * @param {string} fieldType - 字段类型（date, money, text 等）
+   * @returns {string} 格式化后的值
+   */
+  function formatValue(value, fieldType) {
+    if (value === null || value === undefined || value === '') return '';
+    
+    switch (fieldType) {
+      case 'date':
+        // 日期格式：1980-05-20 → 1980年5月20日
+        return formatDateCN(value);
       
-      // 6. 替换 Zip 包中的 document.xml
-      zip.file("word/document.xml", newXml);
-
-      // 7. 生成新的 Blob 并返回
-      return zip.generate({
-        type: "blob",
-        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      });
-
-    } catch (e) {
-      console.error("❌ [预览生成] 失败:", e);
-      return null;
+      case 'money':
+        // 金额格式：1234567 → ¥1,234,567.00
+        return formatMoney(value);
+      
+      default:
+        // 默认直接返回字符串
+        return String(value);
     }
   }
 
   /**
-   * 清空所有模板数据
+   * 下载填充后的文档
+   * @param {Object} formData - 表单数据
+   * @param {string} filename - 文件名（可选）
    */
-  function clear() {
-    templateFile.value = null;
-    templateInfo.value = null;
-    parsedXml.value = null;
-    placeholders.value = [];
-    error.value = null;
-    console.log("模板数据已清空");
-  }
+  async function download(formData, filename) {
+    try {
+      // 1. 生成填充后的 Blob
+      const blob = await generateFilledBlob(
+        formData,
+        templateInfo.value?.markData
+      );
 
-  /**
-   * 重新加载模板
-   * @param {number} caseId - 案卷 ID
-   */
-  async function reload(caseId) {
-    clear();
-    await loadFile(caseId);
+      if (!blob) {
+        ElMessage.error("生成文档失败");
+        return;
+      }
+
+      // 2. 生成文件名
+      const defaultName = `${
+        templateInfo.value?.name || "文档"
+      }_${Date.now()}.docx`;
+      const finalName = filename || defaultName;
+
+      // 3. 触发下载
+      saveFile(blob, finalName);
+
+      ElMessage.success("下载成功");
+    } catch (error) {
+      console.error("下载失败:", error);
+      ElMessage.error("下载失败");
+    }
   }
 
   return {
-    // State
+    // // State
     templateFile,
     templateInfo,
-    parsedXml,
-    placeholders,
     loading,
     error,
 
     // Getters
-    hasFile,
-    hasInfo,
-    isParsed,
-    fileSize,
-    placeholderCount,
 
     // Actions
-    loadFile,
-    setInfo,
-    parseXml,
-    download,
-    getArrayBuffer,
-    getBase64,
     clear,
-    reload,
-    getNodes,
-    generateFilledBlob
+    saveFile,
+    loadFile,
+    setTemplateInfo,
+    generateFilledBlob,
+    download,
   };
 });

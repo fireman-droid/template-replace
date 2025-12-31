@@ -10,14 +10,13 @@ class Template {
    * @param {Object} templateData - 模板数据
    * @returns {Object} 创建的模板信息
    */
-  static async create({ name, description, fields, mapping, file_path }) {
+  static async create({ name, description, markData, file_path }) {
     const [result] = await pool.query(
-      'INSERT INTO templates (name, description, fields, mapping, file_path) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO templates (name, description, mark_data, file_path) VALUES (?, ?, ?, ?)',
       [
         name, 
         description, 
-        JSON.stringify(fields || {}),
-        JSON.stringify(mapping || {}),
+        JSON.stringify(markData || {}),
         file_path || null
       ]
     )
@@ -26,8 +25,7 @@ class Template {
       id: result.insertId,
       name,
       description,
-      fields,
-      mapping,
+      markData,
       file_path
     }
   }
@@ -38,14 +36,17 @@ class Template {
    */
   static async getEnabled() {
     const [rows] = await pool.query(
-      'SELECT id, name, description as `desc`, icon, features, enabled FROM templates WHERE enabled = TRUE ORDER BY created_at DESC'
-    )
-    
+      "SELECT id, name, description as `desc`, icon, features, enabled FROM templates WHERE enabled = TRUE ORDER BY created_at DESC"
+    );
+
     // 解析 JSON 字段
-    return rows.map(row => ({
+    return rows.map((row) => ({
       ...row,
-      features: typeof row.features === 'string' ? JSON.parse(row.features || '[]') : row.features
-    }))
+      features:
+        typeof row.features === "string"
+          ? JSON.parse(row.features || "[]")
+          : row.features,
+    }));
   }
 
   /**
@@ -55,61 +56,55 @@ class Template {
    * @param {string} keyword - 搜索关键词
    * @returns {Object} 模板列表和总数
    */
-  static async getAll(page = 1, pageSize = 10, keyword = '') {
-    const offset = (page - 1) * pageSize
-    
-    let query = 'SELECT * FROM templates'
-    let countQuery = 'SELECT COUNT(*) as total FROM templates'
-    const params = []
-    
+  static async getAll(page = 1, pageSize = 10, keyword = "") {
+    const offset = (page - 1) * pageSize;
+
+    let query = "SELECT * FROM templates";
+    let countQuery = "SELECT COUNT(*) as total FROM templates";
+    const params = [];
+
     if (keyword) {
-      query += ' WHERE name LIKE ? OR description LIKE ?'
-      countQuery += ' WHERE name LIKE ? OR description LIKE ?'
-      const searchTerm = `%${keyword}%`
-      params.push(searchTerm, searchTerm)
+      query += " WHERE name LIKE ? OR description LIKE ?";
+      countQuery += " WHERE name LIKE ? OR description LIKE ?";
+      const searchTerm = `%${keyword}%`;
+      params.push(searchTerm, searchTerm);
     }
-    
-    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?'
-    
-    const [rows] = await pool.query(query, [...params, pageSize, offset])
-    const [countResult] = await pool.query(countQuery, params)
-    
+
+    query += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+
+    const [rows] = await pool.query(query, [...params, pageSize, offset]);
+    const [countResult] = await pool.query(countQuery, params);
+
     // 解析 JSON 字段
-    const templates = rows.map(row => {
-      let parsedFields = {}
-      let parsedMapping = {}
-      
+    const templates = rows.map((row) => {
+      let parsedMarkData = {};
+
       try {
         // 解析 fields
-        if (typeof row.fields === 'string') {
-          parsedFields = JSON.parse(row.fields)
-        } else if (typeof row.fields === 'object' && row.fields !== null) {
-          parsedFields = row.fields
-        }
-        
-        // 解析 mapping
-        if (typeof row.mapping === 'string') {
-          parsedMapping = JSON.parse(row.mapping)
-        } else if (typeof row.mapping === 'object' && row.mapping !== null) {
-          parsedMapping = row.mapping
+        if (typeof row.mark_data === "string") {
+          parsedMarkData = JSON.parse(row.mark_data);
+        } else if (
+          typeof row.mark_data === "object" &&
+          row.mark_data !== null
+        ) {
+          parsedMarkData = row.mark_data;
         }
       } catch (e) {
-        console.error('解析模板字段失败:', e)
+        console.error("解析模板 mark_data 失败:", e);
       }
-      
+
       return {
         ...row,
-        fields: parsedFields,
-        mapping: parsedMapping
-      }
-    })
-    
+        markData: parsedMarkData,
+      };
+    });
+
     return {
       list: templates,
       total: countResult[0].total,
       page,
-      pageSize
-    }
+      pageSize,
+    };
   }
 
   /**
@@ -127,11 +122,9 @@ class Template {
       const row = rows[0]
       return {
         ...row,
-        fields: typeof row.fields === 'string' ? JSON.parse(row.fields || '{}') : row.fields,
-        mapping: typeof row.mapping === 'string' ? JSON.parse(row.mapping || '{}') : row.mapping
+        markData: typeof row.mark_data === 'string' ? JSON.parse(row.mark_data || '{}') : row.mark_data
       }
     }
-    
     return null
   }
 
@@ -140,7 +133,7 @@ class Template {
    * @param {number} id - 模板 ID
    * @param {Object} data - 更新的数据
    */
-  static async update(id, { name, description, fields, mapping, file_path }) {
+  static async update(id, { name, description, markData, file_path }) {
     const updates = []
     const params = []
     
@@ -152,13 +145,9 @@ class Template {
       updates.push('description = ?')
       params.push(description)
     }
-    if (fields !== undefined) {
-      updates.push('fields = ?')
-      params.push(JSON.stringify(fields))
-    }
-    if (mapping !== undefined) {
-      updates.push('mapping = ?')
-      params.push(JSON.stringify(mapping))
+    if (markData !== undefined) {
+      updates.push('mark_data = ?')
+      params.push(JSON.stringify(markData))
     }
     if (file_path !== undefined) {
       updates.push('file_path = ?')
@@ -178,7 +167,7 @@ class Template {
    * @param {number} id - 模板 ID
    */
   static async delete(id) {
-    await pool.query('DELETE FROM templates WHERE id = ?', [id])
+    await pool.query("DELETE FROM templates WHERE id = ?", [id]);
   }
 }
 

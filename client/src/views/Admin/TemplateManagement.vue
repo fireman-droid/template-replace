@@ -12,8 +12,8 @@
         <div class="tpl-icon"><el-icon><DocumentChecked /></el-icon></div>
         <div class="tpl-info">
           <h4>{{ tpl.name }}</h4>
-          <p>字段: {{ Object.keys(tpl.fields || {}).length }}个</p>
-          <p class="desc">{{ tpl.description }}</p>
+          <p>待填充: {{ countSpace(tpl.markData) }}</p>
+          <p class="desc">描述:{{ tpl.description }}</p>
         </div>
         <div class="tpl-actions">
           <button class="icon-btn" @click.stop="handleEdit(tpl)"><el-icon><Edit /></el-icon></button>
@@ -85,41 +85,25 @@
               </el-upload>
             </div>
             <div class="upload-item">
-              <div class="upload-label code-label"><el-icon><Connection /></el-icon> 结构表 (Schema)</div>
+              <div class="upload-label code-label"><el-icon><Connection /></el-icon> MarkData 配置 (.json)</div>
               <el-upload 
                 class="mini-upload" 
                 :auto-upload="false" 
                 :limit="1" 
                 accept=".json" 
-                :on-change="handleSchemaChange"
+                :on-change="handleMarkDataChange"
                 drag
               >
                 <div class="drop-area code-area">
                   <el-icon><Link /></el-icon>
-                  <span>{{ uploadFiles.schema ? uploadFiles.schema.name : '定义表单结构' }}</span>
-                </div>
-              </el-upload>
-            </div>
-            <div class="upload-item">
-              <div class="upload-label code-label"><el-icon><Link /></el-icon> 映射表 (Map)</div>
-              <el-upload 
-                class="mini-upload" 
-                :auto-upload="false" 
-                :limit="1" 
-                accept=".json" 
-                :on-change="handleMappingChange"
-                drag
-              >
-                <div class="drop-area code-area">
-                  <el-icon><Link /></el-icon>
-                  <span>{{ uploadFiles.mapping ? uploadFiles.mapping.name : 'Tag ↔ Key 映射' }}</span>
+                  <span>{{ uploadFiles.markData ? uploadFiles.markData.name : '上传配置文件' }}</span>
                 </div>
               </el-upload>
             </div>
           </div>
 
           <div class="tips-box">
-            <p><el-icon><InfoFilled /></el-icon> 提示：结构表用于生成前端表单，映射表用于将表单数据填充回 Word 内容控件。</p>
+            <p><el-icon><InfoFilled /></el-icon> 提示：MarkData 配置文件包含表单结构和字段映射信息。</p>
           </div>
         </el-form>
       </div>
@@ -134,11 +118,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted,computed } from 'vue'
 import { Upload, DocumentChecked, Edit, Delete, Document, Connection, Link, InfoFilled, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getTemplateList, createTemplate, deleteTemplate } from '@/api'
 import TemplatePreview from '@/components/TemplatePreview.vue'
+import { countSpace } from '@/utils'
 
 const showUploadDialog = ref(false)
 const showPreviewDialog = ref(false)
@@ -154,14 +139,12 @@ const pagination = ref({
 const formData = ref({
   name: '',
   description: '',
-  fields: {},
-  mapping: {}
+  markData: {}
 })
 
 const uploadFiles = ref({
   docx: null,
-  schema: null,
-  mapping: null
+  markData: null
 })
 
 // 获取模板列表
@@ -186,59 +169,24 @@ const handleDocxChange = (file) => {
   uploadFiles.value.docx = file.raw
 }
 
-const handleSchemaChange = async (file) => {
-  uploadFiles.value.schema = file.raw
+// 读取markData文件
+const handleMarkDataChange = async (file) => {
+  uploadFiles.value.markData = file.raw
   
   // 直接读取 JSON 文件内容
   try {
     const text = await file.raw.text()
-    console.log('Schema 文件内容:', text)
-    console.log('Schema 文件内容长度:', text.length)
-    console.log('Schema 文件前100个字符:', text.substring(0, 100))
-    
     const json = JSON.parse(text)
-    console.log('Schema 解析结果:', json)
-    // console.log('Schema 类型:', typeof json, Array.isArray(json) ? '数组' : '对象')
-    
-    formData.value.fields = json
-    console.log('formData.fields 已更新:', formData.value.fields)
-    ElMessage.success('Schema 文件读取成功')
+    formData.value.markData = json
+    ElMessage.success('MarkData 文件读取成功')
   } catch (error) {
-    console.error('Schema JSON 解析错误:', error)
-    console.error('错误位置:', error.message)
-    ElMessage.error(`Schema JSON 格式错误: ${error.message}`)
-    uploadFiles.value.schema = null
-    formData.value.fields = {}
+    ElMessage.error(`JSON 格式错误: ${error.message}`)
+    uploadFiles.value.markData = null
+    formData.value.markData = {}
   }
 }
 
-const handleMappingChange = async (file) => {
-  uploadFiles.value.mapping = file.raw
-  
-  // 直接读取 JSON 文件内容
-  try {
-    const text = await file.raw.text()
-    console.log('Mapping 文件内容:', text)
-    console.log('Mapping 文件内容长度:', text.length)
-    console.log('Mapping 文件前100个字符:', text.substring(0, 100))
-    
-    const json = JSON.parse(text)
-    console.log('Mapping 解析结果:', json)
-    console.log('Mapping 类型:', typeof json, Array.isArray(json) ? '数组' : '对象')
-    
-    formData.value.mapping = json
-    console.log('formData.mapping 已更新:', formData.value.mapping)
-    ElMessage.success('Mapping 文件读取成功')
-  } catch (error) {
-    console.error('Mapping JSON 解析错误:', error)
-    console.error('错误位置:', error.message)
-    ElMessage.error(`Mapping JSON 格式错误: ${error.message}`)
-    uploadFiles.value.mapping = null
-    formData.value.mapping = {}
-  }
-}
-
-// 创建模板（支持文件上传）
+// 创建模板
 const handleCreate = async () => {
   try {
     if (!formData.value.name) {
@@ -246,52 +194,32 @@ const handleCreate = async () => {
       return
     }
 
-    console.log('准备提交的数据:', formData.value)
+    if (!uploadFiles.value.docx) {
+      ElMessage.warning('请上传 Word 模板文件')
+      return
+    }
+
+    if (!uploadFiles.value.markData) {
+      ElMessage.warning('请上传 MarkData 配置文件')
+      return
+    }
 
     // 创建 FormData 对象
     const data = new FormData()
     data.append('name', formData.value.name)
     data.append('description', formData.value.description || '')
+    data.append('docx', uploadFiles.value.docx)
     
-    // 添加 Word 文件
-    if (uploadFiles.value.docx) {
-      data.append('docx', uploadFiles.value.docx)
-      console.log('已添加 Word 文件')
-    }
-    
-    // 将 JSON 数据作为字符串发送，而不是文件
-    if (formData.value.fields && Object.keys(formData.value.fields).length > 0) {
-      const fieldsStr = JSON.stringify(formData.value.fields)
-      data.append('fields', fieldsStr)
-      console.log('已添加 fields:', fieldsStr)
-    } else {
-      console.log('fields 为空，未添加', formData.value.fields)
-    }
-    
-    if (formData.value.mapping && Object.keys(formData.value.mapping).length > 0) {
-      const mappingStr = JSON.stringify(formData.value.mapping)
-      data.append('mapping', mappingStr)
-      console.log('已添加 mapping:', mappingStr)
-    } else {
-      console.log('mapping 为空，未添加', formData.value.mapping)
-    }
-    
-    // 打印 FormData 内容（调试用）
-    console.log('FormData 内容:')
-    for (let pair of data.entries()) {
-      console.log(pair[0] + ':', pair[1])
-    }
-
-    // 使用封装好的 API
+    // 将 markData 对象转为 JSON 字符串
+    const markDataStr = JSON.stringify(formData.value.markData)
+    data.append('markData', markDataStr)
     await createTemplate(data)
-
     ElMessage.success('模板创建成功')
     showUploadDialog.value = false
     resetForm()
     fetchTemplates()
   } catch (error) {
     console.error('创建模板失败:', error)
-    // 错误已在拦截器中处理
   }
 }
 
@@ -304,7 +232,6 @@ const handleDelete = async (id) => {
       cancelButtonText: '取消',
       type: 'warning'
     })
-
     await deleteTemplate(id)
     ElMessage.success('删除成功')
     fetchTemplates()
@@ -318,13 +245,11 @@ const resetForm = () => {
   formData.value = {
     name: '',
     description: '',
-    fields: {},
-    mapping: {}
+    markData: {}
   }
   uploadFiles.value = {
     docx: null,
-    schema: null,
-    mapping: null
+    markData: null
   }
 }
 
@@ -339,16 +264,9 @@ const handleEdit = (template) => {
   formData.value = {
     name: template.name,
     description: template.description,
-    fields: template.fields || {}
+    markData: template.markData || {}
   }
   showUploadDialog.value = true
-}
-
-// 格式化日期
-const formatDate = (dateString) => {
-  if (!dateString) return '-'
-  const date = new Date(dateString)
-  return date.toLocaleString('zh-CN')
 }
 
 // 下载模板
@@ -515,7 +433,7 @@ $border: rgba(255,255,255,0.1);
   
   .upload-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
     margin: 20px 0;
     width: 100%;

@@ -11,6 +11,7 @@
  * @example
  * formatDate(new Date()) // '2025-11-22 15:30:45'
  * formatDate(new Date(), 'YYYY-MM-DD') // '2025-11-22'
+ * formatDate('1980-05-20', 'YYYY年M月D日') // '1980年5月20日'
  * formatDate(1700654400000, 'YYYY年MM月DD日') // '2023年11月22日'
  */
 export function formatDate(date, format = 'YYYY-MM-DD HH:mm:ss') {
@@ -20,19 +21,41 @@ export function formatDate(date, format = 'YYYY-MM-DD HH:mm:ss') {
   if (isNaN(d.getTime())) return ''
 
   const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  const hours = String(d.getHours()).padStart(2, '0')
-  const minutes = String(d.getMinutes()).padStart(2, '0')
-  const seconds = String(d.getSeconds()).padStart(2, '0')
+  const month = d.getMonth() + 1
+  const day = d.getDate()
+  const hours = d.getHours()
+  const minutes = d.getMinutes()
+  const seconds = d.getSeconds()
+
+  // 带前导零的版本
+  const MM = String(month).padStart(2, '0')
+  const DD = String(day).padStart(2, '0')
+  const HH = String(hours).padStart(2, '0')
+  const mm = String(minutes).padStart(2, '0')
+  const ss = String(seconds).padStart(2, '0')
 
   return format
     .replace('YYYY', year)
-    .replace('MM', month)
-    .replace('DD', day)
-    .replace('HH', hours)
-    .replace('mm', minutes)
-    .replace('ss', seconds)
+    .replace('MM', MM)
+    .replace('M', month)  // 不带前导零的月份
+    .replace('DD', DD)
+    .replace('D', day)    // 不带前导零的日期
+    .replace('HH', HH)
+    .replace('mm', mm)
+    .replace('ss', ss)
+}
+
+/**
+ * 格式化为中文日期（去除前导零）
+ * @param {Date|string|number} date - 日期
+ * @returns {string} 中文格式日期
+ * 
+ * @example
+ * formatDateCN('1980-05-20') // '1980年5月20日'
+ * formatDateCN('2023-01-01') // '2023年1月1日'
+ */
+export function formatDateCN(date) {
+  return formatDate(date, 'YYYY年M月D日')
 }
 
 /**

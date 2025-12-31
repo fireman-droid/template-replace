@@ -280,8 +280,7 @@ router.get('/:id', async (req, res) => {
         id: templateData.id,
         name: templateData.name,
         description: templateData.description,
-        fields: templateData.fields,
-        mapping: templateData.mapping,
+        markData: templateData.markData,
         file_path: templateData.file_path
       } : null
     }
