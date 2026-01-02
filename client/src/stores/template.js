@@ -7,9 +7,9 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import { getCaseTemplateFile } from "@/api";
 import JSZip from "jszip";
-import { saveAs } from "file-saver"; // 引入文件保存库
-import { formatDateCN, formatMoney } from "@/utils/format"; // 引入格式化函数
-// import testData from "@/utils/test.json"; // 引入测试数据
+// import { saveAs } from "file-saver"; // 引入文件保存库
+import { formatDateCN } from "@/utils/format";
+
 export const useTemplateStore = defineStore("template", () => {
   // ==================== State ====================
   // 模板文件（Blob 对象）
@@ -130,6 +130,10 @@ export const useTemplateStore = defineStore("template", () => {
   // 逻辑函数 2: 替换字段 (Vue/Browser 版)
   // ==========================================
   function replaceDocFieldsInDocx(doc, fieldValues, markKeyMap) {
+    // console.log('\n🚀 ========== 开始填充 Word 文档 ==========');
+    // console.log('📋 fieldValues:', fieldValues);
+    // console.log('🗺️ markKeyMap size:', markKeyMap.size);
+    
     let fillCount = 0;
 
     // 浏览器原生获取标签
@@ -140,6 +144,8 @@ export const useTemplateStore = defineStore("template", () => {
       doc.getElementsByTagName("wpsCustomData:docfieldEnd")
     );
 
+    // console.log('📍 找到占位符数量:', docfieldStarts.length);
+
     // 构建 End 节点映射
     const endMap = new Map();
     docfieldEnds.forEach((node) => {
@@ -147,10 +153,10 @@ export const useTemplateStore = defineStore("template", () => {
       if (id) endMap.set(id, node);
     });
 
-    docfieldStarts.forEach((startNode) => {
+    docfieldStarts.forEach((startNode, index) => {
       // 1. 解析 markKey
       const docfieldname = startNode.getAttribute("docfieldname");
-      // docfieldname = '{"key":"plaintiff_name"}'
+      // docfieldname = '{"key":"pla intiff_name"}'
       // 用于多个相同字段
       const subindex = Number(startNode.getAttribute("subindex") || "0");
       if (!docfieldname) return;
@@ -169,22 +175,49 @@ export const useTemplateStore = defineStore("template", () => {
       // 3. 确定 UserData 中的 key
       const fieldKey =
         subindex === 0 ? mapping.fieldKey : `${mapping.fieldKey}_${subindex}`;
-      
+
+      // 🔥 只打印 fieldKey "19" 的日志
+      if (fieldKey === "19") {
+        // console.log(`\n🔍 [${index}] ========== fieldKey: "19" ==========`);
+        // console.log(`markKey: ${markKey.substring(0, 8)}...`);
+        // console.log(`optionValue: ${mapping.optionValue || '无'}`);
+        // console.log(`fieldType: ${mapping.fieldType || '无'}`);
+      }
+
       // 4. 检查是否有数据
       if (!(fieldKey in fieldValues)) {
+        if (fieldKey === "19") {
+          // console.log(`❌ [${index}] 无数据，删除占位符`);
+        }
         // 没数据，删除占位符
         const id = startNode.getAttribute("id");
         const endNode = endMap.get(id);
         removeNode(startNode);
         if (endNode) removeNode(endNode);
         return;
-      }   
+      }
 
       let value = fieldValues[fieldKey];
+      if (fieldKey === "19") {
+        // console.log(`📦 [${index}] 原始值:`, value);
+      }
 
-      // 🔥 4.5 根据字段类型格式化值
-      if (mapping.fieldType && value !== true) {
+      // 扁平化嵌套数组
+      if (Array.isArray(value) && value.length > 0 && Array.isArray(value[0])) {
+        value = value.map((item) => item[0]);
+        if (fieldKey === "19") {
+          // console.log(`✅ [${index}] 扁平化后:`, value);
+        }
+      }
+      // 根据字段类型格式化值（跳过数组）
+      if (mapping.fieldType && value !== true && !Array.isArray(value)) {
+        if (fieldKey === "19") {
+          // console.log(`🎨 [${index}] 格式化前:`, value);
+        }
         value = formatValue(value, mapping.fieldType);
+        if (fieldKey === "19") {
+          // console.log(`🎨 [${index}] 格式化后:`, value);
+        }
       }
 
       // 5. 处理选项 (Checkbox)
@@ -192,8 +225,23 @@ export const useTemplateStore = defineStore("template", () => {
         const shouldCheck =
           value === mapping.optionValue ||
           (Array.isArray(value) && value.includes(mapping.optionValue));
+        
+        if (fieldKey === "19") {
+          // console.log(`☑️ [${index}] 选项检查:`, {
+          //   optionValue: mapping.optionValue,
+          //   value: value,
+          //   shouldCheck: shouldCheck,
+          //   replaceMode: mapping.optionReplaceMode
+          // });
+        }
+
         if (mapping.optionReplaceMode === "check") {
-          if (shouldCheck) value = true;
+          if (shouldCheck) {
+            if (fieldKey === "19") {
+              // console.log(`✅ [${index}] 打勾:`, mapping.optionValue);
+            }
+            value = true;
+          }
           else {
             // 不选中的删掉
             const id = startNode.getAttribute("id");
@@ -207,15 +255,22 @@ export const useTemplateStore = defineStore("template", () => {
 
       // 6. 查找容器 (AlternateContent)
       const altContent = findParentByNodeName(startNode, "mc:AlternateContent");
-      if (!altContent) return;
+      if (!altContent) {
+        // console.log(`⚠️ [${index}] 未找到 AlternateContent 容器`);
+        return;
+      }
 
       // 7. 创建新节点
       const fillNode = createFillNode(doc, value);
+      if (fieldKey === "19") {
+        // console.log(`🎨 [${index}] 创建填充节点:`, value === true ? '✓' : value);
+      }
 
       // 8. 插入 DOM
       if (altContent.parentNode) {
         if (altContent.parentNode.nodeName === "w:tc") {
           // 表格内
+          // console.log(`📊 [${index}] 插入到表格单元格`);
           if (altContent.previousSibling) {
             altContent.previousSibling.appendChild(fillNode);
           } else {
@@ -224,9 +279,11 @@ export const useTemplateStore = defineStore("template", () => {
           }
         } else {
           // 普通段落，插入到 AlternateContent 前面
+          // console.log(`📝 [${index}] 插入到段落`);
           altContent.parentNode.insertBefore(fillNode, altContent);
         }
         fillCount++;
+        // console.log(`✅ [${index}] 填充成功！总计: ${fillCount}`);
       }
 
       // 9. 清理旧节点
@@ -239,9 +296,11 @@ export const useTemplateStore = defineStore("template", () => {
 
       if (altContent && endAltContent) {
         removeContentBetween(altContent, endAltContent);
+        // console.log(`🧹 [${index}] 清理旧节点完成`);
       }
     });
 
+    // console.log(`\n🎉 填充完成！总共填充了 ${fillCount} 个字段`);
     return fillCount;
   }
   // ==========================================
@@ -283,7 +342,7 @@ export const useTemplateStore = defineStore("template", () => {
     }
     return null;
   }
-  
+
   // 删除不需要的节点
   function removeNode(node) {
     if (node && node.parentNode) node.parentNode.removeChild(node);
@@ -310,11 +369,32 @@ export const useTemplateStore = defineStore("template", () => {
     link.click();
     URL.revokeObjectURL(link.href);
   }
-  
+
+  /**
+   * 根据字段类型格式化值
+   * @param {any} value - 原始值
+   * @param {string} fieldType - 字段类型（date, money, text 等）
+   * @returns {string} 格式化后的值
+   */
+  function formatValue(value, fieldType) {
+    if (value === null || value === undefined || value === "") return "";
+
+    switch (fieldType) {
+      case "date":
+        // 日期格式：1980-05-20 → 1980年5月20日
+        return formatDateCN(value);
+
+      default:
+        // 默认直接返回字符串
+        return String(value);
+    }
+  }
+
   // 进行map构建
   const buildMarkKeyToFieldKeyMap = (mData) => {
     const map = new Map();
     if (!mData || !mData.data) return map;
+    
     function traverse(node) {
       if (!node) return;
       if (Array.isArray(node)) {
@@ -324,14 +404,13 @@ export const useTemplateStore = defineStore("template", () => {
       if (typeof node === "object") {
         // 处理 field
         if (node.type === "field" && node.data) {
-          const { fieldKey, marks, fieldType } = node.data;
+          const { fieldKey, marks, type } = node.data;
           if (marks && Array.isArray(marks) && fieldKey) {
             marks.forEach((mark) => {
               if (mark.markKey) {
                 const info = { fieldKey };
-                // 保存字段类型信息（用于格式化）
-                if (fieldType) {
-                  info.fieldType = fieldType;
+                if (type) {
+                  info.fieldType = type;
                 }
                 if (mark.markProps?.optionValue) {
                   info.optionValue = mark.markProps.optionValue;
@@ -349,9 +428,8 @@ export const useTemplateStore = defineStore("template", () => {
               field.marks.forEach((mark) => {
                 if (mark.markKey) {
                   const info = { fieldKey: field.fieldKey };
-                  // 保存字段类型信息
-                  if (field.fieldType) {
-                    info.fieldType = field.fieldType;
+                  if (field.type) {
+                    info.fieldType = field.type;
                   }
                   if (mark.markProps?.optionValue) {
                     info.optionValue = mark.markProps.optionValue;
@@ -367,33 +445,8 @@ export const useTemplateStore = defineStore("template", () => {
       }
     }
     traverse(mData);
-    // console.log(map);
     return map;
   };
-
-  /**
-   * 根据字段类型格式化值
-   * @param {any} value - 原始值
-   * @param {string} fieldType - 字段类型（date, money, text 等）
-   * @returns {string} 格式化后的值
-   */
-  function formatValue(value, fieldType) {
-    if (value === null || value === undefined || value === '') return '';
-    
-    switch (fieldType) {
-      case 'date':
-        // 日期格式：1980-05-20 → 1980年5月20日
-        return formatDateCN(value);
-      
-      case 'money':
-        // 金额格式：1234567 → ¥1,234,567.00
-        return formatMoney(value);
-      
-      default:
-        // 默认直接返回字符串
-        return String(value);
-    }
-  }
 
   /**
    * 下载填充后的文档

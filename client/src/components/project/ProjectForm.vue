@@ -9,11 +9,10 @@
       </div>
     </div>
     
-    <div class="renderer-container" v-if="editorStore.isLoaded">
-      <FormRenderer 
-        :schema="editorStore.templateConfig" 
-        :mapping="editorStore.templateMapping"
-        v-model="editorStore.formData" 
+    <div class="renderer-container" v-if="markData">
+      <DynamicForm 
+        :mark-data="markData"
+        v-model="editorStore.formData"
       />
     </div>
     
@@ -84,15 +83,21 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 // 引入 Store
-import { useEditorStore } from '@/stores'
-// 引入渲染引擎
-import FormRenderer from '@/components/form-engine/FormRenderer.vue'
-import { MagicStick, UploadFilled, Cpu, Connection, Opportunity, Rank, Loading } from '@element-plus/icons-vue'
+import { useEditorStore, useTemplateStore } from '@/stores'
+// 引入动态表单
+import DynamicForm from '@/components/DynamicForm.vue'
+import { MagicStick, UploadFilled, Cpu, Loading } from '@element-plus/icons-vue'
 
 const editorStore = useEditorStore()
+const templateStore = useTemplateStore()
+
+// 获取 markData
+const markData = computed(() => {
+  return templateStore.templateInfo?.markData || null
+})
 
 // 接收父组件传来的模版类型
 const props = defineProps({

@@ -273,12 +273,12 @@ $text-gray: #94a3b8;
   overflow: hidden;
 
   .left-pane {
-    flex: 4; 
+    flex: 5.5; 
     overflow: hidden;
   }
 
   .right-pane {
-    flex: 6;
+    flex: 4.5;
     overflow: hidden;
   }
 }
