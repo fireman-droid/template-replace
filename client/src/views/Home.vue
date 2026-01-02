@@ -30,7 +30,9 @@
           </div>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item divided @click="handleLogout">退出</el-dropdown-item>
+                            <el-dropdown-item divided @click="handleLogout">
+                <el-icon><SwitchButton /></el-icon> 退出
+              </el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -41,7 +43,7 @@
       <section class="hero-box">
         <div class="hero-text-group">
           <div class="glitch-badge">LEGAL INTELLIGENCE</div>
-          <h1 class="hero-title">法律文书，<br /><span class="typing-effect">AI 毫秒级生成</span></h1>
+          <h1 class="hero-title">法律文书，<br /><span class="typing-effect">模板一键填充</span></h1>
           <p class="hero-desc">智能解析案情要素，一键生成严谨法律文件。<br />支持离婚纠纷、房屋买卖、借贷纠纷等多种场景。</p>
           <div class="cta-group">
             <button class="btn-cyber primary" @click="router.push('/template/select')">
@@ -129,7 +131,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   ScaleToOriginal, CaretBottom, Plus, Search, FolderOpened, 
   User, Timer, Right, House, ChatDotSquare, Money, Delete,
-  DataBoard, Document
+  DataBoard, Document, SwitchButton
 } from '@element-plus/icons-vue'
 import { getCaseList, deleteCase } from '@/api'
 

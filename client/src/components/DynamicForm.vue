@@ -120,6 +120,14 @@ const emit = defineEmits(['update:modelValue'])
 // 表单数据
 const formData = ref({ ...props.modelValue })
 
+// 监听外部数据变化，同步到内部
+watch(() => props.modelValue, (newVal) => {
+  // 合并新值到 formData，保留已有数据
+  Object.keys(newVal).forEach(key => {
+    formData.value[key] = newVal[key]
+  })
+}, { deep: true })
+
 // 单选切换（点击已选中的可取消）
 const toggleRadio = (fieldKey, value) => {
   if (formData.value[fieldKey] === value) {
