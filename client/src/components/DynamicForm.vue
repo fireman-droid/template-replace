@@ -17,15 +17,19 @@
           :key="subIndex"
           class="sub-category"
         >
-          <div class="sub-category-title">{{ subCat.title }}</div>
+          <!-- 左边：标题 -->
+          <div class="sub-category-left">
+            <div class="sub-category-title">{{ subCat.title }}</div>
+          </div>
           
-          <!-- 字段列表 -->
-          <el-form :model="formData" label-width="200px" class="field-form">
-            <el-form-item 
-              v-for="field in subCat.fields" 
-              :key="field.fieldKey"
-              :label="field.fieldLabel"
-            >
+          <!-- 右边：字段列表 -->
+          <div class="sub-category-right">
+            <el-form :model="formData" label-position="top" class="field-form">
+              <el-form-item 
+                v-for="field in subCat.fields" 
+                :key="field.fieldKey"
+                :label="field.fieldLabel"
+              >
               <!-- 文本输入 -->
               <el-input
                 v-if="field.type === 'text'"
@@ -65,19 +69,22 @@
                 </el-checkbox>
               </el-checkbox-group>
               
-              <!-- 选项：单选 -->
-              <el-radio-group
+              <!-- 选项：单选（可取消） -->
+              <div
                 v-else-if="field.type === 'options'"
-                v-model="formData[field.fieldKey]"
+                class="radio-group"
               >
-                <el-radio
+                <span
                   v-for="opt in field.options"
                   :key="opt.label"
-                  :label="opt.label"
+                  class="radio-item"
+                  :class="{ active: formData[field.fieldKey] === opt.label }"
+                  @click="toggleRadio(field.fieldKey, opt.label)"
                 >
+                  <span class="radio-circle"></span>
                   {{ opt.label }}
-                </el-radio>
-              </el-radio-group>
+                </span>
+              </div>
               
               <!-- 默认文本 -->
               <el-input
@@ -86,7 +93,8 @@
                 :placeholder="`请输入${field.fieldLabel}`"
               />
             </el-form-item>
-          </el-form>
+            </el-form>
+          </div>
         </div>
       </el-collapse-item>
     </el-collapse>
@@ -111,6 +119,15 @@ const emit = defineEmits(['update:modelValue'])
 
 // 表单数据
 const formData = ref({ ...props.modelValue })
+
+// 单选切换（点击已选中的可取消）
+const toggleRadio = (fieldKey, value) => {
+  if (formData.value[fieldKey] === value) {
+    formData.value[fieldKey] = '' // 取消选中
+  } else {
+    formData.value[fieldKey] = value // 选中
+  }
+}
 
 // 展开的大分类（默认展开第一个）
 const activeCategories = ref([0])
@@ -249,18 +266,34 @@ $text-gray: #94a3b8;
   
   // 子分类
   .sub-category {
+    display: flex;
     margin-bottom: 20px;
-    padding-left: 10px;
-    border-left: 2px solid rgba($accent, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    overflow: hidden;
+    
+    .sub-category-left {
+      flex: 4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(6, 182, 212, 0.08);
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 20px 15px;
+    }
     
     .sub-category-title {
       font-size: 14px;
       font-weight: 600;
-      color: $text-white;
-      margin-bottom: 15px;
-      padding: 8px 12px;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 4px;
+      color: $accent;
+      text-align: center;
+      line-height: 1.5;
+    }
+    
+    .sub-category-right {
+      flex: 6;
+      padding: 20px;
+      min-width: 0;
     }
   }
   
@@ -268,11 +301,88 @@ $text-gray: #94a3b8;
   .field-form {
     padding: 0 10px;
   }
+  
+  // 自定义单选按钮
+  .radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    
+    .radio-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      color: #e2e8f0;
+      font-size: 14px;
+      padding: 4px 0;
+      
+      .radio-circle {
+        width: 14px;
+        height: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 50%;
+        position: relative;
+        transition: all 0.2s;
+        
+        &::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) scale(0);
+          width: 8px;
+          height: 8px;
+          background: #3b82f6;
+          border-radius: 50%;
+          transition: transform 0.2s;
+        }
+      }
+      
+      &:hover .radio-circle {
+        border-color: #3b82f6;
+      }
+      
+      &.active {
+        color: #3b82f6;
+        
+        .radio-circle {
+          border-color: #3b82f6;
+          
+          &::after {
+            transform: translate(-50%, -50%) scale(1);
+          }
+        }
+      }
+    }
+  }
 }
 </style>
 
 
 <style lang="scss">
+// 滚动条样式
+.dynamic-form {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #3b82f6, #06b6d4);
+    border-radius: 4px;
+    
+    &:hover {
+      background: linear-gradient(180deg, #60a5fa, #22d3ee);
+    }
+  }
+}
+
 // Element Plus Collapse 样式覆盖（全局）
 .dynamic-form {
   .el-collapse {
@@ -319,6 +429,9 @@ $text-gray: #94a3b8;
     color: #ffffff !important;
     font-weight: 500;
     font-size: 13px;
+    line-height: 1.5;
+    white-space: normal;
+    word-break: break-word;
   }
   
   .el-input__wrapper {

@@ -33,6 +33,9 @@
       </div>
 
       <div class="right">
+        <button class="btn-ghost" @click="showPreview = true">
+          <el-icon><View /></el-icon> 预览
+        </button>
         <button class="btn-ghost" @click="editorStore.saveEditor()">保存草稿</button>
         <button class="btn-primary" @click="handleGenerate">
           生成文书 <el-icon><Cpu /></el-icon>
@@ -41,28 +44,34 @@
     </header>
 
     <div class="workspace">
-      <div class="left-pane">
+      <div class="main-pane">
         <ProjectForm />
       </div>
-
-      <div class="right-pane">
-        <ProjectPreview 
-          v-if="editorStore.currentCase"
-          :caseId="editorStore.currentCase.id"
-        />
-      </div>
     </div>
+
+    <!-- 预览抽屉 -->
+    <el-drawer
+      v-model="showPreview"
+      title="模版预览"
+      direction="rtl"
+      size="50%"
+      :with-header="true"
+      class="preview-drawer"
+    >
+      <ProjectPreview 
+        v-if="editorStore.currentCase"
+        :visible="showPreview"
+      />
+    </el-drawer>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { HomeFilled, Cpu, Edit } from '@element-plus/icons-vue'
+import { HomeFilled, Cpu, Edit, View } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { getCaseDetail } from '@/api/cases'
-// 引入测试数据
-import userData from '@/utils/userData.json'
 
 // 引入 Store
 import { useEditorStore, useTemplateStore } from '@/stores'
@@ -82,6 +91,7 @@ const templateStore = useTemplateStore()
 const isNew = ref(false)
 const isEditingName = ref(false)
 const nameInputRef = ref(null)
+const showPreview = ref(false)
 
 // === 1. 初始化逻辑 ===
 onMounted(async () => {
@@ -162,12 +172,11 @@ const saveTitle = () => {
 
 // 生成/下载文书
 const handleGenerate = async () => {
-  const res = await getCaseDetail(route.query.id)
-  const markData = res.template.markData
-  // 采用测试数据
-  const data = userData
-  // // 调用 Template Store 生成并下载
-  templateStore.download(data)
+  // 使用表单真实数据
+  const data = editorStore.formData
+  // 使用案卷标题作为文件名
+  const filename = `${editorStore.currentCase?.title || '文书'}.docx`
+  templateStore.download(data, filename)
 }
 </script>
 
@@ -272,14 +281,27 @@ $text-gray: #94a3b8;
   display: flex;
   overflow: hidden;
 
-  .left-pane {
-    flex: 5.5; 
+  .main-pane {
+    flex: 1;
     overflow: hidden;
   }
+}
+</style>
 
-  .right-pane {
-    flex: 4.5;
-    overflow: hidden;
+<style lang="scss">
+// 抽屉样式
+.preview-drawer {
+  .el-drawer__header {
+    background: #0f172a;
+    color: #fff;
+    margin-bottom: 0;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .el-drawer__body {
+    background: #050b14;
+    padding: 0;
   }
 }
 </style>

@@ -159,12 +159,24 @@ router.post('/templates', authenticate, requireAdmin, upload.single('docx'), asy
  * 更新模板
  * PUT /api/admin/templates/:id
  */
-router.put('/templates/:id', authenticate, requireAdmin, async (req, res) => {
+router.put('/templates/:id', authenticate, requireAdmin, upload.single('docx'), async (req, res) => {
   try {
     const { id } = req.params
     const { name, description, markData } = req.body
 
-    await Template.update(id, { name, description, markData })
+    const updateData = { name, description }
+    
+    // 如果有新的 markData
+    if (markData) {
+      updateData.markData = typeof markData === 'string' ? JSON.parse(markData) : markData
+    }
+    
+    // 如果上传了新文件
+    if (req.file) {
+      updateData.file_path = req.file.filename
+    }
+
+    await Template.update(id, updateData)
     res.json({ message: '模板更新成功' })
   } catch (error) {
     console.error('更新模板错误:', error)

@@ -2,7 +2,7 @@
   <div class="panel-box">
     <div class="panel-header">
       <h3>模版核心库</h3>
-      <button class="btn-cyber primary" @click="showUploadDialog = true">
+      <button class="btn-cyber primary" @click="openCreateDialog">
         <el-icon><Upload /></el-icon> 部署新模版
       </button>
     </div>
@@ -50,12 +50,13 @@
 
     <el-dialog
       v-model="showUploadDialog"
-      title="部署新法律模版"
+      :title="isEditMode ? '编辑模版' : '部署新法律模版'"
       width="800px"
       class="admin-dialog"
       :modal="true"
       :append-to-body="true"
       align-center
+      @close="handleDialogClose"
     >
       <div class="deploy-content">
         <el-form label-position="top" class="cyber-form">
@@ -110,7 +111,9 @@
       <template #footer>
         <div class="dialog-footer">
           <button class="btn-cyber secondary" @click="showUploadDialog = false">取消</button>
-          <button class="btn-cyber primary" @click="handleCreate">立即部署</button>
+          <button class="btn-cyber primary" @click="handleCreate">
+            {{ isEditMode ? '保存修改' : '立即部署' }}
+          </button>
         </div>
       </template>
     </el-dialog>
@@ -121,7 +124,7 @@
 import { ref, onMounted,computed } from 'vue'
 import { Upload, DocumentChecked, Edit, Delete, Document, Connection, Link, InfoFilled, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getTemplateList, createTemplate, deleteTemplate } from '@/api'
+import { getTemplateList, createTemplate, deleteTemplate, updateTemplate } from '@/api'
 import TemplatePreview from '@/components/TemplatePreview.vue'
 import { countSpace } from '@/utils'
 
@@ -130,6 +133,8 @@ const showPreviewDialog = ref(false)
 const currentTemplate = ref(null)
 const templateList = ref([])
 const loading = ref(false)
+const isEditMode = ref(false) // 是否编辑模式
+const editingTemplateId = ref(null) // 正在编辑的模板ID
 const pagination = ref({
   page: 1,
   pageSize: 10,
@@ -186,7 +191,7 @@ const handleMarkDataChange = async (file) => {
   }
 }
 
-// 创建模板
+// 创建或更新模板
 const handleCreate = async () => {
   try {
     if (!formData.value.name) {
@@ -194,32 +199,47 @@ const handleCreate = async () => {
       return
     }
 
-    if (!uploadFiles.value.docx) {
-      ElMessage.warning('请上传 Word 模板文件')
-      return
-    }
-
-    if (!uploadFiles.value.markData) {
-      ElMessage.warning('请上传 MarkData 配置文件')
-      return
+    // 新建时必须上传文件，编辑时可选
+    if (!isEditMode.value) {
+      if (!uploadFiles.value.docx) {
+        ElMessage.warning('请上传 Word 模板文件')
+        return
+      }
+      if (!uploadFiles.value.markData) {
+        ElMessage.warning('请上传 MarkData 配置文件')
+        return
+      }
     }
 
     // 创建 FormData 对象
     const data = new FormData()
     data.append('name', formData.value.name)
     data.append('description', formData.value.description || '')
-    data.append('docx', uploadFiles.value.docx)
+    
+    // 只有上传了新文件才添加
+    if (uploadFiles.value.docx?.size) {
+      data.append('docx', uploadFiles.value.docx)
+    }
     
     // 将 markData 对象转为 JSON 字符串
     const markDataStr = JSON.stringify(formData.value.markData)
     data.append('markData', markDataStr)
-    await createTemplate(data)
-    ElMessage.success('模板创建成功')
+
+    if (isEditMode.value) {
+      // 编辑模式：调用更新接口
+      await updateTemplate(editingTemplateId.value, data)
+      ElMessage.success('模板更新成功')
+    } else {
+      // 新建模式：调用创建接口
+      await createTemplate(data)
+      ElMessage.success('模板创建成功')
+    }
+    
     showUploadDialog.value = false
     resetForm()
     fetchTemplates()
   } catch (error) {
-    console.error('创建模板失败:', error)
+    console.error('操作失败:', error)
   }
 }
 
@@ -251,6 +271,19 @@ const resetForm = () => {
     docx: null,
     markData: null
   }
+  isEditMode.value = false
+  editingTemplateId.value = null
+}
+
+// 打开新建弹窗
+const openCreateDialog = () => {
+  resetForm()
+  showUploadDialog.value = true
+}
+
+// 关闭弹窗时重置
+const handleDialogClose = () => {
+  resetForm()
 }
 
 // 预览模板
@@ -261,10 +294,17 @@ const handlePreview = (template) => {
 
 // 编辑模板
 const handleEdit = (template) => {
+  isEditMode.value = true
+  editingTemplateId.value = template.id
   formData.value = {
     name: template.name,
     description: template.description,
     markData: template.markData || {}
+  }
+  // 显示已有文件信息
+  uploadFiles.value = {
+    docx: template.file_path ? { name: template.file_path } : null,
+    markData: template.markData ? { name: 'markData.json' } : null
   }
   showUploadDialog.value = true
 }
@@ -290,15 +330,8 @@ const handleDownload = async (id) => {
       throw new Error('下载失败')
     }
 
-    // 获取文件名
-    const contentDisposition = response.headers.get('Content-Disposition')
-    let filename = 'template.docx'
-    if (contentDisposition) {
-      const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(contentDisposition)
-      if (matches != null && matches[1]) {
-        filename = matches[1].replace(/['"]/g, '')
-      }
-    }
+    // 使用模板名称作为文件名
+    const filename = `${currentTemplate.value?.name || 'template'}.docx`
 
     // 创建 Blob 并下载
     const blob = await response.blob()
@@ -365,7 +398,7 @@ $border: rgba(255,255,255,0.1);
     &:hover { border-color: $primary; background: rgba(59, 130, 246, 0.05); }
     
     .tpl-icon { width: 48px; height: 48px; background: rgba($primary, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: $primary; font-size: 24px; }
-    .tpl-info { flex: 1; h4 { margin: 0 0 6px; color: $text-main; } p { margin: 0 0 4px; font-size: 12px; color: $text-sub; } .desc { color: #64748b; font-size: 11px; } }
+    .tpl-info { flex: 1; min-width: 0; h4 { margin: 0 0 6px; color: $text-main; } p { margin: 0 0 4px; font-size: 12px; color: $text-sub; } .desc { color: #64748b; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; } }
     .tpl-actions { display: flex; gap: 8px; .icon-btn { background: rgba(255,255,255,0.05); border: none; width: 32px; height: 32px; border-radius: 4px; color: $text-sub; cursor: pointer; &:hover { background: white; color: black; } &.danger:hover { background: #ef4444; color: white; } } }
   }
 }

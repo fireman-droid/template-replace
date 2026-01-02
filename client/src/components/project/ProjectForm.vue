@@ -143,6 +143,26 @@ $text-gray: #94a3b8;
   display: flex;
   flex-direction: column;
 
+  // 滚动条样式
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #3b82f6, #06b6d4);
+    border-radius: 4px;
+    
+    &:hover {
+      background: linear-gradient(180deg, #60a5fa, #22d3ee);
+    }
+  }
+
   .panel-header {
     display: flex;
     justify-content: space-between;

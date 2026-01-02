@@ -4,7 +4,6 @@
       <div class="header-left">
         <h2 class="template-name">{{ template.name }}</h2>
         <div class="meta-row">
-          <span class="category-badge">{{ formatCategory(template.category) }}</span>
           <span class="time-text">创建于 {{ formatDate(template.created_at) }}</span>
         </div>
       </div>

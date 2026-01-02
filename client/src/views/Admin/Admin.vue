@@ -36,7 +36,7 @@
           <span class="path">管理控制台</span> / <span class="current">{{ currentTitle }}</span>
         </div>
         <div class="admin-info">
-          <el-tag type="danger" effect="dark" size="small">ROOT 权限</el-tag>
+          <!-- <el-tag type="danger" effect="dark" size="small">ROOT 权限</el-tag> -->
           <el-avatar :size="32" class="avatar-root">A</el-avatar>
         </div>
       </header>
