@@ -106,7 +106,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, markRaw } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -130,12 +130,12 @@ const statusMap = {
   archived: { label: '已归档', type: 'warning' }
 }
 
-// 图标映射（直接使用组件）
+// 图标映射（使用 markRaw 避免响应式警告）
 const iconMap = {
-  divorce: ChatDotSquare,
-  sales: Money,
-  house: House,
-  default: ChatDotSquare
+  divorce: markRaw(ChatDotSquare),
+  sales: markRaw(Money),
+  house: markRaw(House),
+  default: markRaw(ChatDotSquare)
 }
 
 // 获取案卷列表
@@ -258,17 +258,30 @@ $danger: #ef4444;
 // 管理员入口按钮特别样式
 .admin-entry-btn {
   background: linear-gradient(90deg, rgba($danger, 0.8), rgba($primary, 0.8)); 
-  clip-path: none; // 取消切割角，使其更像功能按钮
+  background-size: 200% 100%;
+  clip-path: none;
   border-radius: 20px;
   padding: 8px 16px;
   font-size: 13px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 0 10px rgba($danger, 0.3);
+  transition: all 0.4s ease;
+  animation: gradientShift 3s ease infinite;
   
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 15px rgba($danger, 0.5);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba($danger, 0.5), 0 0 30px rgba($primary, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
   }
+  
+  &:active {
+    transform: translateY(0) scale(0.98);
+  }
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 // --- My Projects 列表样式 ---

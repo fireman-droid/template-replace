@@ -33,20 +33,12 @@
           <div class="card-corner bottom-right"></div>
 
           <div class="icon-wrapper">
-            <el-icon><component :is="tpl.icon" /></el-icon>
+            <span class="first-char">{{ tpl.name?.charAt(0) || '模' }}</span>
           </div>
           
           <div class="card-body">
             <h3>{{ tpl.name }}</h3>
             <p class="desc">{{ tpl.desc }}</p>
-            
-            <div class="divider"></div>
-            
-            <ul class="features">
-              <li v-for="f in tpl.features" :key="f">
-                <el-icon><Check /></el-icon> {{ f }}
-              </li>
-            </ul>
           </div>
 
           <div class="btn-select">
@@ -275,6 +267,19 @@ $card-bg: rgba(30, 41, 59, 0.4);
   .icon-wrapper {
     width: 50px;
     height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba($primary, 0.15);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+    
+    .first-char {
+      font-size: 24px;
+      font-weight: 700;
+      color: $primary;
+    }
     background: rgba($primary, 0.1);
     border-radius: 10px;
     display: flex;
@@ -291,7 +296,7 @@ $card-bg: rgba(30, 41, 59, 0.4);
   .card-body {
     flex: 1;
     h3 { margin: 0 0 8px; font-size: 18px; color: $text-main; }
-    .desc { color: $text-sub; font-size: 13px; line-height: 1.5; margin: 0 0 16px; height: 40px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .desc { color: $text-sub; font-size: 13px; line-height: 1.5; margin: 0 0 16px; height: 120px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; }
     
     .divider { height: 1px; background: rgba(255,255,255,0.05); margin-bottom: 16px; }
     
