@@ -10,7 +10,7 @@
     </div>
 
     <div class="renderer-container" v-if="markData">
-      <DynamicForm :mark-data="markData" v-model="editorStore.formData" />
+      <DynamicForm ref="dynamicFormRef" :mark-data="markData" v-model="editorStore.formData" />
     </div>
 
     <div v-else class="loading-state">
@@ -108,6 +108,9 @@ import { parseWithAI } from '@/api/ai.js'
 
 const editorStore = useEditorStore()
 const templateStore = useTemplateStore()
+
+// DynamicForm 组件引用
+const dynamicFormRef = ref(null)
 
 const markData = computed(() => {
   return templateStore.templateInfo?.markData || null
@@ -215,23 +218,62 @@ async function handleAIParse() {
       const fieldMap = {}
       fields.forEach(f => { fieldMap[f.fieldKey] = f })
       
-      // 直接填充所有数据
-      Object.entries(res.data).forEach(([fieldKey, value]) => {
-        console.log(`填充字段 ${fieldKey}:`, value)
-        if (value) {
-          const field = fieldMap[fieldKey]
-          // 如果是多选字段且值是字符串，转换为数组
-          if (field?.isMultiple && typeof value === 'string') {
-            editorStore.formData[fieldKey] = [value]
-          } else {
-            editorStore.formData[fieldKey] = value
-          }
-        }
-      })
-      console.log('填充后 editorStore.formData:', editorStore.formData)
+      // 关闭弹窗，开始填充
       showAiDialog.value = false
       aiText.value = ''
       fileList.value = []
+      
+      // 逐字段、逐字填充动画
+      const entries = Object.entries(res.data).filter(([_, value]) => value)
+      for (const [fieldKey, value] of entries) {
+        const field = fieldMap[fieldKey]
+        
+        // 先展开字段所在的折叠面板
+        if (dynamicFormRef.value) {
+          dynamicFormRef.value.expandCategoryByFieldKey(fieldKey)
+          await new Promise(resolve => setTimeout(resolve, 100)) // 等待展开动画
+        }
+        
+        // 滚动到当前字段位置
+        await new Promise(resolve => setTimeout(resolve, 50))
+        const fieldEl = document.querySelector(`[data-field-key="${fieldKey}"]`)
+        if (fieldEl) {
+          fieldEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          await new Promise(resolve => setTimeout(resolve, 200)) // 等待滚动完成
+        }
+        
+        // 处理日期字段格式转换
+        let finalValue = value
+        if (field?.type === 'date' && typeof value === 'string') {
+          // 尝试转换中文日期格式为 YYYY-MM-DD
+          const match = value.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/)
+          if (match) {
+            const [, year, month, day] = match
+            finalValue = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+          }
+        }
+        
+        // 如果是多选字段，直接填充数组
+        if (field?.isMultiple && typeof finalValue === 'string') {
+          editorStore.formData[fieldKey] = [finalValue]
+        } else if (field?.type === 'date') {
+          // 日期字段直接填充，不需要逐字动画
+          editorStore.formData[fieldKey] = finalValue
+        } else if (typeof finalValue === 'string' && finalValue.length > 0) {
+          // 文本字段：逐字填充，根据长度调整速度
+          editorStore.formData[fieldKey] = ''
+          const delay = finalValue.length > 20 ? 7 : 30 // 长文本加速到四分之一
+          for (let i = 0; i < finalValue.length; i++) {
+            editorStore.formData[fieldKey] += finalValue[i]
+            await new Promise(resolve => setTimeout(resolve, delay))
+          }
+        } else {
+          editorStore.formData[fieldKey] = finalValue
+        }
+        // 字段之间间隔 50ms
+        await new Promise(resolve => setTimeout(resolve, 50))
+      }
+      
       ElMessage.success('AI 填充完成')
     } else {
       ElMessage.error(res.message || 'AI 解析失败')
@@ -536,7 +578,7 @@ $text-gray: #94a3b8;
     background: $primary;
     color: white;
     &:hover {
-      background: lighten($primary, 5%);
+      background: color-mix(in srgb, $primary 90%, white 10%);
       box-shadow: 0 0 15px rgba($primary, 0.3);
     }
   }

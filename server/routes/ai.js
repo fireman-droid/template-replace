@@ -28,16 +28,19 @@ const AI_CONFIG = {
     url: "https://api.moonshot.cn/v1/chat/completions",
     model: "moonshot-v1-8k",
     getKey: () => process.env.KIMI_API_KEY,
+    maxTokens: 8192,
   },
   qwen: {
     url: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
     model: "qwen-turbo",
     getKey: () => process.env.QWEN_API_KEY,
+    maxTokens: 8192,
   },
   deepseek: {
     url: "https://api.deepseek.com/v1/chat/completions",
     model: "deepseek-chat",
     getKey: () => process.env.DEEPSEEK_API_KEY,
+    maxTokens: 8192,  // DeepSeek 给更多 token
   },
 };
 
@@ -131,7 +134,7 @@ async function callAIWithTools(config, content, fieldList) {
       tools: [fillTableTool],
       tool_choice: { type: "function", function: { name: "fillTable" } }, // 强制调用 fillTable
       temperature: 0.3,
-      max_tokens: 8192,
+      max_tokens: config.maxTokens || 8192,
     }),
   });
 

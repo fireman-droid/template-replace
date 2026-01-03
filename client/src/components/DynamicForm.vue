@@ -29,6 +29,7 @@
                 v-for="field in subCat.fields" 
                 :key="field.fieldKey"
                 :label="field.fieldLabel"
+                :data-field-key="field.fieldKey"
               >
               <!-- 文本输入 -->
               <el-input
@@ -247,6 +248,29 @@ const categories = computed(() => {
   }
   
   return result
+})
+
+// 根据 fieldKey 找到所在的分类索引并展开
+function expandCategoryByFieldKey(fieldKey) {
+  for (let catIndex = 0; catIndex < categories.value.length; catIndex++) {
+    const category = categories.value[catIndex]
+    for (const subCat of category.subCategories) {
+      const found = subCat.fields.some(f => f.fieldKey === fieldKey)
+      if (found) {
+        // 展开该分类
+        if (!activeCategories.value.includes(catIndex)) {
+          activeCategories.value.push(catIndex)
+        }
+        return true
+      }
+    }
+  }
+  return false
+}
+
+// 暴露方法给父组件
+defineExpose({
+  expandCategoryByFieldKey
 })
 
 // 监听表单数据变化
