@@ -260,4 +260,87 @@ router.post("/parse", upload.single("file"), async (req, res) => {
   }
 });
 
+// ========== 流式解析接口 ==========
+/**
+ * SSE 流式 AI 解析接口
+ * POST /api/ai/parse-stream
+ */
+router.post("/parse-stream", upload.single("file"), async (req, res) => {
+  let tempFilePath = null;
+  // 1. 设置 SSE 响应头
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no"); // 禁用 Nginx 缓冲
+  // 辅助函数：发送 SSE 事件
+  const sendEvent = (type, data) => {
+    res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
+  };
+  try {
+    const { text, fields, model = "kimi" } = req.body;
+    const file = req.file;
+    // 2. 发送初始状态
+    sendEvent("progress", { message: "正在解析请求参数..." });
+    // 解析 fields
+    let fieldList = [];
+    try {
+      fieldList = JSON.parse(fields);
+    } catch (e) {
+      sendEvent("error", { message: "fields 格式错误" });
+      return res.end();
+    }
+    if (!text && !file) {
+      sendEvent("error", { message: "请提供文本或上传文件" });
+      return res.end();
+    }
+    // 3. 获取文本内容
+    sendEvent("progress", { message: "正在处理输入内容..." });
+
+    let content = text || "";
+    if (file) {
+      tempFilePath = file.path;
+      sendEvent("progress", { message: `正在解析文件: ${file.originalname}` });
+      const fileContent = await parseFileContent(file.path, file.originalname);
+      content = content ? `${content}\n\n${fileContent}` : fileContent;
+    }
+    // 4. 获取 AI 配置
+    const aiConfig = AI_CONFIG[model];
+    if (!aiConfig) {
+      sendEvent("error", { message: "不支持的模型" });
+      return res.end();
+    }
+    // 5. 调用 AI
+    sendEvent("progress", { message: `正在调用 ${model.toUpperCase()} AI，请稍候...` });
+
+    const result = await callAIWithTools(aiConfig, content, fieldList);
+    // 6. 逐个字段推送结果
+    sendEvent("progress", { message: "AI 解析完成，正在填充字段..." });
+
+    const entries = Object.entries(result).filter(([_, value]) => value);
+    for (let i = 0; i < entries.length; i++) {
+      const [key, value] = entries[i];
+      sendEvent("field", {
+        key,
+        value,
+        index: i,
+        total: entries.length
+      });
+      // 字段之间间隔 100ms，让前端有时间处理
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    // 7. 完成
+    sendEvent("complete", { message: "所有字段填充完成", total: entries.length });
+
+  } catch (error) {
+    console.error("AI 流式解析错误:", error);
+    sendEvent("error", { message: error.message });
+  } finally {
+    // 清理临时文件
+    if (tempFilePath && fs.existsSync(tempFilePath)) {
+      fs.unlinkSync(tempFilePath);
+    }
+    res.end();
+  }
+});
+
 export default router;
