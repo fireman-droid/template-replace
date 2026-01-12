@@ -6,10 +6,17 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
 
+// 根据环境配置 baseURL
+// 开发环境：使用 /api，通过 vite proxy 代理到本地后端
+// 生产环境：直接连接远程后端服务
+const baseURL = import.meta.env.PROD 
+  ? 'http://8.148.251.30:8883/api'  // 生产环境后端地址
+  : '/api'                           // 开发环境使用代理
+
 // 创建 axios 实例
 const request = axios.create({
-  baseURL: '/api',
-  timeout: 10000
+  baseURL,
+  timeout: 120000 
 })
 
 // 请求拦截器

@@ -131,9 +131,6 @@ export const useTemplateStore = defineStore("template", () => {
   // ==========================================
   function replaceDocFieldsInDocx(doc, fieldValues, markKeyMap) {
     // console.log('\n🚀 ========== 开始填充 Word 文档 ==========');
-    // console.log('📋 fieldValues:', fieldValues);
-    // console.log('🗺️ markKeyMap size:', markKeyMap.size);
-    
     let fillCount = 0;
 
     // 浏览器原生获取标签
@@ -156,7 +153,8 @@ export const useTemplateStore = defineStore("template", () => {
     docfieldStarts.forEach((startNode, index) => {
       // 1. 解析 markKey
       const docfieldname = startNode.getAttribute("docfieldname");
-      // docfieldname = '{"key":"pla intiff_name"}'
+      // { "key": "75665f78-9785-404e-9ede-2db6347a24f7" }
+
       // 用于多个相同字段
       const subindex = Number(startNode.getAttribute("subindex") || "0");
       if (!docfieldname) return;
@@ -175,20 +173,9 @@ export const useTemplateStore = defineStore("template", () => {
       // 3. 确定 UserData 中的 key
       const fieldKey =
         subindex === 0 ? mapping.fieldKey : `${mapping.fieldKey}_${subindex}`;
-
-      // 🔥 只打印 fieldKey "19" 的日志
-      if (fieldKey === "19") {
-        // console.log(`\n🔍 [${index}] ========== fieldKey: "19" ==========`);
-        // console.log(`markKey: ${markKey.substring(0, 8)}...`);
-        // console.log(`optionValue: ${mapping.optionValue || '无'}`);
-        // console.log(`fieldType: ${mapping.fieldType || '无'}`);
-      }
-
+      
       // 4. 检查是否有数据
       if (!(fieldKey in fieldValues)) {
-        if (fieldKey === "19") {
-          // console.log(`❌ [${index}] 无数据，删除占位符`);
-        }
         // 没数据，删除占位符
         const id = startNode.getAttribute("id");
         const endNode = endMap.get(id);
@@ -198,48 +185,24 @@ export const useTemplateStore = defineStore("template", () => {
       }
 
       let value = fieldValues[fieldKey];
-      if (fieldKey === "19") {
-        // console.log(`📦 [${index}] 原始值:`, value);
-      }
 
       // 扁平化嵌套数组
       if (Array.isArray(value) && value.length > 0 && Array.isArray(value[0])) {
         value = value.map((item) => item[0]);
-        if (fieldKey === "19") {
-          // console.log(`✅ [${index}] 扁平化后:`, value);
-        }
       }
+
       // 根据字段类型格式化值（跳过数组）
       if (mapping.fieldType && value !== true && !Array.isArray(value)) {
-        if (fieldKey === "19") {
-          // console.log(`🎨 [${index}] 格式化前:`, value);
-        }
         value = formatValue(value, mapping.fieldType);
-        if (fieldKey === "19") {
-          // console.log(`🎨 [${index}] 格式化后:`, value);
-        }
       }
 
       // 5. 处理选项 (Checkbox)
       if (mapping.optionValue) {
         const shouldCheck =
           value === mapping.optionValue ||
-          (Array.isArray(value) && value.includes(mapping.optionValue));
-        
-        if (fieldKey === "19") {
-          // console.log(`☑️ [${index}] 选项检查:`, {
-          //   optionValue: mapping.optionValue,
-          //   value: value,
-          //   shouldCheck: shouldCheck,
-          //   replaceMode: mapping.optionReplaceMode
-          // });
-        }
-
+          (Array.isArray(value) && value.includes(mapping.optionValue))
         if (mapping.optionReplaceMode === "check") {
           if (shouldCheck) {
-            if (fieldKey === "19") {
-              // console.log(`✅ [${index}] 打勾:`, mapping.optionValue);
-            }
             value = true;
           }
           else {
@@ -256,21 +219,16 @@ export const useTemplateStore = defineStore("template", () => {
       // 6. 查找容器 (AlternateContent)
       const altContent = findParentByNodeName(startNode, "mc:AlternateContent");
       if (!altContent) {
-        // console.log(`⚠️ [${index}] 未找到 AlternateContent 容器`);
         return;
       }
-
+      
       // 7. 创建新节点
       const fillNode = createFillNode(doc, value);
-      if (fieldKey === "19") {
-        // console.log(`🎨 [${index}] 创建填充节点:`, value === true ? '✓' : value);
-      }
-
+      
       // 8. 插入 DOM
       if (altContent.parentNode) {
         if (altContent.parentNode.nodeName === "w:tc") {
           // 表格内
-          // console.log(`📊 [${index}] 插入到表格单元格`);
           if (altContent.previousSibling) {
             altContent.previousSibling.appendChild(fillNode);
           } else {
@@ -279,11 +237,9 @@ export const useTemplateStore = defineStore("template", () => {
           }
         } else {
           // 普通段落，插入到 AlternateContent 前面
-          // console.log(`📝 [${index}] 插入到段落`);
           altContent.parentNode.insertBefore(fillNode, altContent);
         }
         fillCount++;
-        // console.log(`✅ [${index}] 填充成功！总计: ${fillCount}`);
       }
 
       // 9. 清理旧节点

@@ -4,6 +4,9 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
+// 兼容低版本 Node.js 的 fetch
+const fetch = globalThis.fetch || (await import('node-fetch')).default;
+
 const router = express.Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -112,6 +115,16 @@ async function callAIWithTools(config, content, fieldList) {
 
   // 生成 tool schema
   const fillTableTool = generateFillTableTool(fieldList);
+  console.log('-------- AI Tool Schema (发送给AI的字段定义) --------');
+  console.log(JSON.stringify(fillTableTool, null, 2));
+  console.log('----------------------------------------------------');
+
+  // 添加超时控制 (120秒，与前端保持一致)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 120000);
+
+  console.log(`正在调用 AI API: ${config.url}`);
+  console.log(`使用模型: ${config.model}`);
 
   const response = await fetch(config.url, {
     method: "POST",
@@ -119,12 +132,28 @@ async function callAIWithTools(config, content, fieldList) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
+    signal: controller.signal,
     body: JSON.stringify({
       model: config.model,
       messages: [
         {
           role: "system",
-          content: "你是一个法律文书信息提取助手。根据用户提供的案情描述，调用 fillTable 工具填充表单字段。如果某个字段无法从文本中提取到信息，就不要填写该字段。"
+          content: `你是一位经验丰富的法律文书专员。你的任务是从用户提供的案情描述或文件内容中，精准提取信息以填充法律表单。
+
+   请严格遵守以下规则：
+   1. **准确性优先**：只提取文本中明确提及或可明确推断的信息，不要臆造。
+   2. **日期格式**：所有日期如果不作特殊说明，请统一转换为 "YYYY-MM-DD" 格式（例如 2024-01-01）。
+   3. **金额数字**：金额字段请直接输出纯数字（例如 50000），不要包含以"元"、"万"结尾的单位或千分位逗号，除非字段明确要求字符串。
+   4. **字段匹配**：仔细阅读每个字段的含义（描述），确保提取的内容最符合该字段的定义。
+   5. **未提及**：如果某个字段在文本中完全没提到，请不要在返回结果中包含该字段。
+   6. **身份识别特别指南**：
+   - **原告**：通常是提起诉讼方、债权人、出借人(甲方)。
+   - **被告**：通常是被诉方、债务人、借款人(乙方)。
+   - **第三人**：通常是担保人、保证人或案件相关的其他方。
+   - **自然人 vs 法人**：
+     - 如果字段名包含"(自然人)"，请提取人名（如"张三"）。
+     - 如果字段名包含"(法人)"或"组织"，请提取公司/机构全称（如"某某有限公司"）。不要填错位置。
+   - **代理人**：请根据上下文判断是属于哪一方的代理人。`
         },
         {
           role: "user",
@@ -138,11 +167,15 @@ async function callAIWithTools(config, content, fieldList) {
     }),
   });
 
+  // 清除超时计时器
+  clearTimeout(timeoutId);
+
   const data = await response.json();
   console.log("AI 完整响应:", JSON.stringify(data, null, 2));
 
   if (!response.ok) {
-    throw new Error(data.error?.message || "AI 接口调用失败");
+    console.error("API 返回错误:", response.status, data);
+    throw new Error(data.error?.message || `AI 接口调用失败 (HTTP ${response.status})`);
   }
 
   // 提取 tool call 结果

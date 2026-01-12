@@ -20,9 +20,10 @@ export default defineConfig({
   server: {
     port: 3001,
     strictPort: false,
+    allowedHosts: true, // 允许所有 ngrok 等内网穿透域名访问
     proxy: {
       '/api': {
-        target: 'http://localhost:4000',
+        target: 'http://localhost:5000',  // 开发环境连接本地后端
         changeOrigin: true
       }
     }
