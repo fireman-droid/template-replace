@@ -286,8 +286,23 @@ $danger: #ef4444;
   --el-table-text-color: #{$text-sub};
   --el-table-border-color: #{$border};
   --el-table-row-hover-bg-color: rgba(59, 130, 246, 0.08);
+  --el-mask-color: rgba(15, 23, 42, 0.7); // 修复 Loading 遮罩颜色
 
   background-color: transparent !important;
+
+  // 修复 Loading 时的白色背景
+  .el-loading-mask {
+    background-color: rgba(15, 23, 42, 0.5) !important;
+    backdrop-filter: blur(4px);
+    .el-loading-spinner {
+      .path {
+        stroke: $primary;
+      }
+      .el-loading-text {
+        color: $primary;
+      }
+    }
+  }
 
   // 移除表格底部的白线
   .el-table__inner-wrapper::before {

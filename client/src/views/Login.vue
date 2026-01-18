@@ -121,9 +121,9 @@ const loginFormRef = ref(null)
 const registerFormRef = ref(null)
 
 const form = reactive({
-  email: 'user@test.com',
+  email: 'admin@test.com',
   username: '',
-  password: 'user123'
+  password: 'admin123'
 })
 
 const rules = {

@@ -7,52 +7,76 @@
           <div class="category-title">{{ category.title }}</div>
         </template>
 
-        <!-- 子分类（不折叠） -->
-        <div v-for="(subCat, subIndex) in category.subCategories" :key="subIndex" class="sub-category">
-          <!-- 左边：标题 -->
+        <!-- 子分类（不折叠），当 repeatCount 为 0 且 canRemove 时隐藏 -->
+        <div v-for="(subCat, subIndex) in category.subCategories" :key="subIndex" 
+          v-show="!isSubCategoryHidden(subCat)" class="sub-category">
+          <!-- 左边：标题 + 添加按钮（只有有 markKey 才能添加） -->
           <div class="sub-category-left">
             <div class="sub-category-title">{{ subCat.title }}</div>
+            <el-button v-if="subCat.canRepeat && subCat.markKey" type="primary" size="small" class="add-person-btn"
+              @click="addPerson(subCat.markKey)">
+              + 添加
+            </el-button>
           </div>
 
-          <!-- 右边：字段列表 -->
+          <!-- 右边：字段列表（支持多人员） -->
           <div class="sub-category-right">
-            <el-form :model="formData" label-position="top" class="field-form">
-              <el-form-item v-for="field in subCat.fields" :key="field.fieldKey" :label="field.fieldLabel"
-                :data-field-key="field.fieldKey">
-                <!-- 文本输入 -->
-                <el-input v-if="field.type === 'text'" v-model="formData[field.fieldKey]"
-                  :placeholder="`请输入${field.fieldLabel}`" />
+            <!-- 遍历每个人员实例 -->
+            <div v-for="personIndex in getRepeatCount(subCat.markKey)" :key="personIndex" class="person-block">
+              <!-- 人员标题栏：始终显示序号和删除按钮 -->
+              <div v-if="subCat.canRepeat && getRepeatCount(subCat.markKey) >= 1" class="person-header">
+                <span class="person-label">
+                  {{ subCat.title.replace(/[（(].*[）)]/, '') }} {{ personIndex }}
+                </span>
+                <el-button type="danger" size="small" class="delete-person-btn"
+                  @click="removePerson(subCat.markKey, personIndex - 1, subCat.fields, subCat.canRemove)">
+                  删除
+                </el-button>
+              </div>
 
-                <!-- 日期选择 -->
-                <el-date-picker v-else-if="field.type === 'date'" v-model="formData[field.fieldKey]" type="date"
-                  value-format="YYYY-MM-DD" :placeholder="`请选择${field.fieldLabel}`" style="width: 100%" />
+              <!-- 该人员的表单字段 -->
+              <el-form :model="formData" label-position="top" class="field-form">
+                <el-form-item v-for="field in subCat.fields" :key="getFieldKey(field.fieldKey, personIndex - 1)"
+                  :label="field.fieldLabel" :data-field-key="getFieldKey(field.fieldKey, personIndex - 1)">
+                  <!-- 文本输入 -->
+                  <el-input v-if="field.type === 'text'"
+                    v-model="formData[getFieldKey(field.fieldKey, personIndex - 1)]"
+                    :placeholder="`请输入${field.fieldLabel}`" />
 
-                <!-- 数字输入 -->
-                <el-input-number v-else-if="field.type === 'number' || field.type === 'amount'"
-                  v-model="formData[field.fieldKey]" style="width: 100%" :controls="false" />
+                  <!-- 日期选择 -->
+                  <el-date-picker v-else-if="field.type === 'date'"
+                    v-model="formData[getFieldKey(field.fieldKey, personIndex - 1)]" type="date"
+                    value-format="YYYY-MM-DD" :placeholder="`请选择${field.fieldLabel}`" style="width: 100%" />
 
-                <!-- 选项：多选 -->
-                <el-checkbox-group v-else-if="field.type === 'options' && field.isMultiple"
-                  v-model="formData[field.fieldKey]">
-                  <el-checkbox v-for="opt in field.options" :key="opt.label" :label="opt.label">
-                    {{ opt.label }}
-                  </el-checkbox>
-                </el-checkbox-group>
+                  <!-- 数字输入 -->
+                  <el-input-number v-else-if="field.type === 'number' || field.type === 'amount'"
+                    v-model="formData[getFieldKey(field.fieldKey, personIndex - 1)]" style="width: 100%"
+                    :controls="false" />
 
-                <!-- 选项：单选（可取消） -->
-                <div v-else-if="field.type === 'options'" class="radio-group">
-                  <span v-for="opt in field.options" :key="opt.label" class="radio-item"
-                    :class="{ active: formData[field.fieldKey] === opt.label }"
-                    @click="toggleRadio(field.fieldKey, opt.label)">
-                    <span class="radio-circle"></span>
-                    {{ opt.label }}
-                  </span>
-                </div>
+                  <!-- 选项：多选 -->
+                  <el-checkbox-group v-else-if="field.type === 'options' && field.isMultiple"
+                    v-model="formData[getFieldKey(field.fieldKey, personIndex - 1)]">
+                    <el-checkbox v-for="opt in field.options" :key="opt.label" :label="opt.label">
+                      {{ opt.label }}
+                    </el-checkbox>
+                  </el-checkbox-group>
 
-                <!-- 默认文本 -->
-                <el-input v-else v-model="formData[field.fieldKey]" :placeholder="`请输入${field.fieldLabel}`" />
-              </el-form-item>
-            </el-form>
+                  <!-- 选项：单选（可取消） -->
+                  <div v-else-if="field.type === 'options'" class="radio-group">
+                    <span v-for="opt in field.options" :key="opt.label" class="radio-item"
+                      :class="{ active: formData[getFieldKey(field.fieldKey, personIndex - 1)] === opt.label }"
+                      @click="toggleRadio(getFieldKey(field.fieldKey, personIndex - 1), opt.label)">
+                      <span class="radio-circle"></span>
+                      {{ opt.label }}
+                    </span>
+                  </div>
+
+                  <!-- 默认文本 -->
+                  <el-input v-else v-model="formData[getFieldKey(field.fieldKey, personIndex - 1)]"
+                    :placeholder="`请输入${field.fieldLabel}`" />
+                </el-form-item>
+              </el-form>
+            </div>
           </div>
         </div>
       </el-collapse-item>
@@ -71,10 +95,14 @@ const props = defineProps({
   modelValue: {
     type: Object,
     default: () => ({})
+  },
+  repeatCountMap: {
+    type: Object,
+    default: () => ({})
   }
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'update:repeatCountMap'])
 
 // 表单数据
 const formData = ref({ ...props.modelValue })
@@ -94,6 +122,89 @@ const toggleRadio = (fieldKey, value) => {
   } else {
     formData.value[fieldKey] = value // 选中
   }
+}
+
+// ====== 多人员管理 ======
+// 记录每个子分类的人员数量，key: markKey，value: 人员数量
+const repeatCounts = ref({ ...props.repeatCountMap })
+
+// 监听外部 repeatCountMap 变化，同步到内部
+watch(() => props.repeatCountMap, (newVal) => {
+  Object.keys(newVal).forEach(key => {
+    repeatCounts.value[key] = newVal[key]
+  })
+}, { deep: true })
+
+// 监听内部 repeatCounts 变化，emit 给父组件
+watch(repeatCounts, (newVal) => {
+  emit('update:repeatCountMap', newVal)
+}, { deep: true })
+
+// 获取某个子分类的人员数量
+function getRepeatCount(markKey) {
+  if (!markKey) return 1
+  return repeatCounts.value[markKey] || 1
+}
+
+// 判断子分类是否隐藏（当 canRemove 为 true 且 repeatCount 为 0 时隐藏）
+function isSubCategoryHidden(subCat) {
+  if (!subCat.canRemove) return false
+  if (!subCat.markKey) return false
+  // 只有当 repeatCount 显式设置为 0 或更小时才隐藏
+  const count = repeatCounts.value[subCat.markKey]
+  if (count === undefined) return false // 未设置时默认显示
+  return count <= 0
+}
+
+// 添加一个人员
+function addPerson(markKey) {
+  if (!markKey) return
+  repeatCounts.value[markKey] = (repeatCounts.value[markKey] || 1) + 1
+}
+
+// 删除一个人员
+function removePerson(markKey, personIndex, fields, canRemove = false) {
+  if (!markKey) return
+  const count = repeatCounts.value[markKey] || 1
+  
+  // 如果不能删除到 0，则保持最少 1 个
+  if (count <= 1 && !canRemove) return
+  if (count <= 0) return
+  
+  repeatCounts.value[markKey] = count - 1
+  
+  // 清理被删除人员的表单数据，并重新编号后续人员数据
+  for (const field of fields) {
+    // 删除当前人员的数据
+    const deletedKey = getFieldKey(field.fieldKey, personIndex)
+    delete formData.value[deletedKey]
+    
+    // 将后续人员的数据往前移
+    for (let i = personIndex + 1; i < count; i++) {
+      const fromKey = getFieldKey(field.fieldKey, i)
+      const toKey = getFieldKey(field.fieldKey, i - 1)
+      if (formData.value[fromKey] !== undefined) {
+        formData.value[toKey] = formData.value[fromKey]
+        delete formData.value[fromKey]
+      }
+    }
+  }
+}
+
+// 根据人员索引获取字段 Key
+function getFieldKey(baseKey, personIndex) {
+  return personIndex === 0 ? baseKey : `${baseKey}_${personIndex}`
+}
+
+// 生成 rowRepeatCountMap（用于保存和文档生成）
+function getRowRepeatCountMap() {
+  const map = {}
+  for (const [markKey, count] of Object.entries(repeatCounts.value)) {
+    if (count > 1) {
+      map[markKey] = count
+    }
+  }
+  return map
 }
 
 // 展开的大分类（默认展开第一个）
@@ -166,6 +277,9 @@ const categories = computed(() => {
 
       // 子分类或字段行
       let subTitle = ''
+      let subMarkKey = ''
+      let canRepeat = false
+      let canRemove = false
       let fields = []
 
       for (const col of cols) {
@@ -174,6 +288,9 @@ const categories = computed(() => {
         for (const item of col.data) {
           if (item.type === 'table-title') {
             subTitle = item.data.title
+            subMarkKey = item.data.mark?.markKey || ''
+            canRepeat = item.data.canRepeatSubjectRow || false
+            canRemove = item.data.canRemoveSubjectWhenEmpty || false
           }
         }
 
@@ -191,10 +308,10 @@ const categories = computed(() => {
             lastSub.fields = lastSub.fields.concat(fields)
           } else {
             subTitle = '基本信息'
-            currentCategory.subCategories.push({ title: subTitle, fields })
+            currentCategory.subCategories.push({ title: subTitle, fields, markKey: '', canRepeat: false, canRemove: false })
           }
         } else {
-          currentCategory.subCategories.push({ title: subTitle, fields })
+          currentCategory.subCategories.push({ title: subTitle, fields, markKey: subMarkKey, canRepeat, canRemove })
         } 
       }
     }
@@ -227,7 +344,9 @@ function expandCategoryByFieldKey(fieldKey) {
 
 // 暴露方法给父组件
 defineExpose({
-  expandCategoryByFieldKey
+  expandCategoryByFieldKey,
+  getRowRepeatCountMap,
+  repeatCounts
 })
 
 // 监听表单数据变化
@@ -265,8 +384,10 @@ $text-gray: #94a3b8;
     .sub-category-left {
       flex: 4;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: 10px;
       background: rgba(6, 182, 212, 0.08);
       border-right: 1px solid rgba(255, 255, 255, 0.08);
       padding: 20px 15px;
@@ -280,10 +401,43 @@ $text-gray: #94a3b8;
       line-height: 1.5;
     }
 
+    .add-person-btn {
+      margin-top: 5px;
+    }
+
     .sub-category-right {
       flex: 6;
       padding: 20px;
       min-width: 0;
+    }
+
+    // 人员区块
+    .person-block {
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+
+      &:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+      }
+    }
+
+    .person-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding: 8px 12px;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 6px;
+    }
+
+    .person-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: $primary;
     }
   }
 
@@ -487,4 +641,34 @@ $text-gray: #94a3b8;
     }
   }
 }
+  // 按钮美化
+  .add-person-btn {
+    background: rgba(6, 182, 212, 0.1) !important;
+    border: 1px solid rgba(6, 182, 212, 0.5) !important;
+    color: #06b6d4 !important;
+    transition: all 0.3s;
+    
+    &:hover {
+      background: rgba(6, 182, 212, 0.2) !important;
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.3) !important;
+      border-color: #06b6d4 !important;
+      color: #fff !important;
+      transform: translateY(-1px);
+    }
+  }
+
+  .delete-person-btn {
+    background: rgba(239, 68, 68, 0.1) !important;
+    border: 1px solid rgba(239, 68, 68, 0.5) !important;
+    color: #ef4444 !important;
+    transition: all 0.3s;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.2) !important;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.3) !important;
+      border-color: #ef4444 !important;
+      color: #fff !important;
+      transform: translateY(-1px);
+    }
+  }
 </style>

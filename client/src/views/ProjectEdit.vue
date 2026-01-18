@@ -174,9 +174,11 @@ const saveTitle = () => {
 const handleGenerate = async () => {
   // 使用表单真实数据
   const data = editorStore.formData
+  // 使用行重复计数
+  const rowRepeatCountMap = editorStore.rowRepeatCountMap || {}
   // 使用案卷标题作为文件名
   const filename = `${editorStore.currentCase?.title || '文书'}.docx`
-  templateStore.download(data, filename)
+  templateStore.download(data, rowRepeatCountMap, filename)
 }
 </script>
 
@@ -272,7 +274,38 @@ $text-gray: #94a3b8;
     gap: 12px;
     button { padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; border: none; transition: all 0.3s; font-weight: 500; display: flex; align-items: center; gap: 6px; }
     .btn-ghost { background: transparent; color: $text-gray; border: 1px solid #475569; &:hover { border-color: white; color: white; } }
-    .btn-primary { background: $primary; color: white; &:hover { background: lighten($primary, 10%); box-shadow: 0 0 15px rgba($primary, 0.4); } }
+    .btn-primary { 
+      background: linear-gradient(135deg, $primary 0%, #06b6d4 100%);
+      color: white; 
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+      
+      &:hover { 
+        box-shadow: 0 0 20px rgba(6, 182, 212, 0.4); 
+        transform: translateY(-1px);
+        border-color: rgba(6, 182, 212, 0.5);
+      }
+      
+      &:active {
+        transform: translateY(0);
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: 0.5s;
+      }
+
+      &:hover::before {
+        left: 100%;
+      }
+    }
   }
 }
 

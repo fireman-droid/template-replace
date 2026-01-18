@@ -2,15 +2,24 @@
   <div class="form-panel">
     <div class="panel-header">
       <h3>要素录入</h3>
-      <div class="ai-trigger" @click="showAiDialog = true">
-        <el-icon class="ai-icon"><MagicStick /></el-icon>
-        <span>AI 识别配置</span>
-        <div class="status-dot"></div>
-      </div>
+    </div>
+
+    <!-- AI 悬浮按钮 -->
+    <div 
+      class="ai-float-btn" 
+      :class="{ expanded: aiButtonHover }"
+      @mouseenter="aiButtonHover = true"
+      @mouseleave="aiButtonHover = false"
+      @click="showAiDialog = true"
+    >
+      <el-icon class="ai-icon"><MagicStick /></el-icon>
+      <span class="ai-text">AI 智能填充</span>
+      <div class="status-dot"></div>
     </div>
 
     <div class="renderer-container" v-if="markData">
-      <DynamicForm ref="dynamicFormRef" :mark-data="markData" v-model="editorStore.formData" />
+      <DynamicForm ref="dynamicFormRef" :mark-data="markData" v-model="editorStore.formData" 
+        v-model:repeatCountMap="editorStore.rowRepeatCountMap" />
     </div>
 
     <div v-else class="loading-state">
@@ -29,21 +38,6 @@
       align-center
     >
       <div class="ai-card-content">
-        <div class="config-section">
-          <label>选择 AI 模型</label>
-          <div class="model-selector">
-            <div
-              v-for="model in models"
-              :key="model.id"
-              class="model-option"
-              :class="{ active: selectedModel === model.id }"
-              @click="selectedModel = model.id"
-            >
-              <span>{{ model.name }}</span>
-            </div>
-          </div>
-        </div>
-
         <div class="config-section">
           <label>上传案卷资料（可选）</label>
           <el-upload
@@ -95,15 +89,50 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- AI 分析全屏动画遮罩 -->
+    <transition name="fade">
+      <div v-if="aiLoading" class="ai-analysis-overlay">
+        <div class="analysis-content">
+          <div class="ai-brain-icon">
+            <div class="brain-circle"></div>
+            <div class="brain-waves"></div>
+            <el-icon class="icon"><Cpu /></el-icon>
+          </div>
+          
+          <h2 class="analysis-title">AI 正在深度分析案卷...</h2>
+          
+          <div class="terminal-box">
+            <div class="terminal-header">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+            <div class="terminal-body" ref="terminalRef">
+              <div v-for="(log, index) in analysisLogs" :key="index" class="log-line">
+                <span class="prompt">></span> {{ log }}
+              </div>
+              <div class="cursor-line">
+                <span class="blink-cursor">_</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="progress-info">
+             {{ aiStatus || '正在建立安全连接...' }}
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useEditorStore, useTemplateStore } from '@/stores'
 import DynamicForm from '@/components/DynamicForm.vue'
-import { MagicStick, UploadFilled, Loading } from '@element-plus/icons-vue'
+import { MagicStick, UploadFilled, Loading, Cpu } from '@element-plus/icons-vue'
 import { parseWithAIStream } from '@/api/ai.js'
 
 const editorStore = useEditorStore()
@@ -124,17 +153,13 @@ const props = defineProps({
 })
 
 const showAiDialog = ref(false)
-const selectedModel = ref('kimi')
 const aiText = ref('')
 const aiLoading = ref(false)
 const fileList = ref([])
 const aiStatus = ref('')  // AI 当前状态提示
-
-const models = [
-  { id: 'kimi', name: 'Kimi', icon: 'ChatDotRound' },
-  { id: 'qwen', name: '通义千问', icon: 'Service' },
-  { id: 'deepseek', name: 'DeepSeek', icon: 'Cpu' }
-]
+const aiButtonHover = ref(false) // AI 按钮悬停状态
+const analysisLogs = ref([]) // 动画日志列表
+const terminalRef = ref(null) // 终端元素引用
 
 // 文件选择回调
 function handleFileChange(uploadFile) {
@@ -154,27 +179,61 @@ function extractFields(markData) {
     for (const row of table.data) {
       if (row.type !== 'table-row' || !row.data) continue
       
+      // 先扫描 row 中所有 col，找到 table-title 获取分类信息
+      let currentCanRepeat = false
+      let currentMarkKey = ''
+      let currentSubTitle = ''
+      
+      for (const col of row.data) {
+        if (col.type !== 'table-col' || !col.data) continue
+        for (const item of col.data) {
+          if (item.type === 'table-title') {
+            currentCanRepeat = item.data.canRepeatSubjectRow || false
+            currentMarkKey = item.data.mark?.markKey || ''
+            currentSubTitle = item.data.title || ''
+            break
+          }
+        }
+        if (currentSubTitle) break // 找到标题后停止搜索
+      }
+      
+      // 再次遍历 row 中所有 col，提取 fields
       for (const col of row.data) {
         if (col.type !== 'table-col' || !col.data) continue
         
         for (const item of col.data) {
-          // 普通字段
+          // 普通字段 - 在 fieldLabel 中添加简短分类前缀帮助 AI 识别
           if (item.type === 'field' && item.data) {
+            const baseLabel = item.data.fieldLabel || '未命名'
+            // 缩短分类前缀以减少 token
+            const shortTitle = currentSubTitle
+              .replace('（自然人）', '-人')
+              .replace('（法人、非法人组织）', '-法人')
+            const labelWithCategory = shortTitle ? `[${shortTitle}]${baseLabel}` : baseLabel
             fields.push({
               fieldKey: item.data.fieldKey,
-              fieldLabel: item.data.fieldLabel || '未命名',
+              fieldLabel: labelWithCategory,
               type: item.data.type || 'text',
-              isMultiple: item.data.props?.isMultiple || false
+              isMultiple: item.data.props?.isMultiple || false,
+              canRepeat: currentCanRepeat,
+              markKey: currentMarkKey
             })
           }
           // inline-fields
           if (item.type === 'inline-fields' && item.data?.fields) {
             for (const f of item.data.fields) {
+              const baseLabel = f.fieldLabel || '未命名'
+              const shortTitle = currentSubTitle
+                .replace('（自然人）', '-人')
+                .replace('（法人、非法人组织）', '-法人')
+              const labelWithCategory = shortTitle ? `[${shortTitle}]${baseLabel}` : baseLabel
               fields.push({
                 fieldKey: f.fieldKey,
-                fieldLabel: f.fieldLabel || '未命名',
+                fieldLabel: labelWithCategory,
                 type: f.type || 'text',
-                isMultiple: f.props?.isMultiple || false
+                isMultiple: f.props?.isMultiple || false,
+                canRepeat: currentCanRepeat,
+                markKey: currentMarkKey
               })
             }
           }
@@ -206,7 +265,6 @@ async function handleAIParse() {
     const formData = new FormData()
     // console.log(formData)
     formData.append('fields', JSON.stringify(fields))
-    formData.append('model', selectedModel.value)
     if (aiText.value.trim()) {
       formData.append('text', aiText.value)
     }
@@ -219,22 +277,68 @@ async function handleAIParse() {
       if (event.type === 'progress') {
         // 更新状态提示
         aiStatus.value = event.message
-        ElMessage.info(event.message)
+        // 添加到日志动画
+        analysisLogs.value.push(event.message)
+        // 自动滚动到底部
+        nextTick(() => {
+          if (terminalRef.value) {
+            terminalRef.value.scrollTop = terminalRef.value.scrollHeight
+          }
+        })
       }
       if (event.type === 'field') {
         const { key, value } = event
-        const field = fieldMap[key]
-        // 展开字段所在的折叠面板
+        
+        // 调试日志：打印 AI 返回的每个字段
+        console.log('🤖 AI 返回字段:', { key, value })
+        
+        // 可选：将提取到的字段也显示在日志中（为了视觉效果）
+        if (analysisLogs.value.length === 0 || !analysisLogs.value[analysisLogs.value.length - 1].startsWith('提取字段')) {
+           // analysisLogs.value.push(`提取字段: ${key} = ${value.substring(0, 10)}...`)
+        }
+        
+        // 尝试获取字段定义
+        let field = fieldMap[key]
+        let baseKey = key
+        
+        // 如果找不到字段定义，尝试解析 _N 后缀（处理多人员）
+        if (!field) {
+          const match = key.match(/^(.+)_(\d+)$/)
+          if (match) {
+            baseKey = match[1]
+            const personIndex = parseInt(match[2], 10) // _1 表示第2个人（index 1）
+            
+            if (fieldMap[baseKey]) {
+              field = fieldMap[baseKey]
+              
+              // 自动增加人员数量
+              if (field.markKey) {
+                const requiredCount = personIndex + 1
+                const currentCount = editorStore.rowRepeatCountMap[field.markKey] || 1
+                if (requiredCount > currentCount) {
+                  editorStore.rowRepeatCountMap[field.markKey] = requiredCount
+                  await nextTick() // 等待 DOM 更新（虽然这里主要是数据层）
+                }
+              }
+            }
+          }
+        }
+
+        // 展开字段所在的折叠面板（使用 baseKey 找到分类）
         if (dynamicFormRef.value) {
-          dynamicFormRef.value.expandCategoryByFieldKey(key)
+          dynamicFormRef.value.expandCategoryByFieldKey(baseKey)
           await new Promise(resolve => setTimeout(resolve, 100))
         }
-        // 滚动到当前字段
+        
+        // 滚动到当前字段 (使用 key, 因为 DOM 中会生成带后缀的 key)
+        // 注意：如果刚刚增加了人员，DOM 可能还没完全渲染好，稍微等待
+        await nextTick()
         const fieldEl = document.querySelector(`[data-field-key="${key}"]`)
         if (fieldEl) {
           fieldEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
           await new Promise(resolve => setTimeout(resolve, 200))
         }
+        
         // 处理日期格式
         let finalValue = value
         // 处理数字类型
@@ -329,39 +433,63 @@ $text-gray: #94a3b8;
     }
 
     .ai-trigger {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      display: none; // 隐藏旧的触发器
+    }
+  }
+
+  // AI 悬浮按钮（固定定位）
+  .ai-float-btn {
+    position: fixed;
+    right: -110px; // 默认隐藏在右边
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(
+      135deg,
+      rgba($accent, 0.15),
+      rgba($primary, 0.1)
+    );
+    border: 1px solid rgba($accent, 0.4);
+    padding: 12px 18px;
+    border-radius: 30px 0 0 30px;
+    font-size: 14px;
+    color: $accent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: -4px 0 20px rgba($accent, 0.2);
+    backdrop-filter: blur(10px);
+
+    .ai-icon {
+      font-size: 18px;
+    }
+
+    .ai-text {
+      white-space: nowrap;
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    // 悬停时展开
+    &.expanded,
+    &:hover {
+      right: 0;
       background: linear-gradient(
-        90deg,
-        rgba($accent, 0.1),
-        rgba($primary, 0.1)
+        135deg,
+        rgba($accent, 0.25),
+        rgba($primary, 0.2)
       );
-      border: 1px solid rgba($accent, 0.3);
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      color: $accent;
-      cursor: pointer;
-      transition: all 0.3s;
-
-      .ai-icon {
-        font-size: 14px;
-      }
-      .status-dot {
-        width: 6px;
-        height: 6px;
-        background: #10b981;
-        border-radius: 50%;
-        box-shadow: 0 0 8px #10b981;
-        animation: pulse 2s infinite;
-      }
-
-      &:hover {
-        background: rgba($accent, 0.2);
-        box-shadow: 0 0 15px rgba($accent, 0.2);
-        transform: translateY(-1px);
-      }
+      box-shadow: -4px 0 30px rgba($accent, 0.4);
     }
   }
 
@@ -585,6 +713,201 @@ $text-gray: #94a3b8;
     box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
   }
 }
+// 全屏 AI 分析遮罩
+.ai-analysis-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(10, 14, 23, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .analysis-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 600px;
+    max-width: 90%;
+  }
+
+  // 大脑图标动画
+  .ai-brain-icon {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+
+    .icon {
+      font-size: 48px;
+      color: $primary;
+      z-index: 2;
+    }
+
+    .brain-circle {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border: 2px solid rgba($primary, 0.3);
+      border-radius: 50%;
+      animation: spin 4s linear infinite;
+      &::before {
+        content: "";
+        position: absolute;
+        top: -2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 10px;
+        height: 10px;
+        background: $primary;
+        border-radius: 50%;
+        box-shadow: 0 0 10px $primary;
+      }
+    }
+
+    .brain-waves {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 1px solid rgba($primary, 0.5);
+      animation: ripple 2s infinite;
+    }
+  }
+
+  .analysis-title {
+    font-size: 24px;
+    color: $text-white;
+    margin-bottom: 30px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    text-align: center;
+    background: linear-gradient(90deg, #fff, $primary, #fff);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 3s linear infinite;
+  }
+
+  // 终端打字机效果
+  .terminal-box {
+    width: 100%;
+    height: 200px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba($primary, 0.3);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: 0 0 20px rgba($primary, 0.1);
+
+    .terminal-header {
+      height: 30px;
+      background: rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba($primary, 0.2);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 6px;
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        &.red { background: #ff5f56; }
+        &.yellow { background: #ffbd2e; }
+        &.green { background: #27c93f; }
+      }
+    }
+
+    .terminal-body {
+      padding: 15px;
+      height: calc(100% - 30px);
+      overflow-y: auto;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 13px;
+      color: $text-gray;
+      text-align: left;
+      
+      /* 自定义滚动条 */
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: rgba($primary, 0.3);
+        border-radius: 3px;
+      }
+
+      .log-line {
+        margin-bottom: 6px;
+        line-height: 1.4;
+        animation: fadeIn 0.3s ease-out;
+        word-break: break-all;
+        
+        .prompt {
+          color: $primary;
+          margin-right: 8px;
+        }
+      }
+
+      .cursor-line {
+        .blink-cursor {
+          color: $primary;
+          animation: blink 1s step-end infinite;
+        }
+      }
+    }
+  }
+
+  .progress-info {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+  }
+}
+
+// 动画关键帧
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ripple {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes shine {
+  to { background-position: 200% center; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// Vue 动画
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 </style>
 
 <style lang="scss">

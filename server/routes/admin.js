@@ -1,11 +1,13 @@
 /**
  * 管理员路由
- * 处理用户管理和模板管理相关的请求
+ * 处理用户管理、模板管理和系统日志相关的请求
  */
 import express from 'express'
 import User from '../models/User.js'
 import Template from '../models/Template.js'
+import SystemLog from '../models/SystemLog.js'
 import { authenticate, requireAdmin } from '../middleware/auth.js'
+import { logAction, ActionTypes, ResourceTypes } from '../utils/logger.js'
 import upload from '../config/upload.js'
 import fs from 'fs'
 import path from 'path'
@@ -50,6 +52,13 @@ router.put('/users/:id/role', authenticate, requireAdmin, async (req, res) => {
     }
 
     await User.updateRole(id, role)
+    
+    // 记录操作日志
+    await logAction(req, ActionTypes.ROLE_CHANGE, ResourceTypes.USER, parseInt(id), {
+      message: `将用户角色修改为 ${role}`,
+      newRole: role
+    })
+    
     res.json({ message: '角色更新成功' })
   } catch (error) {
     console.error('更新用户角色错误:', error)
@@ -70,7 +79,16 @@ router.delete('/users/:id', authenticate, requireAdmin, async (req, res) => {
       return res.status(400).json({ message: '不能删除自己的账号' })
     }
 
+    // 先获取用户信息用于日志记录
+    const userToDelete = await User.findById(id)
+    
     await User.delete(id)
+    
+    // 记录操作日志
+    await logAction(req, ActionTypes.DELETE, ResourceTypes.USER, parseInt(id), {
+      message: `删除用户: ${userToDelete?.email || id}`
+    })
+    
     res.json({ message: '用户删除成功' })
   } catch (error) {
     console.error('删除用户错误:', error)
@@ -147,6 +165,12 @@ router.post('/templates', authenticate, requireAdmin, upload.single('docx'), asy
       file_path
     })
 
+    // 记录操作日志
+    await logAction(req, ActionTypes.CREATE, ResourceTypes.TEMPLATE, template.id, {
+      message: `创建模板: ${name}`,
+      templateName: name
+    })
+
     console.log('模板创建成功:', template)
     res.status(201).json({ message: '模板创建成功', template })
   } catch (error) {
@@ -177,6 +201,13 @@ router.put('/templates/:id', authenticate, requireAdmin, upload.single('docx'), 
     }
 
     await Template.update(id, updateData)
+    
+    // 记录操作日志
+    await logAction(req, ActionTypes.UPDATE, ResourceTypes.TEMPLATE, parseInt(id), {
+      message: `更新模板: ${name || id}`,
+      templateName: name
+    })
+    
     res.json({ message: '模板更新成功' })
   } catch (error) {
     console.error('更新模板错误:', error)
@@ -191,7 +222,17 @@ router.put('/templates/:id', authenticate, requireAdmin, upload.single('docx'), 
 router.delete('/templates/:id', authenticate, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params
+    
+    // 先获取模板信息用于日志记录
+    const templateToDelete = await Template.findById(id)
+    
     await Template.delete(id)
+    
+    // 记录操作日志
+    await logAction(req, ActionTypes.DELETE, ResourceTypes.TEMPLATE, parseInt(id), {
+      message: `删除模板: ${templateToDelete?.name || id}`
+    })
+    
     res.json({ message: '模板删除成功' })
   } catch (error) {
     console.error('删除模板错误:', error)
@@ -242,6 +283,43 @@ router.get('/templates/:id/download', authenticate, requireAdmin, async (req, re
   } catch (error) {
     console.error('下载模板错误:', error)
     res.status(500).json({ message: '下载模板失败', error: error.message })
+  }
+})
+
+// ==================== 系统日志 ====================
+
+/**
+ * 获取系统日志列表
+ * GET /api/admin/logs
+ */
+router.get('/logs', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const { page = 1, pageSize = 20, action = '', resourceType = '', keyword = '' } = req.query
+    
+    const filters = {}
+    if (action) filters.action = action
+    if (resourceType) filters.resourceType = resourceType
+    if (keyword) filters.keyword = keyword
+    
+    const result = await SystemLog.getAll(parseInt(page), parseInt(pageSize), filters)
+    res.json(result)
+  } catch (error) {
+    console.error('获取系统日志错误:', error)
+    res.status(500).json({ message: '获取系统日志失败', error: error.message })
+  }
+})
+
+/**
+ * 获取操作类型统计
+ * GET /api/admin/logs/stats
+ */
+router.get('/logs/stats', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const stats = await SystemLog.getActionStats()
+    res.json(stats)
+  } catch (error) {
+    console.error('获取日志统计错误:', error)
+    res.status(500).json({ message: '获取日志统计失败', error: error.message })
   }
 })
 

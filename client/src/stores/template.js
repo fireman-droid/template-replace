@@ -95,8 +95,9 @@ export const useTemplateStore = defineStore("template", () => {
   /**
    * 【核心】生成填充后的文档 Blob (用于预览和下载)
    * @param {Object} data - 表单数据对象
+   * @param {Object} rowRepeatCountMap - 行重复计数 {markKey: count}
    */
-  async function generateFilledBlob(data) {
+  async function generateFilledBlob(data, rowRepeatCountMap = {}) {
     const markData = templateInfo.value.markData;
     // 如果没有加载模板文件，直接返回 null
     if (!templateFile.value) {
@@ -111,7 +112,9 @@ export const useTemplateStore = defineStore("template", () => {
     const xmlContent = await zip.file("word/document.xml").async("string");
     const parser = new DOMParser();
     const doc = parser.parseFromString(xmlContent, "text/xml");
-    // console.log(doc);
+    
+    // 3.5 根据 rowRepeatCountMap 复制表格行
+    duplicateRowsByRepeatCount(doc, rowRepeatCountMap);
 
     // 4.实现填充
     const fillCount = replaceDocFieldsInDocx(doc, data, markKeyMap);
@@ -124,6 +127,173 @@ export const useTemplateStore = defineStore("template", () => {
     // 7. 生成并下载
     const blob = await zip.generateAsync({ type: "blob" });
     return blob;
+  }
+
+  /**
+   * 根据 rowRepeatCountMap 复制/删除表格行
+   * 左边标题单元格合并，右边内容行复制
+   * @param {Document} doc - Word XML 文档
+   * @param {Object} rowRepeatCountMap - {markKey: repeatCount}
+   */
+  function duplicateRowsByRepeatCount(doc, rowRepeatCountMap) {
+    if (!rowRepeatCountMap || Object.keys(rowRepeatCountMap).length === 0) {
+      return;
+    }
+
+    // 处理每个 markKey
+    for (const [markKey, repeatCount] of Object.entries(rowRepeatCountMap)) {
+      // 找到该 markKey 对应的第一个 docfieldStart
+      const docfieldStarts = Array.from(
+        doc.getElementsByTagName("wpsCustomData:docfieldStart")
+      );
+
+      let targetRow = null;
+      for (const startNode of docfieldStarts) {
+        const docfieldname = startNode.getAttribute("docfieldname");
+        if (!docfieldname) continue;
+        
+        try {
+          const parsed = JSON.parse(docfieldname);
+          if (parsed.key === markKey) {
+            // 找到该占位符所在的表格行 (w:tr)
+            targetRow = findParentByNodeName(startNode, "w:tr");
+            break;
+          }
+        } catch (e) {
+          continue;
+        }
+      }
+
+      if (!targetRow || !targetRow.parentNode) continue;
+
+      // 当 repeatCount 为 0 时，删除整行
+      if (repeatCount <= 0) {
+        targetRow.parentNode.removeChild(targetRow);
+        continue;
+      }
+      
+      // 当 repeatCount 为 1 时，不需要操作
+      if (repeatCount <= 1) continue;
+
+      // 获取行内的所有单元格
+      const cells = targetRow.getElementsByTagName("w:tc");
+      if (cells.length < 2) continue; // 至少需要两个单元格（标题+内容）
+
+      const firstCell = cells[0]; // 左边标题单元格
+      
+      // 为第一行的左边单元格添加行合并开始标记
+      addVMergeRestart(doc, firstCell, repeatCount);
+
+      // 复制行 repeatCount - 1 次
+      const parent = targetRow.parentNode;
+      let lastInsertedRow = targetRow;
+      
+      for (let i = 1; i < repeatCount; i++) {
+        const clonedRow = targetRow.cloneNode(true);
+        
+        // 获取克隆行的第一个单元格，清空内容并设置为合并继续
+        const clonedCells = clonedRow.getElementsByTagName("w:tc");
+        if (clonedCells.length > 0) {
+          const clonedFirstCell = clonedCells[0];
+          // 清空左边单元格的内容（保留格式）
+          clearCellContent(clonedFirstCell);
+          // 设置为合并继续
+          addVMergeContinue(doc, clonedFirstCell);
+        }
+        
+        // 更新克隆行中所有 docfieldStart 的 subindex
+        const clonedStarts = clonedRow.getElementsByTagName("wpsCustomData:docfieldStart");
+        Array.from(clonedStarts).forEach((node) => {
+          node.setAttribute("subindex", String(i));
+        });
+        
+        // 更新 ID
+        const clonedEnds = clonedRow.getElementsByTagName("wpsCustomData:docfieldEnd");
+        Array.from(clonedEnds).forEach((node) => {
+          const oldId = node.getAttribute("id");
+          if (oldId) {
+            node.setAttribute("id", `${oldId}_${i}`);
+          }
+        });
+        
+        Array.from(clonedStarts).forEach((node) => {
+          const oldId = node.getAttribute("id");
+          if (oldId) {
+            node.setAttribute("id", `${oldId}_${i}`);
+          }
+        });
+        
+        // 在上一行之后插入克隆行
+        if (lastInsertedRow.nextSibling) {
+          parent.insertBefore(clonedRow, lastInsertedRow.nextSibling);
+        } else {
+          parent.appendChild(clonedRow);
+        }
+        
+        lastInsertedRow = clonedRow;
+      }
+    }
+  }
+
+  /**
+   * 为单元格添加行合并开始标记
+   */
+  function addVMergeRestart(doc, cell, rowSpan) {
+    let tcPr = cell.getElementsByTagName("w:tcPr")[0];
+    if (!tcPr) {
+      tcPr = doc.createElementNS(NS.w, "w:tcPr");
+      cell.insertBefore(tcPr, cell.firstChild);
+    }
+    
+    // 移除已有的 vMerge
+    const existingVMerge = tcPr.getElementsByTagName("w:vMerge")[0];
+    if (existingVMerge) {
+      existingVMerge.remove();
+    }
+    
+    // 添加 vMerge 开始
+    const vMerge = doc.createElementNS(NS.w, "w:vMerge");
+    vMerge.setAttributeNS(NS.w, "w:val", "restart");
+    tcPr.appendChild(vMerge);
+  }
+
+  /**
+   * 为单元格添加行合并继续标记
+   */
+  function addVMergeContinue(doc, cell) {
+    let tcPr = cell.getElementsByTagName("w:tcPr")[0];
+    if (!tcPr) {
+      tcPr = doc.createElementNS(NS.w, "w:tcPr");
+      cell.insertBefore(tcPr, cell.firstChild);
+    }
+    
+    // 移除已有的 vMerge
+    const existingVMerge = tcPr.getElementsByTagName("w:vMerge")[0];
+    if (existingVMerge) {
+      existingVMerge.remove();
+    }
+    
+    // 添加 vMerge 继续（没有 val 属性表示继续合并）
+    const vMerge = doc.createElementNS(NS.w, "w:vMerge");
+    tcPr.appendChild(vMerge);
+  }
+
+  /**
+   * 清空单元格内容（保留一个空段落）
+   */
+  function clearCellContent(cell) {
+    // 保留 w:tcPr，删除其他内容
+    const children = Array.from(cell.childNodes);
+    children.forEach((child) => {
+      if (child.nodeName !== "w:tcPr") {
+        cell.removeChild(child);
+      }
+    });
+    
+    // 添加一个空段落（Word 单元格必须有至少一个段落）
+    const doc = cell.ownerDocument;
+    const p = doc.createElementNS(NS.w, "w:p");
+    cell.appendChild(p);
   }
 
   // ==========================================
@@ -407,15 +577,13 @@ export const useTemplateStore = defineStore("template", () => {
   /**
    * 下载填充后的文档
    * @param {Object} formData - 表单数据
+   * @param {Object} rowRepeatCountMap - 行重复计数
    * @param {string} filename - 文件名（可选）
    */
-  async function download(formData, filename) {
+  async function download(formData, rowRepeatCountMap = {}, filename) {
     try {
       // 1. 生成填充后的 Blob
-      const blob = await generateFilledBlob(
-        formData,
-        templateInfo.value?.markData
-      );
+      const blob = await generateFilledBlob(formData, rowRepeatCountMap);
 
       if (!blob) {
         ElMessage.error("生成文档失败");

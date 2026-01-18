@@ -36,7 +36,8 @@ const renderPreview = async () => {
   
   try {
     const formData = editorStore.formData
-    const blob = await templateStore.generateFilledBlob(formData)
+    const rowRepeatCountMap = editorStore.rowRepeatCountMap || {}
+    const blob = await templateStore.generateFilledBlob(formData, rowRepeatCountMap)
     
     if (blob && docxRef.value) {
       docxRef.value.innerHTML = ''

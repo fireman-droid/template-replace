@@ -17,6 +17,9 @@ export const useEditorStore = defineStore('editor', () => {
   // 表单数据 (用户填写的内容)
   const formData = ref({})
   
+  // 多人员重复计数 (markKey: 人员数量)
+  const rowRepeatCountMap = ref({})
+  
   // 加载状态
   const loading = ref(false)
 
@@ -51,10 +54,15 @@ export const useEditorStore = defineStore('editor', () => {
         updated_at: res.updated_at
       }
       
-      // 3. 设置表单数据
-      formData.value = res.form_data || {}
+      // 3. 设置表单数据（从 form_data 中提取 __rowRepeatCountMap）
+      const rawFormData = res.form_data || {}
+      const { __rowRepeatCountMap, ...pureFormData } = rawFormData
+      formData.value = pureFormData
       
-      // 4. 设置模板信息到 template store
+      // 4. 设置多人员重复计数（从 form_data 中提取）
+      rowRepeatCountMap.value = __rowRepeatCountMap || {}
+      
+      // 5. 设置模板信息到 template store
       templateStore.setTemplateInfo(res.template)
       
       return res
@@ -75,9 +83,15 @@ export const useEditorStore = defineStore('editor', () => {
     if (!currentCase.value?.id) return
     
     try {
+      // 将 rowRepeatCountMap 合并到 formData 中保存（后端只存储 form_data）
+      const mergedFormData = {
+        ...formData.value,
+        __rowRepeatCountMap: rowRepeatCountMap.value
+      }
+      
       const payload = {
         title: currentCase.value.title,
-        form_data: formData.value
+        form_data: mergedFormData
       }
       
       await updateCase(currentCase.value.id, payload)
@@ -119,6 +133,7 @@ export const useEditorStore = defineStore('editor', () => {
   function resetEditor() {
     currentCase.value = null
     formData.value = {}
+    rowRepeatCountMap.value = {}
     loading.value = false
   }
 
@@ -126,6 +141,7 @@ export const useEditorStore = defineStore('editor', () => {
     // State
     currentCase,
     formData,
+    rowRepeatCountMap,
     loading,
     
     // Getters
