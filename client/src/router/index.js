@@ -13,6 +13,7 @@ import Dashboard from '../views/Admin/Dashboard.vue'
 import UserManagement from '../views/Admin/UserManagement.vue'
 import TemplateManagement from '../views/Admin/TemplateManagement.vue'
 import SystemLogs from '../views/Admin/SystemLogs.vue'
+import ChatSupport from '../views/Admin/chatSupport.vue'
 
 const routes = [
   {
@@ -72,6 +73,12 @@ const routes = [
         name: 'AdminLogs',
         component: SystemLogs,
         meta: { title: '系统日志' }
+      },
+      {
+        path: 'chat',
+        name: 'AdminChat',
+        component: ChatSupport,
+        meta: { title: '在线客服' }
       }
     ]
   }

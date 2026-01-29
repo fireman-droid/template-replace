@@ -1,13 +1,12 @@
 <template>
   <div id="app">
     <router-view />
+    <ChatWidget />
   </div>
 </template>
 
-<script>
-export default {
-  name: 'App'
-}
+<script setup>
+import ChatWidget from '@/components/chatWidget.vue'
 </script>
 
 <style>

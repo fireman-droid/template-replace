@@ -8,12 +8,25 @@ import {
   errorHandler,
   notFoundHandler,
 } from "./middleware/errorLogger.js";
+
+// websocket 的引入
+import { createServer } from "http";
+import { Server } from "socket.io";  
+
 // AI 路由
 import aiRoutes from "./routes/ai.js";
 
 dotenv.config();
 
 const app = express();
+const httpServer = createServer(app); // [新增] 用 app 创建 http 服务器
+const io = new Server(httpServer, {   // [新增] 初始化 socket.io
+  cors: {
+    origin: "*", // 开发环境允许所有跨域，生产环境建议指定域名
+    methods: ["GET", "POST"]
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 
 // 中间件
@@ -24,6 +37,23 @@ app.use("/api/ai", aiRoutes);
 
 // 请求日志中间件
 app.use(requestLogger);
+
+io.on('connection', (socket) => {
+  socket.on('join_room', (roomName) => {
+    socket.join(roomName)
+    console.log(`➕ 加入房间: ${roomName}`);
+  })
+
+  socket.on('send_message', (data) => {
+    const { targetRoom, ...msgContent } = data
+    console.log(`📨 消息 -> ${targetRoom}:`, msgContent.content);
+    socket.to(targetRoom).emit('receive_message', msgContent)
+  })
+
+  socket.on('disconnect', (socket) => {
+    console.log(`用户断开连接: ${socket.id}`)
+  })
+})
 
 // 路由
 app.get("/api/test", (req, res) => {
@@ -73,12 +103,7 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 // 启动服务器
-app.listen(PORT, async () => {
-  console.log(`\n${"=".repeat(50)}`);
+httpServer.listen(PORT, async () => {
   console.log(`🚀 FastReplace 服务器启动成功`);
-  console.log(`📍 地址: http://localhost:${PORT}`);
-  console.log(`⏰ 时间: ${new Date().toLocaleString("zh-CN")}`);
-  console.log(`🌍 环境: ${process.env.NODE_ENV || "development"}`);
-  console.log(`${"=".repeat(50)}\n`);
   await testConnection();
 });

@@ -21,6 +21,9 @@
         <li :class="{ active: isActive('AdminLogs') }" @click="navigateTo('AdminLogs')">
           <el-icon><Monitor /></el-icon> 系统日志
         </li>
+        <li :class="{ active: isActive('AdminChat') }" @click="navigateTo('AdminChat')">
+          <el-icon><ChatDotRound /></el-icon> 在线客服
+        </li>
       </ul>
 
       <div class="bottom-action">
@@ -55,7 +58,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ScaleToOriginal, DataBoard, User, Files, Monitor, Back } from '@element-plus/icons-vue'
+import { ScaleToOriginal, DataBoard, User, Files, Monitor, Back, ChatDotRound } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
