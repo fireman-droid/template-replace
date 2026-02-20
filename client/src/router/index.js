@@ -1,19 +1,21 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-// 引入页面组件
+// 首屏必需：同步加载
 import Home from '../views/Home.vue'
 import Login from '../views/Login.vue'
-import SelectTemplate from '../views/SelectTemplate.vue'
-import ProjectEdit from '../views/ProjectEdit.vue'
 
-// 引入管理后台组件 (建议按需加载，这里为了演示直接引入)
-import AdminLayout from '../views/Admin/Admin.vue'
-import Dashboard from '../views/Admin/Dashboard.vue'
-import UserManagement from '../views/Admin/UserManagement.vue'
-import TemplateManagement from '../views/Admin/TemplateManagement.vue'
-import SystemLogs from '../views/Admin/SystemLogs.vue'
-import ChatSupport from '../views/Admin/chatSupport.vue'
+// 非首屏：路由懒加载（Vite 自动 code splitting，按需下载）
+const SelectTemplate = () => import('../views/SelectTemplate.vue')
+const ProjectEdit = () => import('../views/ProjectEdit.vue')
+
+// 管理后台：独立 chunk，普通用户永远不会下载这些代码
+const AdminLayout = () => import(/* webpackChunkName: "admin" */ '../views/Admin/Admin.vue')
+const Dashboard = () => import(/* webpackChunkName: "admin" */ '../views/Admin/Dashboard.vue')
+const UserManagement = () => import(/* webpackChunkName: "admin" */ '../views/Admin/UserManagement.vue')
+const TemplateManagement = () => import(/* webpackChunkName: "admin" */ '../views/Admin/TemplateManagement.vue')
+const SystemLogs = () => import(/* webpackChunkName: "admin" */ '../views/Admin/SystemLogs.vue')
+const ChatSupport = () => import(/* webpackChunkName: "admin" */ '../views/Admin/chatSupport.vue')
 
 const routes = [
   {
@@ -40,15 +42,15 @@ const routes = [
     component: ProjectEdit,
     meta: { requiresAuth: true }
   },
-  // --- 管理后台路由重构 ---
+  // --- 管理后台路由 ---
   {
     path: '/admin',
-    component: AdminLayout, // Admin.vue 现在只作为布局容器
+    component: AdminLayout,
     meta: { requiresAuth: true, requiresAdmin: true },
     children: [
       {
         path: '',
-        redirect: '/admin/templates' // 默认跳转到模版管理
+        redirect: '/admin/templates'
       },
       {
         path: 'dashboard',

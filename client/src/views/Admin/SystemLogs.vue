@@ -79,7 +79,7 @@
               <span v-else class="details-cell">{{ getDetailsMessage(row.details) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="IP地址" width="140">
+          <el-table-column label="IP地址" width="200">
             <template #default="{ row }">
               <code class="ip-cell">{{ row.ip || '-' }}</code>
             </template>
@@ -114,9 +114,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { Monitor, Search, Refresh } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import axios from 'axios'
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+import { getSystemLogs } from '@/api'
 
 const loading = ref(false)
 const logs = ref([])
@@ -137,19 +135,15 @@ const pagination = reactive({
 const fetchLogs = async () => {
   loading.value = true
   try {
-    const token = localStorage.getItem('token')
-    const response = await axios.get(`${API_BASE}/admin/logs`, {
-      headers: { Authorization: `Bearer ${token}` },
-      params: {
-        page: pagination.page,
-        pageSize: pagination.pageSize,
-        action: filters.action || undefined,
-        resourceType: filters.resourceType || undefined,
-        keyword: filters.keyword || undefined
-      }
+    const data = await getSystemLogs({
+      page: pagination.page,
+      pageSize: pagination.pageSize,
+      action: filters.action || undefined,
+      resourceType: filters.resourceType || undefined,
+      keyword: filters.keyword || undefined
     })
-    logs.value = response.data.list || []
-    pagination.total = response.data.total || 0
+    logs.value = data.list || []
+    pagination.total = data.total || 0
   } catch (error) {
     console.error('获取日志失败:', error)
     ElMessage.error('获取日志失败: ' + (error.response?.data?.message || error.message))
@@ -352,10 +346,30 @@ onMounted(() => {
 :deep(.el-table) {
   --el-table-bg-color: transparent;
   --el-table-tr-bg-color: transparent;
-  --el-table-row-hover-bg-color: rgba(99, 102, 241, 0.05); /* 悬停时淡淡的紫色 */
+  --el-table-row-hover-bg-color: rgba(99, 102, 241, 0.05);
   --el-table-border-color: rgba(148, 163, 184, 0.1);
   --el-table-text-color: #e2e8f0;
   --el-table-header-bg-color: rgba(15, 23, 42, 0.6);
+}
+
+:deep(.el-table__body tr) {
+  background-color: transparent !important;
+}
+
+:deep(.el-table__body tr.el-table__row--striped) {
+  background-color: rgba(15, 23, 42, 0.2) !important;
+}
+
+:deep(.el-table__body tr.el-table__row--striped td.el-table__cell) {
+  background-color: rgba(15, 23, 42, 0.2) !important;
+}
+
+:deep(.el-table__body tr:hover > td.el-table__cell) {
+  background-color: rgba(99, 102, 241, 0.05) !important;
+}
+
+:deep(.el-table__body tr td.el-table__cell) {
+  background-color: transparent !important;
 }
 
 :deep(.el-table__header) {
@@ -396,9 +410,27 @@ onMounted(() => {
   border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
+
 :deep(.el-pager li.is-active) {
   background-color: #6366f1;
   color: white;
   border-color: #6366f1;
+}
+
+/* 强制空状态垂直居中 */
+:deep(.el-table__empty-block) {
+  height: 100% !important;
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+:deep(.el-table__empty-text) {
+  width: 100%;
 }
 </style>

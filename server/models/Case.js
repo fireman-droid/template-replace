@@ -11,9 +11,10 @@ class Case {
    * @returns {Object} 创建的案卷信息
    */
   static async create({ title, template_id, user_id, status = 'draft', form_data }) {
+    const now = new Date()
     const [result] = await pool.query(
-      'INSERT INTO cases (title, template_id, user_id, status, form_data) VALUES (?, ?, ?, ?, ?)',
-      [title, template_id, user_id, status, JSON.stringify(form_data || {})]
+      'INSERT INTO cases (title, template_id, user_id, status, form_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [title, template_id, user_id, status, JSON.stringify(form_data || {}), now, now]
     )
     
     return {

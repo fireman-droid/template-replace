@@ -21,6 +21,7 @@ import multer from "multer";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { randomUUID } from "crypto";
 
 // 兼容低版本 Node.js（18以下）的 fetch
 const fetch = globalThis.fetch || (await import('node-fetch')).default;
@@ -323,7 +324,6 @@ async function* streamAIWithTools(content, fieldList) {
               .replace(/\\"/g, '"')
               .replace(/\\\\/g, '\\');
             
-            console.log(`📤 推送字段: ${key}`);
             yield { key, value: decodedValue };  // 🎯 实时返回字段
           }
         }
@@ -339,7 +339,6 @@ async function* streamAIWithTools(content, fieldList) {
     const result = JSON.parse(argumentsBuffer);
     for (const [key, value] of Object.entries(result)) {
       if (value && !yieldedKeys.has(key)) {
-        console.log(`📤 补充推送: ${key}`);
         yield { key, value };
       }
     }
@@ -360,17 +359,23 @@ async function* streamAIWithTools(content, fieldList) {
  */
 router.post("/parse-stream", upload.single("file"), async (req, res) => {
   let tempFilePath = null;
+  const requestId = randomUUID();
   
   // 1. 设置 SSE 响应头
-  res.setHeader("Content-Type", "text/event-stream");  // SSE 内容类型
-  res.setHeader("Cache-Control", "no-cache");           // 禁用缓存
-  res.setHeader("Connection", "keep-alive");            // 保持连接
-  res.setHeader("X-Accel-Buffering", "no");            // 禁用 Nginx 缓冲
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no");
+  res.setHeader("X-Request-Id", requestId);
 
-  // 辅助函数：发送 SSE 事件
+  // 辅助函数：发送 SSE 事件（附带 requestId）
   const sendEvent = (type, data) => {
-    res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
+    res.write(`data: ${JSON.stringify({ type, requestId, ...data })}\n\n`);
   };
+
+  // 监听客户端断开（支持前端取消）
+  let aborted = false;
+  req.on("close", () => { aborted = true; });
 
   try {
     const { text, fields } = req.body;
@@ -382,10 +387,26 @@ router.post("/parse-stream", upload.single("file"), async (req, res) => {
     let fieldList = [];
     try {
       fieldList = JSON.parse(fields);
+      console.log(`📝 [${requestId}] 收到 ${fieldList.length} 个字段定义`);
+      console.log(`📝 [${requestId}] 前10个字段:`, fieldList.slice(0, 10).map(f => `${f.fieldKey}:${f.fieldLabel}`));
     } catch (e) {
       sendEvent("error", { message: "字段列表格式错误" });
       return res.end();
     }
+
+    // 构建字段白名单（只允许 fieldList 中的 key 及其 _N 后缀）
+    const allowedKeys = new Set();
+    const MAX_REPEAT = 2;
+    for (const f of fieldList) {
+      allowedKeys.add(String(f.fieldKey));
+      if (f.canRepeat) {
+        for (let i = 1; i < MAX_REPEAT; i++) {
+          allowedKeys.add(`${f.fieldKey}_${i}`);
+        }
+      }
+    }
+
+    console.log(`📋 [${requestId}] 字段白名单 (共 ${allowedKeys.size} 个):`, Array.from(allowedKeys).slice(0, 20), '...');
 
     // 3. 验证输入
     if (!text && !file) {
@@ -400,30 +421,75 @@ router.post("/parse-stream", upload.single("file"), async (req, res) => {
       tempFilePath = file.path;
       sendEvent("progress", { message: `正在解析文件: ${file.originalname}` });
       const fileContent = await parseFileContent(file.path, file.originalname);
+      console.log(`📄 [${requestId}] 文件解析结果 (前500字符):`, fileContent.substring(0, 500));
+      console.log(`📊 [${requestId}] 文件内容长度: ${fileContent.length} 字符`);
       content = content ? `${content}\n\n${fileContent}` : fileContent;
     }
 
-    // 5. 调用流式 AI 并推送结果
+    console.log(`📝 [${requestId}] 最终发送给 AI 的内容长度: ${content.length} 字符`);
+
+    // 5. 调用流式 AI 并推送结果（带重试）
     sendEvent("progress", { message: "AI 正在分析案情，字段将逐个填充..." });
     
     let fieldCount = 0;
-    for await (const field of streamAIWithTools(content, fieldList)) {
-      fieldCount++;
-      sendEvent("field", {
-        key: field.key,
-        value: field.value,
-        index: fieldCount
-      });
+    let rejectedCount = 0;
+    const MAX_RETRIES = 2;
+    let lastError = null;
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        if (attempt > 0) {
+          console.log(`🔄 [${requestId}] 重试第 ${attempt} 次...`);
+          sendEvent("progress", { message: `AI 重试中（第 ${attempt} 次）...` });
+        }
+
+        for await (const field of streamAIWithTools(content, fieldList)) {
+          if (aborted) {
+            console.log(`⛔ [${requestId}] 客户端已断开，停止推送`);
+            return;
+          }
+
+          // 字段白名单校验：只允许 fieldList 中的 key
+          if (!allowedKeys.has(field.key)) {
+            rejectedCount++;
+            console.warn(`🚫 [${requestId}] 拒绝未知字段: ${field.key} (不在白名单中)`);
+            continue;
+          }
+
+          fieldCount++;
+          sendEvent("field", {
+            key: field.key,
+            value: field.value,
+            index: fieldCount
+          });
+        }
+
+        lastError = null;
+        break; // 成功，跳出重试循环
+      } catch (err) {
+        lastError = err;
+        console.error(`❌ [${requestId}] AI 调用失败 (attempt ${attempt}):`, err.message);
+        if (attempt < MAX_RETRIES) continue;
+      }
     }
 
-    // 6. 完成
-    sendEvent("complete", { message: "填充完成", total: fieldCount });
+    if (lastError) {
+      sendEvent("error", { message: `AI 调用失败（已重试 ${MAX_RETRIES} 次）：${lastError.message}` });
+    } else {
+      // 6. 完成
+      sendEvent("complete", {
+        message: "填充完成",
+        total: fieldCount,
+        rejected: rejectedCount,
+        requestId
+      });
+      console.log(`✅ [${requestId}] 完成：${fieldCount} 字段已填充，${rejectedCount} 字段被拒绝`);
+    }
 
   } catch (error) {
-    console.error("❌ AI 解析错误:", error);
-    sendEvent("error", { message: error.message });
+    console.error(`❌ [${requestId}] AI 解析错误:`, error);
+    sendEvent("error", { message: error.message, requestId });
   } finally {
-    // 清理临时文件
     if (tempFilePath && fs.existsSync(tempFilePath)) {
       fs.unlinkSync(tempFilePath);
     }

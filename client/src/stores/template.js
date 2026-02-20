@@ -24,6 +24,9 @@ export const useTemplateStore = defineStore("template", () => {
   // 错误信息
   const error = ref(null);
 
+  // 文档生成进度 (0-100)，供 UI 绑定
+  const generateProgress = ref(0);
+
   // ==================== Getters ====================
 
   // 用于操作word模版
@@ -94,39 +97,55 @@ export const useTemplateStore = defineStore("template", () => {
 
   /**
    * 【核心】生成填充后的文档 Blob (用于预览和下载)
+   * 通过 Web Worker 在后台线程执行，避免主线程卡顿
    * @param {Object} data - 表单数据对象
    * @param {Object} rowRepeatCountMap - 行重复计数 {markKey: count}
    */
   async function generateFilledBlob(data, rowRepeatCountMap = {}) {
     const markData = templateInfo.value.markData;
-    // 如果没有加载模板文件，直接返回 null
     if (!templateFile.value) {
       console.warn("⚠️ 无法生成预览：尚未加载模板文件");
       return null;
     }
-    // 2. 构建映射 (核心步骤)
-    const markKeyMap = buildMarkKeyToFieldKeyMap(markData);
 
-    // 3. 解析 document.xml
-    const zip = await JSZip.loadAsync(templateFile.value);
-    const xmlContent = await zip.file("word/document.xml").async("string");
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(xmlContent, "text/xml");
-    
-    // 3.5 根据 rowRepeatCountMap 复制表格行
-    duplicateRowsByRepeatCount(doc, rowRepeatCountMap);
+    generateProgress.value = 0;
 
-    // 4.实现填充
-    const fillCount = replaceDocFieldsInDocx(doc, data, markKeyMap);
-    // console.log(fillCount);
-    // 6. 序列化并重新打包
-    const serializer = new XMLSerializer();
-    const newXmlContent = serializer.serializeToString(doc);
-    zip.file("word/document.xml", newXmlContent);
+    // 将 Blob 转为 ArrayBuffer 以便传递给 Worker
+    const templateBuffer = await templateFile.value.arrayBuffer();
 
-    // 7. 生成并下载
-    const blob = await zip.generateAsync({ type: "blob" });
-    return blob;
+    return new Promise((resolve, reject) => {
+      const worker = new Worker(
+        new URL('../workers/docxWorker.js', import.meta.url),
+        { type: 'module' }
+      );
+
+      worker.onmessage = (e) => {
+        const msg = e.data;
+        if (msg.type === 'progress') {
+          generateProgress.value = msg.percent;
+        } else if (msg.type === 'result') {
+          generateProgress.value = 100;
+          worker.terminate();
+          resolve(msg.blob);
+        } else if (msg.type === 'error') {
+          worker.terminate();
+          reject(new Error(msg.message));
+        }
+      };
+
+      worker.onerror = (err) => {
+        worker.terminate();
+        reject(new Error(err.message || '文档生成 Worker 异常'));
+      };
+
+      worker.postMessage({
+        type: 'generate',
+        templateBuffer,
+        formData: JSON.parse(JSON.stringify(data)),
+        rowRepeatCountMap: { ...rowRepeatCountMap },
+        markData: JSON.parse(JSON.stringify(markData))
+      });
+    });
   }
 
   /**
@@ -614,6 +633,7 @@ export const useTemplateStore = defineStore("template", () => {
     error,
 
     // Getters
+    generateProgress,
 
     // Actions
     clear,

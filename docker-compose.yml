@@ -1,0 +1,61 @@
+# FastReplace 一键启动
+# 使用方式: docker compose up -d
+# 首次启动后需要导入数据库: docker exec -i fastreplace-db mysql -uroot -p${DB_PASSWORD} < server/init.sql
+
+services:
+  # MySQL 数据库
+  db:
+    image: mysql:8.0
+    container_name: fastreplace-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-fastreplace123}
+      MYSQL_DATABASE: fastreplace
+      TZ: Asia/Shanghai
+    ports:
+      - "3307:3306"   # 映射到 3307 避免与宿主机 MySQL 冲突
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./server/init.sql:/docker-entrypoint-initdb.d/init.sql  # 首次自动建表
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 后端 API 服务
+  server:
+    build: ./server
+    container_name: fastreplace-server
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 5000
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD:-fastreplace123}
+      DB_NAME: fastreplace
+      DATABASE_URL: mysql://root:${DB_PASSWORD:-fastreplace123}@db:3306/fastreplace
+      JWT_SECRET: ${JWT_SECRET:-fastreplace_jwt_secret_change_me}
+      KIMI_API_KEY: ${KIMI_API_KEY:-}
+    volumes:
+      - uploads_data:/app/uploads
+    ports:
+      - "5000:5000"
+
+  # 前端（Nginx 托管 + 反向代理）
+  client:
+    build: ./client
+    container_name: fastreplace-client
+    restart: unless-stopped
+    depends_on:
+      - server
+    ports:
+      - "80:80"
+
+volumes:
+  db_data:
+  uploads_data:

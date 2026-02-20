@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import pool, { testConnection } from "./config/db.js";
+import pool, { testConnection, prisma } from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import {
   requestLogger,
@@ -33,21 +33,129 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/api/ai", aiRoutes);
+// AI 路由：需要登录 + 限流（每用户每分钟最多 10 次）
+import { authenticate } from "./middleware/auth.js";
+import { createRateLimiter } from "./middleware/rateLimiter.js";
+const aiRateLimiter = createRateLimiter({ windowMs: 60 * 1000, maxRequests: 10 });
+app.use("/api/ai", authenticate, aiRateLimiter, aiRoutes);
 
 // 请求日志中间件
 app.use(requestLogger);
 
 io.on('connection', (socket) => {
-  socket.on('join_room', (roomName) => {
+  socket.on('join_room', async (roomName) => {
     socket.join(roomName)
     console.log(`➕ 加入房间: ${roomName}`);
+
+    // 如果是用户房间，发送历史记录
+    if (roomName.startsWith('user_')) {
+      try {
+        const userId = parseInt(roomName.split('_')[1]);
+        if (!isNaN(userId)) {
+          const history = await prisma.chatMessage.findMany({
+            where: {
+              OR: [
+                { targetRoom: roomName },                    // 管理员发给这个用户的
+                { senderId: userId, targetRoom: 'admin_room' } // 这个用户发给管理员的
+              ]
+            },
+            orderBy: { createdAt: 'asc' },
+            take: 50
+          });
+          socket.emit('load_history', history);
+        }
+      } catch (e) {
+        console.error('加载历史记录失败:', e.message);
+      }
+    }
+  })
+  
+  // 标记消息已读
+  socket.on('mark_read', async (userId) => {
+    try {
+      await prisma.chatMessage.updateMany({
+        where: {
+          senderId: userId,
+          targetRoom: 'admin_room',
+          isRead: false
+        },
+        data: { isRead: true }
+      })
+      console.log(`✅ 已标记用户 ${userId} 的消息为已读`)
+    } catch (e) {
+      console.error('标记已读失败:', e.message)
+    }
   })
 
-  socket.on('send_message', (data) => {
-    const { targetRoom, ...msgContent } = data
-    console.log(`📨 消息 -> ${targetRoom}:`, msgContent.content);
-    socket.to(targetRoom).emit('receive_message', msgContent)
+  socket.on('send_message',async (data) => {
+    const { targetRoom, content, sender, senderId } = data
+    console.log(`📨 [${sender}] -> ${targetRoom}:`, content);
+    // 判断发送者类型
+    const isUserToAdmin = targetRoom === 'admin_room'
+    const senderType = isUserToAdmin ? 'user' : 'admin'
+
+    // 处理id
+    const safeSenderId = (senderId && !isNaN(parseInt(senderId))) ? parseInt(senderId) : null;
+    
+    // 处理会话
+    let sessionUserId = null
+    if (senderType === 'user') {
+      sessionUserId = safeSenderId; // 用户发的消息，用用户的 ID
+    } else {
+      // 管理员发给用户 (targetRoom = 'user_123')
+      if (targetRoom.startsWith('user_')) {
+        const parsedId = parseInt(targetRoom.split('_')[1]);
+        if (!isNaN(parsedId)) sessionUserId = parsedId;
+      }
+    }
+    
+    let sessionId = null
+    if (sessionUserId) {
+      try {
+        let session = await prisma.chatSession.findFirst({
+          where:{userId:sessionUserId}
+        })
+        if (session) {
+          await prisma.chatSession.update({
+            where:{id:session.id},
+            data:{updatedAt:new Date()}
+          })
+          sessionId = session.id
+        } else {
+          const newSession = await prisma.chatSession.create({
+            data:{
+              userId:sessionUserId,
+              createdAt:new Date(),
+              updatedAt:new Date()
+            }
+          })
+          sessionId = newSession.id
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    // 保存到数据库
+    try {
+      await prisma.chatMessage.create({
+        data: {
+          senderType,
+          senderId: safeSenderId,
+          senderName: sender,
+          targetRoom,
+          content,
+          sessionId 
+        }
+      });
+    } catch (e) {
+      console.error('❌ 保存消息失败:', e.message)
+    }
+  
+    socket.to(targetRoom).emit('receive_message', data)
+
+    if (!isUserToAdmin) {
+      socket.to('admin_room').emit('receive_message', data);
+    }
   })
 
   socket.on('disconnect', (socket) => {

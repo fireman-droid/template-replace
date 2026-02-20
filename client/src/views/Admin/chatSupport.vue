@@ -45,9 +45,15 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { io } from 'socket.io-client'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { getChatSessions } from '@/api/admin'
 
+const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
 const socket = ref(null)
-const sessions = ref([]) // 会话列表
+const sessions = ref([])
 const currentSession = ref(null) // 当前选中的会话
 const replyText = ref('')
 const msgAreaRef = ref(null)
@@ -64,6 +70,18 @@ const initSocket = () => {
     console.log('管理员已连接聊天服务')
   })
 
+  // 监听历史记录（管理员点击会话时触发）
+  socket.value.on('load_history', (history) => {
+    console.log('📜 加载用户历史记录:', history)
+    if (currentSession.value) {
+      currentSession.value.messages = history.map(msg => ({
+        sender: msg.senderType,  // 'user' 或 'admin'
+        content: msg.content,
+        time: new Date(msg.createdAt)
+      }))
+    }
+  })
+  
   // 监听用户发来的消息
   socket.value.on('receive_message', (data) => {
     console.log('管理员收到消息:', data)
@@ -78,12 +96,12 @@ const initSocket = () => {
 // 处理新消息
 const handleIncomingMessage = (data) => {
   // 1. 查找会话是否存在
-  let session = sessions.value.find(s => s.userId === data.sender) // 先用用户名当ID
+  let session = sessions.value.find(s => s.userId === data.senderId)
 
   if (!session) {
     // 新会话
     session = {
-      userId: data.sender, // 暂用
+      userId: data.senderId,
       username: data.sender,
       lastMessage: data.content,
       unread: 0,
@@ -109,6 +127,10 @@ const handleIncomingMessage = (data) => {
 const selectSession = (session) => {
   currentSession.value = session
   session.unread = 0
+
+  router.replace({ query: { userId: session.userId } })
+  socket.value.emit('join_room', `user_${session.userId}`)
+  socket.value.emit('mark_read', session.userId)  // 加上这行
 }
 
 const sendReply = () => {
@@ -122,9 +144,10 @@ const sendReply = () => {
   // 实际上建议修改后端 send_message 把完整 user 对象传过来。
 
   socket.value.emit('send_message', {
-    targetRoom: `user_这里得填对应ID`,
+    targetRoom: `user_${currentSession.value.userId}`,
     content: content,
-    sender: 'admin'
+    sender: authStore.user?.username || 'Admin',
+    senderId: authStore.user?.id
   })
 
   // 2. 本地显示
@@ -137,8 +160,27 @@ const sendReply = () => {
   replyText.value = ''
 }
 
-onMounted(() => {
+const fetchSessions = async () => {
+  try {
+    const res = await getChatSessions()
+    sessions.value = res.data || res  // 看返回格式
+  } catch (e) {
+    console.error('获取会话列表失败:', e)
+  }
+}
+
+onMounted(async () => {
   initSocket()
+  await fetchSessions()
+
+  // 如果 URL 有 userId，自动选中对应会话
+  const urlUserId = route.query.userId
+  if (urlUserId) {
+    const session = sessions.value.find(s => s.userId == urlUserId)
+    if (session) {
+      selectSession(session)
+    }
+  }
 })
 
 onUnmounted(() => {
@@ -245,6 +287,33 @@ onUnmounted(() => {
   .input-area {
     padding: 20px;
     border-top: 1px solid #334155;
+    background: rgba(30, 41, 59, 0.5);
+
+    /* 深度覆盖 Element 样式，打造深色输入框 */
+    :deep(.el-input-group__append) {
+      background-color: #3b82f6;
+      border: none;
+      color: white;
+      box-shadow: none;
+      
+      &:hover { background-color: #2563eb; }
+    }
+    
+    :deep(.el-input__wrapper) {
+      background-color: #0f172a;
+      box-shadow: none; /* 去掉默认边框 */
+      border: 1px solid #334155;
+      padding-left: 15px;
+      
+      &.is-focus {
+        box-shadow: 0 0 0 1px #3b82f6; /* 聚焦高亮 */
+      }
+      
+      .el-input__inner {
+        color: #f1f5f9;
+        &::placeholder { color: #64748b; }
+      }
+    }
   }
 }
 

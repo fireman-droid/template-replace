@@ -1,0 +1,4286 @@
+{
+  "type": "multi-table",
+  "data": [
+    {
+      "type": "table",
+      "data": [
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "当事人信息"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "原告（自然人）",
+                    "canRemoveSubjectWhenEmpty": true,
+                    "canRepeatSubjectRow": true,
+                    "mark": {
+                      "markKey": "b4c66a4a-024f-4740-a02f-5c35fac9bc21"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "1",
+                    "fieldLabel": "姓名",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "c69e4698-3d91-41f3-a8af-0a91492d36f1"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "2",
+                    "type": "options",
+                    "fieldLabel": "性别",
+                    "marks": [
+                      {
+                        "markKey": "e0034cc4-0a06-4130-af67-ef74f75b59c1",
+                        "markProps": {
+                          "optionValue": "男",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "212853cd-8825-48a1-9c11-2cbcee723a0f",
+                        "markProps": {
+                          "optionValue": "女",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "男"
+                        },
+                        {
+                          "label": "女"
+                        }
+                      ],
+                      "displayMode": "check"
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "3",
+                    "type": "date",
+                    "fieldLabel": "出生日期",
+                    "marks": [
+                      {
+                        "markKey": "3f03bfdd-fadc-4510-8707-ec01baf63333"
+                      }
+                    ],
+                    "props": {
+                      "precision": "day"
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "4",
+                    "fieldLabel": "民族",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "e3853383-1718-4e51-b80b-eed9ca6628da"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "5",
+                    "fieldLabel": "工作单位",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "8a4146fe-ef28-49a2-8e14-0af705fbff6e"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "6",
+                    "fieldLabel": "职务",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "c66acfd8-278c-4b08-bba0-20470d4cedb4"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "7",
+                    "fieldLabel": "联系电话",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "9e8482d6-5ed0-49ba-a45a-e4e7b0aa1e36"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "8",
+                    "fieldLabel": "住所地（户籍所在地）",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "b5a15223-d647-4c83-b570-d1cfc5481b38"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "9",
+                    "fieldLabel": "经常居住地",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "7d5c763d-73f1-41cc-8f96-af0d61951b6e"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "10",
+                    "fieldLabel": "证件类型",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "c0207bbd-b313-44e9-9dd4-559dacc41f85"
+                      }
+                    ],
+                    "fieldTips": "如居民身份证、港澳台身份证、护照、户口簿、军官证（士兵证）等"
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "11",
+                    "fieldLabel": "证件号码",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "ac3a713f-82f9-4091-9ce9-24e926bb796a"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "原告（法人、非法人组织）",
+                    "canRemoveSubjectWhenEmpty": true,
+                    "canRepeatSubjectRow": true,
+                    "mark": {
+                      "markKey": "61abb8fe-032a-42e5-8645-b8c6e4e1da31"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "12",
+                    "fieldLabel": "名称",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "4af4fc3d-c196-4161-8061-eff8da2d7a23"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "13",
+                    "fieldLabel": "住所地（主要办事机构所在地）",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "62cb6c8e-38c8-4738-bc1d-988c8fd5c432"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "14",
+                    "fieldLabel": "注册地 / 登记地",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "ad81d6b1-188f-46fb-80fe-3704cf8ce4eb"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "15",
+                    "fieldLabel": "法定代表人 / 负责人",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "b56d3c07-3786-4397-b843-56cdb680e3d5"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "16",
+                    "fieldLabel": "职务",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "8a50d3c9-c4cb-487e-9095-1c0db98e754a"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "17",
+                    "fieldLabel": "联系电话",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "7f1d0913-aa26-4187-a7ce-3cf4458b2fb0"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "18",
+                    "fieldLabel": "统一社会信用代码",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "d0133f5c-d9b8-4a8b-90b5-2628e087f03a"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "19",
+                    "type": "options",
+                    "fieldLabel": "类型",
+                    "marks": [
+                      {
+                        "markKey": "aaf4c068-8cf6-4562-9aa7-a89e27418e33",
+                        "markProps": {
+                          "optionValue": "有限责任公司",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "6fbe32c6-f3ef-4e16-b1d7-d55b00259cb7",
+                        "markProps": {
+                          "optionValue": "股份有限公司",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "e26c4fdd-57d4-4b7a-a347-c8ccac31fcac",
+                        "markProps": {
+                          "optionValue": "上市公司",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "02b57d46-221b-4697-9f6b-1319042d4c8a",
+                        "markProps": {
+                          "optionValue": "其他企业法人",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "646b6535-a2d4-4dfc-870c-9434218fa638",
+                        "markProps": {
+                          "optionValue": "事业单位",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "f4a7c365-17ad-426e-ab58-6977e7eb897c",
+                        "markProps": {
+                          "optionValue": "社会团体",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "8568f2fb-f5c7-4318-b883-3eaf9fc2ec32",
+                        "markProps": {
+                          "optionValue": "基金会",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "65c78da5-fdd0-47d2-b130-a34029592a12",
+                        "markProps": {
+                          "optionValue": "社会服务机构",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "e2574c98-171f-452d-8735-48f3d1a47ad9",
+                        "markProps": {
+                          "optionValue": "机关法人",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "8ad9338f-c6bd-4cd5-a1af-daf97d5a5694",
+                        "markProps": {
+                          "optionValue": "农村集体经济组织法人",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "be4f29c5-b62a-419c-9d75-9af32001b968",
+                        "markProps": {
+                          "optionValue": "城镇农村的合作经济组织法人",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "3743a1fd-cf8a-4fa4-b5a1-6402e02bc749",
+                        "markProps": {
+                          "optionValue": "基层群众性自治组织法人",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "c99a0c6b-14fe-4d00-b397-2ac674b83336",
+                        "markProps": {
+                          "optionValue": "个人独资企业",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "03b34820-e7e4-4f02-be9f-aff9c4123285",
+                        "markProps": {
+                          "optionValue": "合伙企业",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "81d01d34-9511-425e-9e09-32ba42a1a19c",
+                        "markProps": {
+                          "optionValue": "不具有法人资格的专业服务机构",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "7bdc0568-63db-4092-8e06-0ad60b4d9c55",
+                        "markProps": {
+                          "optionValue": "国有",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "5a5cba0f-c0ea-4673-8304-4b3e20bb7938",
+                        "markProps": {
+                          "optionValue": "控股",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "c31a67b1-6703-4391-82d0-137033655640",
+                        "markProps": {
+                          "optionValue": "参股",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "a53a3a41-ecea-4181-854d-ec13e6fed07f",
+                        "markProps": {
+                          "optionValue": "民营",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "有限责任公司"
+                        },
+                        {
+                          "label": "股份有限公司"
+                        },
+                        {
+                          "label": "上市公司"
+                        },
+                        {
+                          "label": "其他企业法人"
+                        },
+                        {
+                          "label": "事业单位"
+                        },
+                        {
+                          "label": "社会团体"
+                        },
+                        {
+                          "label": "基金会"
+                        },
+                        {
+                          "label": "社会服务机构"
+                        },
+                        {
+                          "label": "机关法人"
+                        },
+                        {
+                          "label": "农村集体经济组织法人"
+                        },
+                        {
+                          "label": "城镇农村的合作经济组织法人"
+                        },
+                        {
+                          "label": "基层群众性自治组织法人"
+                        },
+                        {
+                          "label": "个人独资企业"
+                        },
+                        {
+                          "label": "合伙企业"
+                        },
+                        {
+                          "label": "不具有法人资格的专业服务机构"
+                        },
+                        {
+                          "label": "国有",
+                          "children": [
+                            {
+                              "label": "控股"
+                            },
+                            {
+                              "label": "参股"
+                            }
+                          ]
+                        },
+                        {
+                          "label": "民营"
+                        }
+                      ],
+                      "isMultiple": true,
+                      "displayMode": "dropdown"
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "20",
+                    "fieldLabel": "其他类型",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "d440f194-5786-45ee-83f6-c24d09397ea0"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "委托诉讼代理人",
+                    "canRemoveSubjectWhenEmpty": true,
+                    "canRepeatSubjectRow": true,
+                    "mark": {
+                      "markKey": "9cbeefca-af8c-4c69-96e6-59621a0e453d"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "21",
+                    "type": "options",
+                    "fieldLabel": "有无诉讼代理人",
+                    "marks": [
+                      {
+                        "markKey": "be6fa41d-66af-4988-a6b7-441f96802123",
+                        "markProps": {
+                          "optionValue": "有",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "600b7ad7-9dfe-4778-a9b3-a0bb59c775e5",
+                        "markProps": {
+                          "optionValue": "无",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "有"
+                        },
+                        {
+                          "label": "无"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "22",
+                    "fieldLabel": "姓名",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "dcd630fd-0f01-4226-a293-ce4909533b16"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "23",
+                    "fieldLabel": "单位",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "33ac6d55-b2d2-4be2-b8e7-e5a4faa0efa4"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "24",
+                    "fieldLabel": "职务",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "21201551-ca19-4ab5-aae3-034d7827a657"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "25",
+                    "fieldLabel": "联系电话",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "e9c98056-4331-44d1-b9c7-6c0cdc0a95a6"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "26",
+                    "type": "options",
+                    "fieldLabel": "代理权限",
+                    "marks": [
+                      {
+                        "markKey": "ce68544a-7f55-4059-a5e8-c4e523a752b2",
+                        "markProps": {
+                          "optionValue": "一般授权",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "216a064b-65eb-400b-a3a5-11b55f8c5ce2",
+                        "markProps": {
+                          "optionValue": "特别授权",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "一般授权"
+                        },
+                        {
+                          "label": "特别授权"
+                        }
+                      ],
+                      "displayMode": "check"
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "27",
+                    "fieldLabel": "特别授权内容",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "b9aaa142-6134-430a-8fa0-f3b4c53e77cb"
+                      }
+                    ],
+                    "fieldTips": "如代为承认、放弃、变更诉讼请求，进行和解，提起反诉或者上诉",
+                    "fieldLabelHidden": false,
+                    "props": {
+                      "multiple": true
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "被告（自然人）",
+                    "canRemoveSubjectWhenEmpty": true,
+                    "canRepeatSubjectRow": true,
+                    "mark": {
+                      "markKey": "687f46f3-9d53-43f3-a44f-79f5c26ec8fc"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "28",
+                    "fieldLabel": "姓名",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "980ffbce-265a-4fe1-9da6-74d0e37013b4"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "29",
+                    "type": "options",
+                    "fieldLabel": "性别",
+                    "marks": [
+                      {
+                        "markKey": "4f4c989a-86bd-427e-98b1-5b05609265f0",
+                        "markProps": {
+                          "optionValue": "男",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "ab61a8e8-2605-4a93-87d8-3fb47c79660d",
+                        "markProps": {
+                          "optionValue": "女",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "男"
+                        },
+                        {
+                          "label": "女"
+                        }
+                      ],
+                      "displayMode": "check"
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "30",
+                    "type": "date",
+                    "fieldLabel": "出生日期",
+                    "marks": [
+                      {
+                        "markKey": "9e4fd2bf-6003-4a3a-81f3-f89883e9dd23"
+                      }
+                    ],
+                    "props": {
+                      "precision": "day"
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "31",
+                    "fieldLabel": "民族",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "e9efcd1a-b99b-419f-bc7b-27554d675c6d"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "32",
+                    "fieldLabel": "工作单位",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "0e71ae10-9d30-4622-9993-e2f5cc7c6cae"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "33",
+                    "fieldLabel": "职务",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "0611ccab-2aa0-46dc-a25e-8f0b95f6783e"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "34",
+                    "fieldLabel": "联系电话",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "b50dbf4d-e50e-4312-87bd-09e55ebfe640"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "35",
+                    "fieldLabel": "住所地（户籍所在地）",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "1a4d628c-bfbc-4148-9b86-6765f2a456a4"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "36",
+                    "fieldLabel": "经常居住地",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "024fa7d0-9b82-49ee-9995-d942286822bb"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "37",
+                    "fieldLabel": "证件类型",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "f9ce4488-0a90-4309-9346-5afa2a6a3c42"
+                      }
+                    ],
+                    "fieldTips": "如居民身份证、港澳台身份证、护照、户口簿、军官证（士兵证）等"
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "38",
+                    "fieldLabel": "证件号码",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "0f95c461-931a-4760-86c8-924082464e18"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "被告（法人、非法人组织）",
+                    "canRemoveSubjectWhenEmpty": true,
+                    "canRepeatSubjectRow": true,
+                    "mark": {
+                      "markKey": "0fb122ca-7ff7-46ac-a699-914eefcffbd9"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "39",
+                    "fieldLabel": "名称",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "64c7b379-f0ca-442a-873e-7ab72ea467d7"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "40",
+                    "fieldLabel": "住所地（主要办事机构所在地）",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "40c6317b-4275-429b-8013-dd99180dea36"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "41",
+                    "fieldLabel": "注册地 / 登记地",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "b831e74b-f0e9-4173-821c-d0a808a156c5"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "42",
+                    "fieldLabel": "法定代表人 / 负责人",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "61b09a4d-eba3-4d49-8017-785c83ec8af5"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "43",
+                    "fieldLabel": "职务",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "da1c8cb1-7c4b-4906-a55c-8c0500702a12"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "44",
+                    "fieldLabel": "联系电话",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "64960772-52cf-4405-b422-ab8354d2cba0"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "45",
+                    "fieldLabel": "统一社会信用代码",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "3d80260c-5185-45a4-86fe-191abd5add43"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "46",
+                    "type": "options",
+                    "fieldLabel": "类型",
+                    "marks": [
+                      {
+                        "markKey": "3709fc5d-ea34-40ad-88aa-be61151374c5",
+                        "markProps": {
+                          "optionValue": "有限责任公司",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "0f6d8b87-0588-488b-a95f-b8a18a8f5a6b",
+                        "markProps": {
+                          "optionValue": "股份有限公司",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "6e0cfcee-cca2-40f9-9878-f8d42ceafe8c",
+                        "markProps": {
+                          "optionValue": "上市公司",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "ad01374d-0632-4dd8-a4fe-20db44586cb1",
+                        "markProps": {
+                          "optionValue": "其他企业法人",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "969a8168-3b33-487f-8a07-f4bcfc33b7c2",
+                        "markProps": {
+                          "optionValue": "事业单位",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "aff12db5-f314-42e5-a87e-df890ed5d62b",
+                        "markProps": {
+                          "optionValue": "社会团体",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "6a5ca103-18be-46a9-a359-ab82b90f811d",
+                        "markProps": {
+                          "optionValue": "基金会",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "5cd7d04e-1004-4b6c-a41d-143c4b2bcf66",
+                        "markProps": {
+                          "optionValue": "社会服务机构",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "55963ab8-eb1b-428f-acb5-b727c37d775a",
+                        "markProps": {
+                          "optionValue": "机关法人",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "8dfea1d4-6de2-4896-8a78-a6c73396baa7",
+                        "markProps": {
+                          "optionValue": "农村集体经济组织法人",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "cb1d25a4-8bde-4aec-bac4-bae055533f19",
+                        "markProps": {
+                          "optionValue": "城镇农村的合作经济组织法人",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "bfd66a91-93e9-4848-856a-4a078ad32606",
+                        "markProps": {
+                          "optionValue": "基层群众性自治组织法人",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "6f18aa28-c69a-4088-99c4-8ddd32e9210d",
+                        "markProps": {
+                          "optionValue": "个人独资企业",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "de4ef5d1-edaa-4b52-9cd7-d39bfe359992",
+                        "markProps": {
+                          "optionValue": "合伙企业",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "d80fbdaa-4fa3-40e6-86eb-dfe2aebbf0ae",
+                        "markProps": {
+                          "optionValue": "不具有法人资格的专业服务机构",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "cd46ff8e-f9e2-4575-bb03-5df5633ec6db",
+                        "markProps": {
+                          "optionValue": "国有",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "c44447fd-8fef-4fe3-9753-04d5efbb21e8",
+                        "markProps": {
+                          "optionValue": "控股",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "96543361-3eac-4a80-88d1-4183f51f6811",
+                        "markProps": {
+                          "optionValue": "参股",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "1642b9c5-ebcf-4a2a-9ef1-eddbce4511b7",
+                        "markProps": {
+                          "optionValue": "民营",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "有限责任公司"
+                        },
+                        {
+                          "label": "股份有限公司"
+                        },
+                        {
+                          "label": "上市公司"
+                        },
+                        {
+                          "label": "其他企业法人"
+                        },
+                        {
+                          "label": "事业单位"
+                        },
+                        {
+                          "label": "社会团体"
+                        },
+                        {
+                          "label": "基金会"
+                        },
+                        {
+                          "label": "社会服务机构"
+                        },
+                        {
+                          "label": "机关法人"
+                        },
+                        {
+                          "label": "农村集体经济组织法人"
+                        },
+                        {
+                          "label": "城镇农村的合作经济组织法人"
+                        },
+                        {
+                          "label": "基层群众性自治组织法人"
+                        },
+                        {
+                          "label": "个人独资企业"
+                        },
+                        {
+                          "label": "合伙企业"
+                        },
+                        {
+                          "label": "不具有法人资格的专业服务机构"
+                        },
+                        {
+                          "label": "国有",
+                          "children": [
+                            {
+                              "label": "控股"
+                            },
+                            {
+                              "label": "参股"
+                            }
+                          ]
+                        },
+                        {
+                          "label": "民营"
+                        }
+                      ],
+                      "isMultiple": true,
+                      "displayMode": "dropdown"
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "47",
+                    "fieldLabel": "其他类型",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "108e2133-61eb-447a-8e35-66e845592e5c"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "第三人（自然人）",
+                    "canRemoveSubjectWhenEmpty": true,
+                    "canRepeatSubjectRow": true,
+                    "mark": {
+                      "markKey": "27f0126d-1f77-4d2b-abbd-db8a95476b12"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "48",
+                    "fieldLabel": "姓名",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "a6bdcd9c-51fb-4867-a2db-a7ff1d030cfc"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "49",
+                    "type": "options",
+                    "fieldLabel": "性别",
+                    "marks": [
+                      {
+                        "markKey": "656dfad6-7ec9-48ba-bafc-31680bc68510",
+                        "markProps": {
+                          "optionValue": "男",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "496df261-b7ac-415f-9c6c-8310733d4776",
+                        "markProps": {
+                          "optionValue": "女",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "男"
+                        },
+                        {
+                          "label": "女"
+                        }
+                      ],
+                      "displayMode": "check"
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "50",
+                    "type": "date",
+                    "fieldLabel": "出生日期",
+                    "marks": [
+                      {
+                        "markKey": "5639b549-2be0-4f17-96e2-f64f95a7b59d"
+                      }
+                    ],
+                    "props": {
+                      "precision": "day"
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "51",
+                    "fieldLabel": "民族",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "eb5f2448-5549-4661-9c78-c187bff2db15"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "52",
+                    "fieldLabel": "工作单位",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "da282833-3a7f-402d-a1ce-02fc2b651193"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "53",
+                    "fieldLabel": "职务",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "1f18f9aa-fabd-4ef7-8c0f-59befd47bf00"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "54",
+                    "fieldLabel": "联系电话",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "00ad58e2-4247-4e22-8d17-3644bb942659"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "55",
+                    "fieldLabel": "住所地（户籍所在地）",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "ccd2696b-44c1-4d57-9eb3-0c006533d312"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "56",
+                    "fieldLabel": "经常居住地",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "1d37dbf6-5c18-4651-989d-ef74efbbfea4"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "57",
+                    "fieldLabel": "证件类型",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "9c24bace-c616-4a86-b7c3-4c76d3eb3b66"
+                      }
+                    ],
+                    "fieldTips": "如居民身份证、港澳台身份证、护照、户口簿、军官证（士兵证）等"
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "58",
+                    "fieldLabel": "证件号码",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "d7bba4e1-3801-4c09-b871-c9507d38fd11"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "第三人（法人、非法人组织）",
+                    "canRemoveSubjectWhenEmpty": false,
+                    "canRepeatSubjectRow": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "59",
+                    "fieldLabel": "名称",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "225855c5-b0cb-4232-ad7e-7d90b0c35403"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "60",
+                    "fieldLabel": "住所地（主要办事机构所在地）",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "bd895c57-86a7-4c28-a060-a5ba18d239d4"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "61",
+                    "fieldLabel": "注册地 / 登记地",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "1b539c14-8f4c-4316-8ad0-44575a3fa0ce"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "62",
+                    "fieldLabel": "法定代表人 / 负责人",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "28ceba9d-1fb7-4a28-aa84-e2c671881f7b"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "63",
+                    "fieldLabel": "职务",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "91e55795-05c4-42f0-bb3e-d325d7a16111"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "64",
+                    "fieldLabel": "联系电话",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "270610fb-2e8d-425d-bb03-eaa887c042ee"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "65",
+                    "fieldLabel": "统一社会信用代码",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "5ca2954b-5aff-40a1-b5fa-f0ff40dc10b7"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "66",
+                    "type": "options",
+                    "fieldLabel": "类型",
+                    "marks": [
+                      {
+                        "markKey": "f0c58fd8-8306-42b9-90bb-44c71195ed10",
+                        "markProps": {
+                          "optionValue": "有限责任公司",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "b552a90b-d966-4d0e-8cdd-ef50a9f2d4db",
+                        "markProps": {
+                          "optionValue": "股份有限公司",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "478e3518-3907-4d31-9dcb-f4b7886004cc",
+                        "markProps": {
+                          "optionValue": "上市公司",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "18c542d4-ff77-4fba-ab54-ef3e06bd1b7e",
+                        "markProps": {
+                          "optionValue": "其他企业法人",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "891e5e15-471a-4b8b-a422-196e1c5306f9",
+                        "markProps": {
+                          "optionValue": "事业单位",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "d7564cc7-8026-45bf-ae62-7ef226fb3359",
+                        "markProps": {
+                          "optionValue": "社会团体",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "f3f79f49-e11d-4f2f-bf3a-264602e3a3db",
+                        "markProps": {
+                          "optionValue": "基金会",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "d5483a93-c824-4b76-9e92-809a8640c18c",
+                        "markProps": {
+                          "optionValue": "社会服务机构",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "d014537b-99f1-4c1e-92d7-311b99e33c1b",
+                        "markProps": {
+                          "optionValue": "机关法人",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "b248e25e-3558-4428-8510-dd67a13b5307",
+                        "markProps": {
+                          "optionValue": "农村集体经济组织法人",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "e6d32909-2fc8-46a6-b439-b5fe9beeae5c",
+                        "markProps": {
+                          "optionValue": "城镇农村的合作经济组织法人",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "e6a75b8a-4875-4089-aad6-198aaf92c723",
+                        "markProps": {
+                          "optionValue": "基层群众性自治组织法人",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "11d50218-36d4-4e3a-96f3-759c0849a357",
+                        "markProps": {
+                          "optionValue": "个人独资企业",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "92fa902d-be34-41cd-b045-260f287112b1",
+                        "markProps": {
+                          "optionValue": "合伙企业",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "f5561fdb-e6b6-445e-ba19-17bd5be65446",
+                        "markProps": {
+                          "optionValue": "不具有法人资格的专业服务机构",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "d0e8f9b6-a64b-4abf-97f6-62f9bb6b21ea",
+                        "markProps": {
+                          "optionValue": "国有",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "61f06b82-d669-4058-bfc5-c7546adacb98",
+                        "markProps": {
+                          "optionValue": "控股",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "d7fbc649-0656-4b00-b3de-4c3bf67f525f",
+                        "markProps": {
+                          "optionValue": "参股",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "d487a7ce-e6f8-49b4-9444-4d60474e1f26",
+                        "markProps": {
+                          "optionValue": "民营",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "有限责任公司"
+                        },
+                        {
+                          "label": "股份有限公司"
+                        },
+                        {
+                          "label": "上市公司"
+                        },
+                        {
+                          "label": "其他企业法人"
+                        },
+                        {
+                          "label": "事业单位"
+                        },
+                        {
+                          "label": "社会团体"
+                        },
+                        {
+                          "label": "基金会"
+                        },
+                        {
+                          "label": "社会服务机构"
+                        },
+                        {
+                          "label": "机关法人"
+                        },
+                        {
+                          "label": "农村集体经济组织法人"
+                        },
+                        {
+                          "label": "城镇农村的合作经济组织法人"
+                        },
+                        {
+                          "label": "基层群众性自治组织法人"
+                        },
+                        {
+                          "label": "个人独资企业"
+                        },
+                        {
+                          "label": "合伙企业"
+                        },
+                        {
+                          "label": "不具有法人资格的专业服务机构"
+                        },
+                        {
+                          "label": "国有",
+                          "children": [
+                            {
+                              "label": "控股"
+                            },
+                            {
+                              "label": "参股"
+                            }
+                          ]
+                        },
+                        {
+                          "label": "民营"
+                        }
+                      ],
+                      "isMultiple": true,
+                      "displayMode": "dropdown"
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "67",
+                    "fieldLabel": "其他类型",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "51f3e003-94c9-4181-a60c-2d0b3d35b805"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "data": [
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "诉讼请求"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "（可完整表述诉讼请求；为方便、准确梳理要点，相关内容请在下方要素式表格中填写）"
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "68",
+                    "fieldLabel": "可完整表述诉讼请求；为方便、准确梳理要点，相关内容请在下方要素式表格中填写",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "7e9a1eb2-0d81-461e-9986-5d012da315c9"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    },
+                    "fieldLabelHidden": true,
+                    "ai": {
+                      "fieldExample": "1、判令被告立即向原告支付透支本金39958.51元，以及截至2021年10月9日止，欠利息、违约金、手续费等共计18168.14元，自2021年10月10日之后的逾期利息计算至实际清偿之日止，计算方式：透支款58126.65元×0.5‰×天数。\n2、判令被告承担实现债权的费用（律师费，以实际发生为准)。\n3、本案诉讼费用由被告承担。\n标的总额：58126.65 元（暂计）"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "1.透支本金"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "inline-fields",
+                  "data": {
+                    "fields": [
+                      {
+                        "fieldKey": "69",
+                        "type": "date",
+                        "fieldLabel": "截止日期",
+                        "marks": [
+                          {
+                            "markKey": "7ca9b66a-5d8d-4096-97b8-57351f2c3c12"
+                          }
+                        ],
+                        "props": {
+                          "precision": "day"
+                        },
+                        "fieldLabelHidden": true,
+                        "fieldPrefixLabel": "截至",
+                        "fieldSuffixLabel": "止，"
+                      },
+                      {
+                        "fieldKey": "70",
+                        "type": "amount",
+                        "fieldLabel": "尚欠本金金额",
+                        "marks": [
+                          {
+                            "markKey": "198a5277-bab0-4734-86cc-bf8b5d698630"
+                          }
+                        ],
+                        "props": {},
+                        "fieldLabelHidden": true,
+                        "fieldPrefixLabel": "尚欠本金",
+                        "fieldSuffixLabel": "元（人民币，下同；如为外币需特别注明）"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "2.利息、罚息、复利、滞纳金、违约金、手续费等"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "inline-fields",
+                  "data": {
+                    "fields": [
+                      {
+                        "fieldKey": "71",
+                        "type": "date",
+                        "fieldLabel": "截止日期",
+                        "marks": [
+                          {
+                            "markKey": "e8c28204-2672-418f-83ae-f5ffca0778b2"
+                          }
+                        ],
+                        "props": {
+                          "precision": "day"
+                        },
+                        "fieldLabelHidden": true,
+                        "fieldPrefixLabel": "截至",
+                        "fieldSuffixLabel": "止，"
+                      },
+                      {
+                        "fieldKey": "72",
+                        "type": "amount",
+                        "fieldLabel": "欠利息、罚息、复利、滞纳金、违约金、手续费等共计金额",
+                        "marks": [
+                          {
+                            "markKey": "38ef724d-f098-4040-8250-74408d80a5d3"
+                          }
+                        ],
+                        "props": {},
+                        "fieldLabelHidden": true,
+                        "fieldPrefixLabel": "欠利息、罚息、复利、滞纳金、违约金、手续费等共计",
+                        "fieldSuffixLabel": "元"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "73",
+                    "type": "date",
+                    "fieldLabel": "起始日期",
+                    "marks": [
+                      {
+                        "markKey": "c072c1af-b6eb-4d57-a614-fd4d56e6ab69"
+                      }
+                    ],
+                    "props": {
+                      "precision": "day"
+                    },
+                    "fieldLabelHidden": true,
+                    "fieldPrefixLabel": "自",
+                    "fieldSuffixLabel": "之后的利息、罚息、复利、滞纳金、违约金以及手续费等各项费用按照信用卡领用协议计算至实际清偿之日止"
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "74",
+                    "type": "text",
+                    "fieldLabel": "明细",
+                    "marks": [
+                      {
+                        "markKey": "8b42fc41-5b50-4daf-9d07-c346f919e624"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    },
+                    "ai": {
+                      "fieldExample": "截至 2021 年 10 月 9 日止，被告林 ×× 欠利息 4440.19 元、违约金11486.96 元、账单分期手续费 2240.99 元。"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "3.是否主张担保权利"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "inline-fields",
+                  "data": {
+                    "fields": [
+                      {
+                        "fieldKey": "75",
+                        "type": "options",
+                        "fieldLabel": "涉及主张担保权利",
+                        "marks": [
+                          {
+                            "markKey": "19ebf868-bf1f-433e-90eb-eababc6efe6b",
+                            "markProps": {
+                              "optionValue": "是",
+                              "optionReplaceMode": "check"
+                            }
+                          }
+                        ],
+                        "props": {
+                          "options": [
+                            {
+                              "label": "是"
+                            }
+                          ],
+                          "displayMode": "check"
+                        },
+                        "fieldLabelHidden": true
+                      },
+                      {
+                        "type": "text",
+                        "marks": [
+                          {
+                            "markKey": "953c58ef-0463-48b9-a568-aceec796a31f"
+                          }
+                        ],
+                        "fieldLabel": "内容",
+                        "fieldKey": "76",
+                        "props": {
+                          "multiple": true
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "77",
+                    "type": "options",
+                    "fieldLabel": "不涉及主张担保权利",
+                    "marks": [
+                      {
+                        "markKey": "99bf211b-ae81-44b4-ad44-62d2db02002a",
+                        "markProps": {
+                          "optionValue": "否",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "否"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "4.是否主张实现债权的费用"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "inline-fields",
+                  "data": {
+                    "fields": [
+                      {
+                        "fieldKey": "78",
+                        "type": "options",
+                        "fieldLabel": "涉及主张实现债权的费用",
+                        "marks": [
+                          {
+                            "markKey": "194c276f-8f8b-469d-8067-a66bca87f4e0",
+                            "markProps": {
+                              "optionValue": "是",
+                              "optionReplaceMode": "check"
+                            }
+                          }
+                        ],
+                        "props": {
+                          "options": [
+                            {
+                              "label": "是"
+                            }
+                          ],
+                          "displayMode": "check"
+                        },
+                        "fieldLabelHidden": true
+                      },
+                      {
+                        "type": "text",
+                        "marks": [
+                          {
+                            "markKey": "3fbb1dfe-7baa-4355-a1e1-cb0f6ede39ef"
+                          }
+                        ],
+                        "fieldLabel": "费用明细",
+                        "fieldKey": "79",
+                        "props": {
+                          "multiple": true
+                        },
+                        "ai": {
+                          "fieldExample": "律师费（以实际发生数额为准）"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "80",
+                    "type": "options",
+                    "fieldLabel": "不涉及主张实现债权的费用",
+                    "marks": [
+                      {
+                        "markKey": "4b03266f-ec74-4a43-a7f5-bac69a61f908",
+                        "markProps": {
+                          "optionValue": "否",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "否"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "5. 是否主张诉讼费用"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "81",
+                    "type": "options",
+                    "fieldLabel": "是否主张诉讼费用",
+                    "marks": [
+                      {
+                        "markKey": "e4ac72cd-9be9-466d-853c-4a571a0b3090",
+                        "markProps": {
+                          "optionValue": "是",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "272faa39-8b71-484f-ae61-bcf690332423",
+                        "markProps": {
+                          "optionValue": "否",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "是"
+                        },
+                        {
+                          "label": "否"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "6. 其他请求"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "82",
+                    "fieldLabel": "其他请求",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "a8baf028-ed36-4bc9-860b-23ec03260c93"
+                      }
+                    ],
+                    "fieldLabelHidden": true,
+                    "props": {
+                      "multiple": true
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "7. 标的总额"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "83",
+                    "fieldLabel": "标的总额",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "5220fbd5-f276-418a-948d-3648ae927651"
+                      }
+                    ],
+                    "fieldLabelHidden": true,
+                    "ai": {
+                      "fieldExample": "58126.65 元"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "data": [
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "约定管辖和诉前保全"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "1. 有无仲裁、法院管辖约定"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "inline-fields",
+                  "data": {
+                    "fields": [
+                      {
+                        "fieldKey": "84",
+                        "type": "options",
+                        "fieldLabel": "有仲裁、法院管辖约定",
+                        "marks": [
+                          {
+                            "markKey": "d7c3df50-d521-44e5-99fd-763541f06bf9",
+                            "markProps": {
+                              "optionValue": "有",
+                              "optionReplaceMode": "check"
+                            }
+                          }
+                        ],
+                        "props": {
+                          "options": [
+                            {
+                              "label": "有"
+                            }
+                          ],
+                          "displayMode": "check"
+                        },
+                        "fieldLabelHidden": true
+                      },
+                      {
+                        "type": "text",
+                        "marks": [
+                          {
+                            "markKey": "3840a99f-746f-4ede-85fe-a1e2ab9f0219"
+                          }
+                        ],
+                        "fieldLabel": "合同条款及内容",
+                        "fieldKey": "85",
+                        "props": {
+                          "multiple": true
+                        },
+                        "ai": {
+                          "fieldExample": "《×× 银行信用卡领用协议》第xx条约定：如发生纠纷向人民法院起诉解决。"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "86",
+                    "type": "options",
+                    "fieldLabel": "没有仲裁、法院管辖约定",
+                    "marks": [
+                      {
+                        "markKey": "f01e7d63-cbf6-4f35-802a-e08adfda03ba",
+                        "markProps": {
+                          "optionValue": "无",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "无"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "2. 是否已经诉前保全"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "inline-fields",
+                  "data": {
+                    "fields": [
+                      {
+                        "fieldKey": "87",
+                        "type": "options",
+                        "fieldLabel": "已经诉前保全",
+                        "marks": [
+                          {
+                            "markKey": "76c2ff28-4a8b-4596-9dc6-68310dc6672c",
+                            "markProps": {
+                              "optionValue": "是",
+                              "optionReplaceMode": "check"
+                            }
+                          }
+                        ],
+                        "props": {
+                          "options": [
+                            {
+                              "label": "是"
+                            }
+                          ],
+                          "displayMode": "check"
+                        },
+                        "fieldLabelHidden": true
+                      },
+                      {
+                        "type": "text",
+                        "marks": [
+                          {
+                            "markKey": "47b93360-c48f-4a63-ade7-baf0a2c4bdf3"
+                          }
+                        ],
+                        "fieldLabel": "保全法院",
+                        "fieldKey": "88"
+                      },
+                      {
+                        "fieldKey": "89",
+                        "type": "date",
+                        "fieldLabel": "保全时间",
+                        "marks": [
+                          {
+                            "markKey": "5acb2a22-cc12-4d5d-8006-86a2f9eb0104"
+                          }
+                        ],
+                        "props": {
+                          "precision": "day"
+                        }
+                      },
+                      {
+                        "type": "text",
+                        "marks": [
+                          {
+                            "markKey": "a757f51b-d2c1-4e62-84de-07ee64e495bc"
+                          }
+                        ],
+                        "fieldLabel": "保全案号",
+                        "fieldKey": "90"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "91",
+                    "type": "options",
+                    "fieldLabel": "不涉及诉前保全",
+                    "marks": [
+                      {
+                        "markKey": "da83cd54-9825-4197-9764-147631388f1e",
+                        "markProps": {
+                          "optionValue": "否",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "否"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "（如申请诉讼保全，请另行提交诉讼保全申请及相关材料）",
+                    "style": {
+                      "bold": true
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "data": [
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "事实与理由"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "（可完整表述纠纷涉及的事实与理由；为方便、准确梳理要点，相关内容请在下方要素式表格中填写）"
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "92",
+                    "fieldLabel": "纠纷涉及的事实与理由",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "592f3b5f-ec0c-4ed1-a3aa-dbc45dee4e07"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    },
+                    "fieldLabelHidden": true,
+                    "ai": {
+                      "fieldExample": "20×× 年 ×× 月 ×× 日，被告与原告签署了《×× 银行信用卡领用协议》。截至 2021 年 10 月 9 日，被告林 ×× 欠付信用卡本金 39958.51 元、利息 4440.19 元、违约金 11486.96 元、手续费 2240.99 元。"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "1. 信用卡办理情况（信用卡卡号、信用卡登记权利人、办卡时间、办卡行等）",
+                    "canRepeatSubjectRow": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "93",
+                    "type": "text",
+                    "fieldLabel": "信用卡办理情况",
+                    "marks": [
+                      {
+                        "markKey": "4208d08a-24bb-42fb-8bdf-5f00574756a5"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    },
+                    "fieldLabelHidden": true,
+                    "ai": {
+                      "fieldExample": "20×× 年 ×× 月 ×× 日，林 ×× 携带身份证件来我行申领信用卡，并签署了《×× 银行信用卡领用协议》。"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "2.信用卡合约的主要约定"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "94",
+                    "type": "text",
+                    "fieldLabel": "透支金额",
+                    "marks": [
+                      {
+                        "markKey": "36e467c6-19dc-4f7f-a28b-8b730c33589e"
+                      }
+                    ],
+                    "props": {}
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "95",
+                    "type": "text",
+                    "fieldLabel": "利息、罚息、复利、滞纳金、违约金、手续费等的计算标准",
+                    "marks": [
+                      {
+                        "markKey": "ba3833bf-1831-4ce3-812c-46c25625a17a"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    },
+                    "ai": {
+                      "fieldExample": "从交易记账日起至还款记账日止计收透支利息，日利率为万分之五。"
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "96",
+                    "fieldLabel": "违约责任",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "6ce8a108-765c-468f-8a9f-e0ca7ecd5116"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    },
+                    "ai": {
+                      "fieldExample": "按照当月最低还款额未还部分的 5% 计算。"
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "97",
+                    "fieldLabel": "解除条件",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "bb49f9b2-1a34-4205-bdf5-ad76d45f4968"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    },
+                    "ai": {
+                      "fieldExample": "若持卡人出现未按时还款、提供虚假资料、非法使用信用卡等违约行为，银行有权解除协议。此外，若银行因政策调整、业务变化，或是持卡人主动申请，以及出现其他特殊情况，如持卡人资信状况恶化等，也可解除领用协议。"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "3.是否就信用卡合约主要条款进行提示注意"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "inline-fields",
+                  "data": {
+                    "fields": [
+                      {
+                        "fieldKey": "98",
+                        "type": "options",
+                        "fieldLabel": "已经就信用卡合约主要条款进行提示注意",
+                        "marks": [
+                          {
+                            "markKey": "0d055667-a1de-4fb9-9bbe-df3623024fbe",
+                            "markProps": {
+                              "optionValue": "是",
+                              "optionReplaceMode": "check"
+                            }
+                          }
+                        ],
+                        "props": {
+                          "options": [
+                            {
+                              "label": "是"
+                            }
+                          ],
+                          "displayMode": "check"
+                        },
+                        "fieldLabelHidden": true
+                      },
+                      {
+                        "type": "text",
+                        "marks": [
+                          {
+                            "markKey": "08452172-c24a-4c11-84a5-8c7b960a7d1a"
+                          }
+                        ],
+                        "fieldLabel": "提示说明的具体方式以及时间地点",
+                        "fieldKey": "99",
+                        "props": {
+                          "multiple": true
+                        },
+                        "ai": {
+                          "fieldExample": "《×× 银行信用卡领用协议》中标红部分内容，并口头告知。"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "100",
+                    "type": "options",
+                    "fieldLabel": "没有就信用卡合约主要条款进行提示注意",
+                    "marks": [
+                      {
+                        "markKey": "4943c7e7-ed00-4e1f-ad27-3d767ad8a312",
+                        "markProps": {
+                          "optionValue": "否",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "否"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "4.被告逾期部分已还金额"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "101",
+                    "type": "amount",
+                    "fieldLabel": "被告逾期部分已还金额",
+                    "marks": [
+                      {
+                        "markKey": "889e2b1e-322f-442c-9cbf-3f9dea3d5e65"
+                      }
+                    ],
+                    "props": {},
+                    "fieldLabelHidden": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "5.被告逾期未还款金额"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "inline-fields",
+                  "data": {
+                    "fields": [
+                      {
+                        "fieldKey": "102",
+                        "type": "date",
+                        "fieldLabel": "逾期时间",
+                        "marks": [
+                          {
+                            "markKey": "3c9cd81b-7d58-42c8-add4-51e876d723aa"
+                          }
+                        ],
+                        "props": {
+                          "precision": "day"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "inline-fields",
+                  "data": {
+                    "fields": [
+                      {
+                        "fieldKey": "103",
+                        "type": "date",
+                        "fieldLabel": "截止日期",
+                        "marks": [
+                          {
+                            "markKey": "6806869c-1bb9-483f-b56a-2fa8c74867eb"
+                          }
+                        ],
+                        "props": {
+                          "precision": "day"
+                        },
+                        "fieldLabelHidden": true,
+                        "fieldPrefixLabel": "截至",
+                        "fieldSuffixLabel": "，"
+                      },
+                      {
+                        "fieldKey": "104",
+                        "type": "text",
+                        "fieldLabel": "被告",
+                        "marks": [
+                          {
+                            "markKey": "696f7ea2-99cd-4959-91a0-3908dbe7bfd3"
+                          }
+                        ],
+                        "props": {}
+                      },
+                      {
+                        "fieldKey": "105",
+                        "type": "amount",
+                        "fieldLabel": "信用卡本金金额",
+                        "marks": [
+                          {
+                            "markKey": "c426560e-d261-4809-a22b-c16fc2525d09"
+                          }
+                        ],
+                        "props": {},
+                        "fieldLabelHidden": true,
+                        "fieldPrefixLabel": "欠付信用卡本金",
+                        "fieldSuffixLabel": "元、"
+                      },
+                      {
+                        "fieldKey": "106",
+                        "type": "amount",
+                        "fieldLabel": "利息金额",
+                        "marks": [
+                          {
+                            "markKey": "4806a8e8-e267-4ce9-8c42-607b937aa6e0"
+                          }
+                        ],
+                        "props": {},
+                        "fieldLabelHidden": true,
+                        "fieldPrefixLabel": "利息",
+                        "fieldSuffixLabel": "元、"
+                      },
+                      {
+                        "fieldKey": "107",
+                        "type": "amount",
+                        "fieldLabel": "罚息金额",
+                        "marks": [
+                          {
+                            "markKey": "57a8d159-51bc-45b5-9771-b2dd43dd768c"
+                          }
+                        ],
+                        "props": {},
+                        "fieldLabelHidden": true,
+                        "fieldPrefixLabel": "罚息",
+                        "fieldSuffixLabel": "元、"
+                      },
+                      {
+                        "fieldKey": "108",
+                        "type": "amount",
+                        "fieldLabel": "复利金额",
+                        "marks": [
+                          {
+                            "markKey": "04631df7-4066-4c0f-ac2c-7fc9de6a47a6"
+                          }
+                        ],
+                        "props": {},
+                        "fieldLabelHidden": true,
+                        "fieldPrefixLabel": "复利",
+                        "fieldSuffixLabel": "元、"
+                      },
+                      {
+                        "fieldKey": "109",
+                        "type": "amount",
+                        "fieldLabel": "滞纳金金额",
+                        "marks": [
+                          {
+                            "markKey": "83f96492-4787-4851-88a8-f7af55e0784f"
+                          }
+                        ],
+                        "props": {},
+                        "fieldLabelHidden": true,
+                        "fieldPrefixLabel": "滞纳金",
+                        "fieldSuffixLabel": "元、"
+                      },
+                      {
+                        "fieldKey": "110",
+                        "type": "amount",
+                        "fieldLabel": "违约金金额",
+                        "marks": [
+                          {
+                            "markKey": "ef9f3a0c-6be8-4036-a9c9-b26fe97ab3bb"
+                          }
+                        ],
+                        "props": {},
+                        "fieldLabelHidden": true,
+                        "fieldPrefixLabel": "违约金",
+                        "fieldSuffixLabel": "元、"
+                      },
+                      {
+                        "fieldKey": "111",
+                        "type": "amount",
+                        "fieldLabel": "手续费金额",
+                        "marks": [
+                          {
+                            "markKey": "2fc28d46-afd1-4777-9b78-7ac4d2ae0ada"
+                          }
+                        ],
+                        "props": {},
+                        "fieldLabelHidden": true,
+                        "fieldPrefixLabel": "手续费",
+                        "fieldSuffixLabel": "元"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "6.是否向被告进行通知和催收"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "inline-fields",
+                  "data": {
+                    "fields": [
+                      {
+                        "fieldKey": "112",
+                        "type": "options",
+                        "fieldLabel": "已经向被告进行通知和催收",
+                        "marks": [
+                          {
+                            "markKey": "83c3d1a0-d439-4739-bd58-37f58a25cc78",
+                            "markProps": {
+                              "optionValue": "是",
+                              "optionReplaceMode": "check"
+                            }
+                          }
+                        ],
+                        "props": {
+                          "options": [
+                            {
+                              "label": "是"
+                            }
+                          ],
+                          "displayMode": "check"
+                        },
+                        "fieldLabelHidden": true
+                      },
+                      {
+                        "type": "text",
+                        "marks": [
+                          {
+                            "markKey": "0f12d99f-5444-4002-8f2b-531a415172d9"
+                          }
+                        ],
+                        "fieldLabel": "具体情况",
+                        "fieldKey": "113",
+                        "props": {
+                          "multiple": true
+                        },
+                        "ai": {
+                          "fieldExample": "2021 年 7 月 8 日通过我行客服电话95×××与林××在我行预留手机号××××××××通话，告知其已逾期；2021 年 7 月 9 日通过 EMS 向林 ×× 在我行预留地址邮寄催收函。"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "114",
+                    "type": "options",
+                    "fieldLabel": "没有向被告进行通知和催收",
+                    "marks": [
+                      {
+                        "markKey": "e90a26c8-5bc2-49e8-9e5d-8886cccda4e0",
+                        "markProps": {
+                          "optionValue": "否",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "否"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "7. 是否签订物的担保（抵押、质押）合同"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "inline-fields",
+                  "data": {
+                    "fields": [
+                      {
+                        "fieldKey": "115",
+                        "type": "options",
+                        "fieldLabel": "已经签订物的担保（抵押、质押）合同",
+                        "marks": [
+                          {
+                            "markKey": "9e39dbb2-5e74-45b8-92c1-7392fd04913e",
+                            "markProps": {
+                              "optionValue": "是",
+                              "optionReplaceMode": "check"
+                            }
+                          }
+                        ],
+                        "props": {
+                          "options": [
+                            {
+                              "label": "是"
+                            }
+                          ],
+                          "displayMode": "check"
+                        },
+                        "fieldLabelHidden": true
+                      },
+                      {
+                        "fieldKey": "116",
+                        "type": "date",
+                        "fieldLabel": "签订时间",
+                        "marks": [
+                          {
+                            "markKey": "d6d69852-fd2d-4cc4-8822-c3024deff96f"
+                          }
+                        ],
+                        "props": {
+                          "precision": "day"
+                        },
+                        "fieldLabelHidden": false
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "117",
+                    "type": "options",
+                    "fieldLabel": "没有签订物的担保（抵押、质押）合同",
+                    "marks": [
+                      {
+                        "markKey": "3cef9610-1478-4add-ab9c-439fcf8c6948",
+                        "markProps": {
+                          "optionValue": "否",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "否"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "8. 担保人、担保物"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "118",
+                    "fieldLabel": "担保人",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "98470f4a-12c1-4ceb-8be6-7eda50f50cc4"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "119",
+                    "fieldLabel": "担保物",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "ec257cfb-9b61-4388-8a84-27778987d6e1"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "9. 是否最高额担保（抵押、质押）"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "120",
+                    "type": "options",
+                    "fieldLabel": "是否最高额担保（抵押、质押）",
+                    "marks": [
+                      {
+                        "markKey": "aef26966-03aa-4e70-b32f-a35ca6a67514",
+                        "markProps": {
+                          "optionValue": "是",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "bc3510ff-a13b-4fd5-88fb-759ea7afcc1b",
+                        "markProps": {
+                          "optionValue": "否",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "是"
+                        },
+                        {
+                          "label": "否"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "121",
+                    "type": "date",
+                    "fieldLabel": "担保债权的确定时间",
+                    "marks": [
+                      {
+                        "markKey": "62cf98b3-e9b6-495a-b729-f25854cb9df7"
+                      }
+                    ],
+                    "props": {
+                      "precision": "day"
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "122",
+                    "fieldLabel": "担保额度",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "3d3bb906-310b-4d66-b088-5310f7e97226"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "10. 是否办理抵押、质押登记"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "inline-fields",
+                  "data": {
+                    "fields": [
+                      {
+                        "fieldKey": "123",
+                        "type": "options",
+                        "fieldLabel": "已经办理抵押、质押登记",
+                        "marks": [
+                          {
+                            "markKey": "f29d91c8-5996-4204-b089-29b7d86c1b9b",
+                            "markProps": {
+                              "optionValue": "是",
+                              "optionReplaceMode": "check"
+                            }
+                          }
+                        ],
+                        "props": {
+                          "options": [
+                            {
+                              "label": "是"
+                            }
+                          ],
+                          "displayMode": "check"
+                        },
+                        "fieldLabelHidden": true
+                      },
+                      {
+                        "fieldKey": "124",
+                        "type": "options",
+                        "fieldLabel": "办理抵押、质押登记的类型",
+                        "marks": [
+                          {
+                            "markKey": "0d3eeadd-a12a-4a1a-9097-8795ff779e06",
+                            "markProps": {
+                              "optionValue": "正式登记",
+                              "optionReplaceMode": "check"
+                            }
+                          },
+                          {
+                            "markKey": "1764eb75-76b8-40f5-87f0-52fa2d027cce",
+                            "markProps": {
+                              "optionValue": "预告登记",
+                              "optionReplaceMode": "check"
+                            }
+                          }
+                        ],
+                        "props": {
+                          "options": [
+                            {
+                              "label": "正式登记"
+                            },
+                            {
+                              "label": "预告登记"
+                            }
+                          ],
+                          "displayMode": "check"
+                        },
+                        "fieldLabelHidden": true
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "125",
+                    "type": "options",
+                    "fieldLabel": "没有办理抵押、质押登记",
+                    "marks": [
+                      {
+                        "markKey": "4f3e2780-62cd-4afa-8424-fcbd757fb1b4",
+                        "markProps": {
+                          "optionValue": "否",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "否"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "11. 是否签订保证合同"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "inline-fields",
+                  "data": {
+                    "fields": [
+                      {
+                        "fieldKey": "126",
+                        "type": "options",
+                        "fieldLabel": "已经签订保证合同",
+                        "marks": [
+                          {
+                            "markKey": "e7f16782-d997-4e0d-88dc-057a8a955c2a",
+                            "markProps": {
+                              "optionValue": "是",
+                              "optionReplaceMode": "check"
+                            }
+                          }
+                        ],
+                        "props": {
+                          "options": [
+                            {
+                              "label": "是"
+                            }
+                          ],
+                          "displayMode": "check"
+                        },
+                        "fieldLabelHidden": true
+                      },
+                      {
+                        "fieldKey": "127",
+                        "type": "date",
+                        "fieldLabel": "签订时间",
+                        "marks": [
+                          {
+                            "markKey": "d8e8c990-c004-461d-8b8a-50d90876834c"
+                          }
+                        ],
+                        "props": {
+                          "precision": "day"
+                        }
+                      },
+                      {
+                        "type": "text",
+                        "marks": [
+                          {
+                            "markKey": "5b483db3-dddf-4676-a020-101c453483d6"
+                          }
+                        ],
+                        "fieldLabel": "保证人",
+                        "fieldKey": "128"
+                      },
+                      {
+                        "type": "text",
+                        "marks": [
+                          {
+                            "markKey": "3b5ba6cb-5ec8-4c2c-abd9-8e9ba3939caf"
+                          }
+                        ],
+                        "fieldLabel": "主要内容",
+                        "fieldKey": "129",
+                        "props": {
+                          "multiple": true
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "130",
+                    "type": "options",
+                    "fieldLabel": "没有签订保证合同",
+                    "marks": [
+                      {
+                        "markKey": "eee32583-5e45-42e1-8458-125dfeeb4c17",
+                        "markProps": {
+                          "optionValue": "否",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "否"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "12. 保证方式"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "131",
+                    "type": "options",
+                    "fieldLabel": "保证方式",
+                    "marks": [
+                      {
+                        "markKey": "9f7ee020-c605-4385-898a-410eff3d376d",
+                        "markProps": {
+                          "optionValue": "一般保证",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "cae48a83-8ab3-4bde-85ee-eba3d5358ebe",
+                        "markProps": {
+                          "optionValue": "连带责任保证",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "一般保证"
+                        },
+                        {
+                          "label": "连带责任保证"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "13. 其他担保方式"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "inline-fields",
+                  "data": {
+                    "fields": [
+                      {
+                        "fieldKey": "132",
+                        "type": "options",
+                        "fieldLabel": "涉及其他担保方式",
+                        "marks": [
+                          {
+                            "markKey": "32120e50-d769-4ac9-b520-37964253dd59",
+                            "markProps": {
+                              "optionValue": "是",
+                              "optionReplaceMode": "check"
+                            }
+                          }
+                        ],
+                        "props": {
+                          "options": [
+                            {
+                              "label": "是"
+                            }
+                          ],
+                          "displayMode": "check"
+                        },
+                        "fieldLabelHidden": true
+                      },
+                      {
+                        "type": "text",
+                        "marks": [
+                          {
+                            "markKey": "3634011a-18ac-44e8-bcae-c657eb3fe32c"
+                          }
+                        ],
+                        "fieldLabel": "形式",
+                        "fieldKey": "133"
+                      },
+                      {
+                        "fieldKey": "134",
+                        "type": "date",
+                        "fieldLabel": "签订时间",
+                        "marks": [
+                          {
+                            "markKey": "bb0b320a-7ab0-4665-a9b8-eede0696e975"
+                          }
+                        ],
+                        "props": {
+                          "precision": "day"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "135",
+                    "type": "options",
+                    "fieldLabel": "不涉及其他担保方式",
+                    "marks": [
+                      {
+                        "markKey": "aff8f739-7f33-46ba-aa77-bbaa79d27eb1",
+                        "markProps": {
+                          "optionValue": "否",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "否"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "14. 请求承担责任的依据"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "136",
+                    "fieldLabel": "合同约定",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "f757c976-85e4-405e-873d-a3fd2b0cb55c"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    },
+                    "ai": {
+                      "fieldExample": "《×× 银行信用卡领用协议》第xx条"
+                    }
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "137",
+                    "fieldLabel": "法律规定",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "feaf997b-11f7-4887-b4ec-ababcf215415"
+                      }
+                    ],
+                    "props": {
+                      "multiple": true
+                    },
+                    "ai": {
+                      "fieldExample": "《中华人民共和国民法典》第六百七十四条、第六百七十五条、第六百七十六条"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "15. 其他需要说明的内容（可另附页）"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "138",
+                    "fieldLabel": "其他需要说明的内容",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "6db4045c-e5e0-4093-ace5-54b761fe7a66"
+                      }
+                    ],
+                    "fieldLabelHidden": true,
+                    "props": {
+                      "multiple": true
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "16. 证据清单（可另附页）"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "139",
+                    "fieldLabel": "证据清单",
+                    "type": "text",
+                    "marks": [
+                      {
+                        "markKey": "9e982f17-3de4-4540-b76d-e21c970d7630"
+                      }
+                    ],
+                    "fieldLabelHidden": true,
+                    "ai": {
+                      "fieldExample": "1.《×× 银行信用卡领用协议》，以证明xxxx。\n2.信用卡卡片正反面复印件，以证明xxxx。\n3.银行核卡通知、激活记录，以证明xxxx。\n4.银行账单明细，以证明xxxx。\n5.催收函、催收电话录音，以证明xxxx。"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "data": [
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "对纠纷解决方式的意愿"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "是否了解调解作为非诉讼纠纷解决方式，能及时、高效、低成本、不伤和气地解决纠纷"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "140",
+                    "type": "options",
+                    "fieldLabel": "是否了解调解作为非诉讼纠纷解决方式，能及时、高效、低成本、不伤和气地解决纠纷",
+                    "marks": [
+                      {
+                        "markKey": "a30ba01b-9156-4bb4-b300-2eb1a2d8c5dc",
+                        "markProps": {
+                          "optionValue": "了解",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "1238a9f9-7b0c-4a60-9c15-6b48614e2dfd",
+                        "markProps": {
+                          "optionValue": "不了解",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "了解"
+                        },
+                        {
+                          "label": "不了解"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "是否了解先行调解解决纠纷的好处"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "1.立案后选择先行调解的，可以很快启动调解程序。如不同意调解，法院将依程序开庭审理案件，但可能需要经过较长一段时间的排期等待，且审理、执行周期相对较长。"
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "141",
+                    "type": "options",
+                    "fieldLabel": "1.立案后选择先行调解的，可以很快启动调解程序。如不同意调解，法院将依程序开庭审理案件，但可能需要经过较长一段时间的排期等待，且审理、执行周期相对较长。",
+                    "marks": [
+                      {
+                        "markKey": "d9b351e2-fd09-4b4d-813d-568ea9feea8b",
+                        "markProps": {
+                          "optionValue": "了解",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "50379ea8-6975-44d9-a68c-8bc4c8a58fcc",
+                        "markProps": {
+                          "optionValue": "不了解",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "了解"
+                        },
+                        {
+                          "label": "不了解"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "2.选择先行调解，调解成功且自动履行的免交诉讼费用，申请司法确认的不交纳诉讼费用，要求出具调解书的减半交纳诉讼费用。"
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "142",
+                    "type": "options",
+                    "fieldLabel": "2.选择先行调解，调解成功且自动履行的免交诉讼费用，申请司法确认的不交纳诉讼费用，要求出具调解书的减半交纳诉讼费用。",
+                    "marks": [
+                      {
+                        "markKey": "ebc7e645-1306-4530-b7e2-2a47c0f2cae3",
+                        "markProps": {
+                          "optionValue": "了解",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "6aa0e101-651b-465e-afeb-4389b3188ed4",
+                        "markProps": {
+                          "optionValue": "不了解",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "了解"
+                        },
+                        {
+                          "label": "不了解"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "3.首次调解不成功，但仍有继续调解意愿的，可以选择更换调解组织和调解员再进行调解。调解无法达成一致意见的，法院将依程序排期开庭。"
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "143",
+                    "type": "options",
+                    "fieldLabel": "3.首次调解不成功，但仍有继续调解意愿的，可以选择更换调解组织和调解员再进行调解。调解无法达成一致意见的，法院将依程序排期开庭。",
+                    "marks": [
+                      {
+                        "markKey": "efbaa0ca-bea4-4798-b3ff-fc07f6b75db7",
+                        "markProps": {
+                          "optionValue": "了解",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "ac6f7005-d3c3-4d69-b60f-a9987413e6c2",
+                        "markProps": {
+                          "optionValue": "不了解",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "了解"
+                        },
+                        {
+                          "label": "不了解"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "4.依照法律规定，调解具有保密性要求，调解过程不公开，调解协议未经当事人同意不得公开。"
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "144",
+                    "type": "options",
+                    "fieldLabel": "4.依照法律规定，调解具有保密性要求，调解过程不公开，调解协议未经当事人同意不得公开。",
+                    "marks": [
+                      {
+                        "markKey": "8b579160-48b8-4dbf-8104-aab5061ee768",
+                        "markProps": {
+                          "optionValue": "了解",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "6474f676-7543-4d7d-8e17-6dd3b05e322b",
+                        "markProps": {
+                          "optionValue": "不了解",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "了解"
+                        },
+                        {
+                          "label": "不了解"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "5.调解达成的协议具有法律效力，可以依照法律规定申请司法确认，具有强制执行效力。"
+                  }
+                },
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "145",
+                    "type": "options",
+                    "fieldLabel": "5.调解达成的协议具有法律效力，可以依照法律规定申请司法确认，具有强制执行效力。",
+                    "marks": [
+                      {
+                        "markKey": "788f33ac-3dba-4032-827d-4d5680fd6551",
+                        "markProps": {
+                          "optionValue": "了解",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "f42c59aa-8220-45e6-819f-b02671f2a50b",
+                        "markProps": {
+                          "optionValue": "不了解",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "了解"
+                        },
+                        {
+                          "label": "不了解"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table-row",
+          "data": [
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "table-title",
+                  "data": {
+                    "title": "是否考虑先行调解"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "table-col",
+              "data": [
+                {
+                  "type": "field",
+                  "data": {
+                    "fieldKey": "146",
+                    "type": "options",
+                    "fieldLabel": "是否考虑先行调解",
+                    "marks": [
+                      {
+                        "markKey": "d24d2776-c6ac-41e2-b7cc-600446aaf361",
+                        "markProps": {
+                          "optionValue": "是",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "7d1a79cd-c9af-4f49-b5ad-08e8d2a80bf2",
+                        "markProps": {
+                          "optionValue": "否",
+                          "optionReplaceMode": "check"
+                        }
+                      },
+                      {
+                        "markKey": "e2de8b21-f242-43a9-a1c6-bbdcdc166bef",
+                        "markProps": {
+                          "optionValue": "暂不确定，想要了解更多内容",
+                          "optionReplaceMode": "check"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "options": [
+                        {
+                          "label": "是"
+                        },
+                        {
+                          "label": "否"
+                        },
+                        {
+                          "label": "暂不确定，想要了解更多内容"
+                        }
+                      ],
+                      "displayMode": "check"
+                    },
+                    "fieldLabelHidden": true
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

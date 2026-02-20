@@ -8,10 +8,8 @@ import { useAuthStore } from '@/stores/auth'
 
 // 根据环境配置 baseURL
 // 开发环境：使用 /api，通过 vite proxy 代理到本地后端
-// 生产环境：直接连接远程后端服务
-const baseURL = import.meta.env.PROD 
-  ? 'http://8.148.251.30:8883/api'  // 生产环境后端地址
-  : '/api'                           // 开发环境使用代理
+// 生产环境：通过 Nginx 反向代理，同样使用 /api；也可通过环境变量覆盖
+const baseURL = import.meta.env.VITE_API_BASE_URL || '/api'
 
 // 创建 axios 实例
 const request = axios.create({
@@ -75,5 +73,28 @@ request.interceptors.response.use(
     return Promise.reject(error)
   }
 )
+
+/**
+ * 获取 API 基础地址（供 fetch 等非 axios 请求使用）
+ * 开发环境返回 '/api'（通过 Vite proxy 代理）
+ * 生产环境返回完整后端地址
+ */
+export function getApiBaseUrl() {
+  return baseURL
+}
+
+/**
+ * 获取包含 Authorization 的请求头（供 fetch 等非 axios 请求使用）
+ * @param {Object} [extra] - 额外的 headers
+ * @returns {Object} headers 对象
+ */
+export function getAuthHeaders(extra = {}) {
+  const authStore = useAuthStore()
+  const headers = { ...extra }
+  if (authStore.token) {
+    headers['Authorization'] = `Bearer ${authStore.token}`
+  }
+  return headers
+}
 
 export default request

@@ -3,10 +3,41 @@
  * 核心职责：管理案卷数据和编辑器业务逻辑
  */
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { getCaseDetail, updateCase, createCase } from '@/api'
 import { ElMessage } from 'element-plus'
 import { useTemplateStore } from '@/stores/template'
+
+// ==================== 草稿持久化工具 ====================
+const DRAFT_PREFIX = 'fastreplace_draft_'
+
+function getDraftKey(caseId) {
+  return `${DRAFT_PREFIX}${caseId}`
+}
+
+function saveDraft(caseId, data, repeatMap) {
+  if (!caseId) return
+  try {
+    sessionStorage.setItem(getDraftKey(caseId), JSON.stringify({
+      formData: data,
+      rowRepeatCountMap: repeatMap,
+      savedAt: Date.now()
+    }))
+  } catch (e) { /* sessionStorage 满或不可用，静默忽略 */ }
+}
+
+function loadDraft(caseId) {
+  if (!caseId) return null
+  try {
+    const raw = sessionStorage.getItem(getDraftKey(caseId))
+    return raw ? JSON.parse(raw) : null
+  } catch (e) { return null }
+}
+
+function clearDraft(caseId) {
+  if (!caseId) return
+  sessionStorage.removeItem(getDraftKey(caseId))
+}
 
 export const useEditorStore = defineStore('editor', () => {
   // ==================== State (状态) ====================
@@ -22,6 +53,9 @@ export const useEditorStore = defineStore('editor', () => {
   
   // 加载状态
   const loading = ref(false)
+  
+  // 是否有未保存的草稿
+  const hasDraft = ref(false)
 
   // ==================== Getters (计算属性) ====================
   
@@ -62,8 +96,26 @@ export const useEditorStore = defineStore('editor', () => {
       // 4. 设置多人员重复计数（从 form_data 中提取）
       rowRepeatCountMap.value = __rowRepeatCountMap || {}
       
+      // 4.5 检查是否有未保存的草稿（刷新恢复）
+      const draft = loadDraft(id)
+      if (draft && draft.savedAt) {
+        const serverTime = new Date(res.updated_at).getTime()
+        if (draft.savedAt > serverTime) {
+          // 草稿比服务端数据新，恢复草稿
+          formData.value = draft.formData || formData.value
+          rowRepeatCountMap.value = draft.rowRepeatCountMap || rowRepeatCountMap.value
+          hasDraft.value = true
+          ElMessage.success('已恢复上次未保存的编辑内容')
+        } else {
+          clearDraft(id)
+        }
+      }
+      
       // 5. 设置模板信息到 template store
       templateStore.setTemplateInfo(res.template)
+      
+      // 6. 启动自动保存草稿监听
+      setupDraftWatcher()
       
       return res
     } catch (error) {
@@ -95,6 +147,10 @@ export const useEditorStore = defineStore('editor', () => {
       }
       
       await updateCase(currentCase.value.id, payload)
+      
+      // 保存成功，清除草稿
+      clearDraft(currentCase.value.id)
+      hasDraft.value = false
       
       // 更新本地时间戳
       currentCase.value.updated_at = new Date().toISOString()
@@ -131,10 +187,42 @@ export const useEditorStore = defineStore('editor', () => {
    * 清空编辑器数据
    */
   function resetEditor() {
+    // 离开编辑器时清除草稿（正常退出不保留，只有意外刷新才会触发恢复）
+    if (currentCase.value?.id) {
+      clearDraft(currentCase.value.id)
+    }
     currentCase.value = null
     formData.value = {}
     rowRepeatCountMap.value = {}
     loading.value = false
+    hasDraft.value = false
+    if (draftWatchStop) {
+      draftWatchStop()
+      draftWatchStop = null
+    }
+  }
+
+  // ==================== 草稿自动保存 ====================
+  let draftWatchStop = null
+  let draftTimer = null
+  
+  function setupDraftWatcher() {
+    // 停止上一个 watcher（如果有）
+    if (draftWatchStop) draftWatchStop()
+    
+    draftWatchStop = watch(
+      [formData, rowRepeatCountMap],
+      () => {
+        // 防抖：500ms 内只保存一次
+        if (draftTimer) clearTimeout(draftTimer)
+        draftTimer = setTimeout(() => {
+          if (currentCase.value?.id) {
+            saveDraft(currentCase.value.id, formData.value, rowRepeatCountMap.value)
+          }
+        }, 500)
+      },
+      { deep: true }
+    )
   }
 
   return {
@@ -143,6 +231,7 @@ export const useEditorStore = defineStore('editor', () => {
     formData,
     rowRepeatCountMap,
     loading,
+    hasDraft,
     
     // Getters
     isLoaded,

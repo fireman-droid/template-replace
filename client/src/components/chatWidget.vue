@@ -64,7 +64,7 @@ import { io } from 'socket.io-client' // 引入 socket.io
 import { useAuthStore } from '@/stores/auth' // 引入用户状态
 
 const authStore = useAuthStore()
-const isOpen = ref(false)
+const isOpen = ref(localStorage.getItem('chatOpen') === 'true')
 const inputMessage = ref('')
 const socket = ref(null)
 const messages = ref([]) // 存储真实消息
@@ -91,12 +91,22 @@ const initSocket = () => {
         content: data.content
       })
     })
+    socket.value.on('load_history', (history) => {
+      console.log('📜 加载历史记录:', history)
+      // 把历史消息转换成前端格式
+      const formattedHistory = history.map(msg => ({
+        type: msg.senderType === 'user' ? 'user' : 'admin',
+        content: msg.content
+      }))
+      messages.value = formattedHistory
+    })
   })
 }
 
 // 切换聊天窗状态
 const toggleChat = () => {
   isOpen.value = !isOpen.value
+  localStorage.setItem('chatOpen', isOpen.value)
 }
 
 // 发送消息 (暂时只清空输入框)

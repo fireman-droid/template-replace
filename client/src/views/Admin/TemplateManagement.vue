@@ -11,9 +11,9 @@
       <div class="tpl-card" v-for="tpl in templateList" :key="tpl.id" @click="handlePreview(tpl)">
         <div class="tpl-icon"><el-icon><DocumentChecked /></el-icon></div>
         <div class="tpl-info">
-          <h4>{{ tpl.name }}</h4>
+          <h4>{{ tpl.name || '未命名模板' }}</h4>
           <p>待填充: {{ countSpace(tpl.markData) }}</p>
-          <p class="desc">描述:{{ tpl.description }}</p>
+          <p class="desc">描述:{{ tpl.description || '暂无描述' }}</p>
         </div>
         <div class="tpl-actions">
           <button class="icon-btn" @click.stop="handleEdit(tpl)"><el-icon><Edit /></el-icon></button>
@@ -125,6 +125,7 @@ import { ref, onMounted,computed } from 'vue'
 import { Upload, DocumentChecked, Edit, Delete, Document, Connection, Link, InfoFilled, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getTemplateList, createTemplate, deleteTemplate, updateTemplate } from '@/api'
+import { getApiBaseUrl, getAuthHeaders } from '@/utils/request'
 import TemplatePreview from '@/components/TemplatePreview.vue'
 import { countSpace } from '@/utils'
 
@@ -312,18 +313,10 @@ const handleEdit = (template) => {
 // 下载模板
 const handleDownload = async (id) => {
   try {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      ElMessage.error('请先登录')
-      return
-    }
-
-    // 使用 fetch 下载文件，可以带上 token
-    const response = await fetch(`/api/admin/templates/${id}/download`, {
+    // 使用 fetch 下载文件，通过统一请求层获取 baseURL 与 token
+    const response = await fetch(`${getApiBaseUrl()}/admin/templates/${id}/download`, {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+      headers: getAuthHeaders()
     })
 
     if (!response.ok) {
@@ -397,9 +390,68 @@ $border: rgba(255,255,255,0.1);
     
     &:hover { border-color: $primary; background: rgba(59, 130, 246, 0.05); }
     
-    .tpl-icon { width: 48px; height: 48px; background: rgba($primary, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: $primary; font-size: 24px; }
-    .tpl-info { flex: 1; min-width: 0; h4 { margin: 0 0 6px; color: $text-main; } p { margin: 0 0 4px; font-size: 12px; color: $text-sub; } .desc { color: #64748b; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; } }
-    .tpl-actions { display: flex; gap: 8px; .icon-btn { background: rgba(255,255,255,0.05); border: none; width: 32px; height: 32px; border-radius: 4px; color: $text-sub; cursor: pointer; &:hover { background: white; color: black; } &.danger:hover { background: #ef4444; color: white; } } }
+    .tpl-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba($primary, 0.1);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: $primary;
+      font-size: 24px;
+    }
+
+    .tpl-info {
+      flex: 1;
+      min-width: 0;
+
+      h4 {
+        margin: 0 0 6px;
+        color: $text-main;
+      }
+
+      p {
+        margin: 0 0 4px;
+        font-size: 12px;
+        color: $text-sub;
+      }
+
+      .desc {
+        color: #64748b;
+        font-size: 11px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 180px;
+      }
+    }
+
+    .tpl-actions {
+      display: flex;
+      gap: 8px;
+
+      .icon-btn {
+        background: rgba(255,255,255,0.05) !important;
+        border: none !important;
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+        color: $text-sub !important;
+        cursor: pointer;
+        transition: all 0.3s;
+
+        &:hover {
+          background: rgba(59, 130, 246, 0.2) !important;
+          color: $primary !important;
+        }
+
+        &.danger:hover {
+          background: rgba(239, 68, 68, 0.2) !important;
+          color: #ef4444 !important;
+        }
+      }
+    }
   }
 }
 

@@ -118,3 +118,46 @@ export const getTemplateDetail = (id) => {
 export const downloadTemplate = (id) => {
   return `/api/admin/templates/${id}/download`
 }
+
+// ==================== 系统日志 ====================
+
+/**
+ * 获取系统日志列表
+ * @param {Object} params - 查询参数
+ * @param {number} params.page - 页码
+ * @param {number} params.pageSize - 每页数量
+ * @param {string} [params.action] - 操作类型筛选
+ * @param {string} [params.resourceType] - 资源类型筛选
+ * @param {string} [params.keyword] - 搜索关键词
+ */
+export const getSystemLogs = (params) => {
+  return request({
+    url: '/admin/logs',
+    method: 'get',
+    params
+  })
+}
+
+// ==================== 仪表盘 ====================
+
+/**
+ * 获取仪表盘统计数据
+ */
+export const getDashboardStats = () => {
+  return request({
+    url: '/admin/dashboard/stats',
+    method: 'get'
+  })
+}
+
+// ==================== 聊天管理 ====================
+
+/**
+ * 获取聊天会话列表
+ */
+export const getChatSessions = () => {
+  return request({
+    url: '/admin/chat/sessions',
+    method: 'get'
+  })
+}

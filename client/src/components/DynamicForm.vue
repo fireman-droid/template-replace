@@ -107,13 +107,22 @@ const emit = defineEmits(['update:modelValue', 'update:repeatCountMap'])
 // 表单数据
 const formData = ref({ ...props.modelValue })
 
+// 防止循环更新的标志
+let isUpdatingFromProps = false
+
 // 监听外部数据变化，同步到内部
 watch(() => props.modelValue, (newVal) => {
-  // 合并新值到 formData，保留已有数据
-  Object.keys(newVal).forEach(key => {
-    formData.value[key] = newVal[key]
-  })
-}, { deep: true })
+  // 设置标志，防止触发 emit
+  isUpdatingFromProps = true
+
+  // 完全替换 formData，确保响应式更新
+  formData.value = { ...newVal }
+
+  // 下一个 tick 后重置标志
+  setTimeout(() => {
+    isUpdatingFromProps = false
+  }, 0)
+}, { deep: true, immediate: true })
 
 // 单选切换（点击已选中的可取消）
 const toggleRadio = (fieldKey, value) => {
@@ -349,8 +358,10 @@ defineExpose({
   repeatCounts
 })
 
-// 监听表单数据变化
+// 监听表单数据变化，emit 给父组件
 watch(formData, (newVal) => {
+  // 如果是从 props 更新的，不要 emit 回去，避免循环
+  if (isUpdatingFromProps) return
   emit('update:modelValue', newVal)
 }, { deep: true })
 </script>

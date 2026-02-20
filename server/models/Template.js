@@ -11,13 +11,16 @@ class Template {
    * @returns {Object} 创建的模板信息
    */
   static async create({ name, description, markData, file_path }) {
+    const now = new Date()
     const [result] = await pool.query(
-      'INSERT INTO templates (name, description, mark_data, file_path) VALUES (?, ?, ?, ?)',
+      'INSERT INTO templates (name, description, mark_data, file_path, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
       [
-        name, 
-        description, 
+        name,
+        description,
         JSON.stringify(markData || {}),
-        file_path || null
+        file_path || null,
+        now,
+        now
       ]
     )
     

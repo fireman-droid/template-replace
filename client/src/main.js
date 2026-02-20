@@ -5,6 +5,7 @@ import 'element-plus/dist/index.css'
 import router from './router'
 import App from './App.vue'
 import { useAuthStore } from './stores/auth'
+import { installErrorHandler } from './utils/tracker'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -16,5 +17,8 @@ app.use(ElementPlus)
 // 初始化认证状态
 const authStore = useAuthStore()
 authStore.initAuth()
+
+// 安装全局错误监听（Vue 错误 + unhandledrejection + window.onerror）
+installErrorHandler(app)
 
 app.mount('#app')

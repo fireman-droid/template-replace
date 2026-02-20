@@ -12,6 +12,7 @@ import upload from '../config/upload.js'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { prisma } from '../config/db.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -320,6 +321,147 @@ router.get('/logs/stats', authenticate, requireAdmin, async (req, res) => {
   } catch (error) {
     console.error('获取日志统计错误:', error)
     res.status(500).json({ message: '获取日志统计失败', error: error.message })
+  }
+})
+
+// ==================== 仪表盘统计 ====================
+
+/**
+ * 获取仪表盘统计数据
+ * GET /api/admin/dashboard/stats
+ */
+router.get('/dashboard/stats', authenticate, requireAdmin, async (req, res) => {
+  try {
+    // 1. 总量统计
+    const [userCount, templateCount, caseCount, logCount] = await Promise.all([
+      prisma.user.count(),
+      prisma.template.count(),
+      prisma.case.count(),
+      prisma.systemLog.count()
+    ])
+
+    // 2. 近 7 天每日案卷创建趋势
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
+    sevenDaysAgo.setHours(0, 0, 0, 0)
+
+    const caseTrend = await prisma.$queryRaw`
+      SELECT DATE(created_at) as date, COUNT(*) as count
+      FROM cases
+      WHERE created_at >= ${sevenDaysAgo}
+      GROUP BY DATE(created_at)
+      ORDER BY date ASC
+    `
+
+    // 3. 近 7 天每日操作日志趋势
+    const logTrend = await prisma.$queryRaw`
+      SELECT DATE(created_at) as date, COUNT(*) as count
+      FROM system_logs
+      WHERE created_at >= ${sevenDaysAgo}
+      GROUP BY DATE(created_at)
+      ORDER BY date ASC
+    `
+
+    // 4. 模板使用排行（按关联案卷数量）
+    const templateRank = await prisma.$queryRaw`
+      SELECT t.name, COUNT(c.id) as case_count
+      FROM templates t
+      LEFT JOIN cases c ON c.template_id = t.id
+      GROUP BY t.id, t.name
+      ORDER BY case_count DESC
+      LIMIT 10
+    `
+
+    // 5. 操作类型分布
+    const actionStats = await SystemLog.getActionStats()
+
+    // 6. 近 7 天新增用户数
+    const newUserCount = await prisma.user.count({
+      where: { createdAt: { gte: sevenDaysAgo } }
+    })
+
+    // 补齐 7 天日期（没有数据的天填 0）
+    const fillDays = (rawData) => {
+      const map = {}
+      rawData.forEach(r => {
+        const key = new Date(r.date).toISOString().slice(0, 10)
+        map[key] = Number(r.count)
+      })
+      const result = []
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(sevenDaysAgo)
+        d.setDate(d.getDate() + i)
+        const key = d.toISOString().slice(0, 10)
+        result.push({ date: key, count: map[key] || 0 })
+      }
+      return result
+    }
+
+    res.json({
+      summary: { userCount, templateCount, caseCount, logCount, newUserCount },
+      caseTrend: fillDays(caseTrend),
+      logTrend: fillDays(logTrend),
+      templateRank: templateRank.map(r => ({ name: r.name, count: Number(r.case_count) })),
+      actionStats: actionStats.map(r => ({ name: r.action, count: Number(r.count) }))
+    })
+  } catch (error) {
+    console.error('获取仪表盘统计错误:', error)
+    res.status(500).json({ message: '获取统计数据失败', error: error.message })
+  }
+})
+
+// ==================== 聊天管理 ====================
+
+/**
+ * 获取聊天会话列表
+ * GET /api/admin/chat/sessions
+ */
+router.get('/chat/sessions', authenticate, requireAdmin, async (req, res) => {
+  try {
+    // 获取所有会话，按最后更新时间倒序
+    const sessions = await prisma.chatSession.findMany({
+      where: { status: 'open' },
+      orderBy: { updatedAt: 'desc' }
+    });
+
+    // 为每个会话获取最后一条消息和未读计数
+    const result = await Promise.all(sessions.map(async (session) => {
+      // 获取关联用户信息
+      const user = await prisma.user.findUnique({
+        where: { id: session.userId },
+        select: { username: true, email: true }
+      });
+
+      // 获取最后一条消息
+      const lastMsg = await prisma.chatMessage.findFirst({
+        where: { sessionId: session.id },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      // 获取未读数 (senderType = 'user' AND isRead = false)
+      const unreadCount = await prisma.chatMessage.count({
+        where: {
+          sessionId: session.id,
+          senderType: 'user',
+          isRead: false
+        }
+      });
+
+      return {
+        sessionId: session.id,
+        userId: session.userId,
+        username: user?.username || `用户 ${session.userId}`,
+        lastMessage: lastMsg?.content || '',
+        lastTime: lastMsg?.createdAt || session.updatedAt,
+        unread: unreadCount,
+        messages: [] // 前端需要这个字段初始化
+      };
+    }));
+
+    res.json(result);
+  } catch (error) {
+    console.error('获取会话列表错误:', error);
+    res.status(500).json({ message: '获取会话列表失败', error: error.message });
   }
 })
 

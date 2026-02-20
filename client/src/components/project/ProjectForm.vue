@@ -121,6 +121,7 @@
           <div class="progress-info">
              {{ aiStatus || '正在建立安全连接...' }}
           </div>
+          <button class="btn-cancel-ai" @click="cancelAIParse">取消填充</button>
         </div>
       </div>
     </transition>
@@ -134,6 +135,7 @@ import { useEditorStore, useTemplateStore } from '@/stores'
 import DynamicForm from '@/components/DynamicForm.vue'
 import { MagicStick, UploadFilled, Loading, Cpu } from '@element-plus/icons-vue'
 import { parseWithAIStream } from '@/api/ai.js'
+import { trackEvent, trackError, trackPerf } from '@/utils/tracker'
 
 const editorStore = useEditorStore()
 const templateStore = useTemplateStore()
@@ -160,6 +162,16 @@ const aiStatus = ref('')  // AI 当前状态提示
 const aiButtonHover = ref(false) // AI 按钮悬停状态
 const analysisLogs = ref([]) // 动画日志列表
 const terminalRef = ref(null) // 终端元素引用
+const aiAbortController = ref(null) // 用于取消 AI 请求
+const aiChanges = ref([]) // AI 填充变更记录 [{key, oldValue, newValue, fieldLabel}]
+
+// 取消 AI 填充
+function cancelAIParse() {
+  if (aiAbortController.value) {
+    aiAbortController.value.abort('用户取消')
+    aiAbortController.value = null
+  }
+}
 
 // 文件选择回调
 function handleFileChange(uploadFile) {
@@ -253,10 +265,13 @@ async function handleAIParse() {
   }
 
   aiLoading.value = true
-  // 关闭弹窗
+  aiChanges.value = []
   showAiDialog.value = false
+  const abortCtrl = new AbortController()
+  aiAbortController.value = abortCtrl
+  const aiStartTime = performance.now()
+  trackEvent('action', 'ai_parse_start', { hasFile: fileList.value.length > 0, hasText: !!aiText.value.trim() })
   try {
-    console.log('进行ai解析')
     const fields = extractFields(markData.value)
     // console.log(fields)
     const fieldMap = {}
@@ -272,7 +287,7 @@ async function handleAIParse() {
     if (fileList.value.length > 0 && fileList.value[0].raw) {
       formData.append('file', fileList.value[0].raw)
     }
-    // 使用流式api
+    // 使用流式api（支持取消和超时）
     await parseWithAIStream(formData, async (event) => {
       if (event.type === 'progress') {
         // 更新状态提示
@@ -288,15 +303,7 @@ async function handleAIParse() {
       }
       if (event.type === 'field') {
         const { key, value } = event
-        
-        // 调试日志：打印 AI 返回的每个字段
-        console.log('🤖 AI 返回字段:', { key, value })
-        
-        // 可选：将提取到的字段也显示在日志中（为了视觉效果）
-        if (analysisLogs.value.length === 0 || !analysisLogs.value[analysisLogs.value.length - 1].startsWith('提取字段')) {
-           // analysisLogs.value.push(`提取字段: ${key} = ${value.substring(0, 10)}...`)
-        }
-        
+
         // 尝试获取字段定义
         let field = fieldMap[key]
         let baseKey = key
@@ -322,6 +329,11 @@ async function handleAIParse() {
               }
             }
           }
+        }
+
+        // 如果找不到字段定义，跳过该字段
+        if (!field) {
+          return
         }
 
         // 展开字段所在的折叠面板（使用 baseKey 找到分类）
@@ -353,17 +365,44 @@ async function handleAIParse() {
             finalValue = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
           }
         }
-        // 填充字段（带动画）
+        // 记录变更（旧值 -> 新值）
+        const oldValue = editorStore.formData[key] ?? ''
+
+        // 填充字段
         if (field?.isMultiple && typeof finalValue === 'string') {
           editorStore.formData[key] = [finalValue]
-        } else if (field?.type === 'date') {
-          editorStore.formData[key] = finalValue
         } else {
-          // 直接填充，不使用动画
           editorStore.formData[key] = finalValue
         }
+
+        // 追踪变更
+        aiChanges.value.push({
+          key,
+          oldValue: oldValue || '',
+          newValue: finalValue,
+          fieldLabel: field?.fieldLabel || key
+        })
       }
       if (event.type === 'complete') {
+        // 打印总的识别结果
+        console.log('🎉 ========== AI 识别完成 ==========')
+        console.log(`📊 识别统计:`)
+        console.log(`  - 识别字段数: ${aiChanges.value.length}`)
+        console.log(`  - 请求ID: ${event.requestId}`)
+
+        // 打印表单填充结果
+        console.log('\n📝 表单填充结果:')
+        console.table(aiChanges.value.map(change => ({
+          '字段': change.fieldLabel,
+          'Key': change.key,
+          '旧值': change.oldValue || '(空)',
+          '新值': change.newValue
+        })))
+
+        console.log('\n✅ formData 最终状态:')
+        console.log(JSON.parse(JSON.stringify(editorStore.formData)))
+        console.log('=====================================\n')
+
         ElMessage.success(event.message)
         aiStatus.value = ''
       }
@@ -371,11 +410,14 @@ async function handleAIParse() {
         ElMessage.error(event.message)
         aiStatus.value = ''
       }
-    })
+    }, { signal: abortCtrl.signal })
+    trackPerf('ai_parse_complete', Math.round(performance.now() - aiStartTime), { fieldCount: aiChanges.value.length })
   } catch (error) {
+    trackError('ai_parse_failed', error)
     ElMessage.error('AI 解析失败: ' + (error.response?.data?.message || error.message))
   } finally {
     aiLoading.value = false
+    aiAbortController.value = null
   }
 }
 </script>
@@ -869,6 +911,22 @@ $text-gray: #94a3b8;
   .progress-info {
     color: rgba(255, 255, 255, 0.5);
     font-size: 14px;
+  }
+
+  .btn-cancel-ai {
+    margin-top: 16px;
+    padding: 8px 24px;
+    border-radius: 6px;
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    &:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: #ef4444;
+    }
   }
 }
 
