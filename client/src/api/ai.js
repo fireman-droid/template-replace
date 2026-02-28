@@ -37,6 +37,7 @@ export async function parseWithAIStream(formData, onEvent, options = {}) {
   let requestId = null
   let fieldCount = 0
   let cancelled = false
+  let hasTerminalEvent = false
 
   try {
     const response = await fetch(`${getApiBaseUrl()}/ai/parse-stream`, {
@@ -77,6 +78,7 @@ export async function parseWithAIStream(formData, onEvent, options = {}) {
           const data = JSON.parse(trimmed.slice(6))
           if (data.requestId) requestId = data.requestId
           if (data.type === 'field') fieldCount++
+          if (data.type === 'complete' || data.type === 'error') hasTerminalEvent = true
           onEvent(data)
         } catch (e) {
           // 不完整的 JSON，跳过（下一个 chunk 会补全）
@@ -90,10 +92,14 @@ export async function parseWithAIStream(formData, onEvent, options = {}) {
         const data = JSON.parse(buffer.trim().slice(6))
         if (data.requestId) requestId = data.requestId
         if (data.type === 'field') fieldCount++
+        if (data.type === 'complete' || data.type === 'error') hasTerminalEvent = true
         onEvent(data)
       } catch (e) {
         // 忽略
       }
+    }
+    if (!hasTerminalEvent) {
+      onEvent({ type: 'error', message: 'AI 连接已结束，未收到完成信号' })
     }
   } catch (err) {
     if (err.name === 'AbortError' || controller.signal.aborted) {
@@ -107,4 +113,29 @@ export async function parseWithAIStream(formData, onEvent, options = {}) {
   }
 
   return { requestId, fieldCount, cancelled }
+}
+
+// ai聊天助手
+export async function chatWithAI(message, history = [], onEvent) {
+  const res = fetch(`${getApiBaseUrl()}/ai/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    body: JSON.stringify({ message, history })
+  })
+  const reader = (await res).body.getReader()
+  const decoder = new TextDecoder()
+  let buf = ''
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buf += decoder.decode(value, { stream: true })
+    const lines = buf.split('\n')
+    buf = lines.pop() || ''
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue
+      try {
+        onEvent(JSON.parse(line.slice(6)))  // 每条数据回调一次
+      } catch { }
+    }
+  }
 }

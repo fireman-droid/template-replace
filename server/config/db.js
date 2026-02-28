@@ -32,13 +32,24 @@ export const testConnection = async () => {
     return true
     
   } catch (error) {
-    console.error('❌ MySQL 数据库连接失败:', error.message)
+    console.error(
+      '❌ MySQL 数据库连接失败:',
+      JSON.stringify({
+        code: error.code,
+        errno: error.errno,
+        message: error.message,
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
+        database: process.env.DB_NAME
+      })
+    )
     return false
   }
 }
 
 // Prisma Client 单例
-import { PrismaClient } from '@prisma/client'
+import prismaPkg from '@prisma/client'
+const { PrismaClient } = prismaPkg
 export const prisma = new PrismaClient()
 
 export default pool

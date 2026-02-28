@@ -5,51 +5,55 @@
     </div>
 
     <!-- AI 悬浮按钮 -->
-    <div 
-      class="ai-float-btn" 
-      :class="{ expanded: aiButtonHover }"
-      @mouseenter="aiButtonHover = true"
-      @mouseleave="aiButtonHover = false"
-      @click="showAiDialog = true"
-    >
-      <el-icon class="ai-icon"><MagicStick /></el-icon>
+    <div class="ai-float-btn" :class="{ expanded: aiButtonHover }" @mouseenter="aiButtonHover = true"
+      @mouseleave="aiButtonHover = false" @click="showAiDialog = true">
+      <el-icon class="ai-icon">
+        <MagicStick />
+      </el-icon>
       <span class="ai-text">AI 智能填充</span>
       <div class="status-dot"></div>
     </div>
 
     <div class="renderer-container" v-if="markData">
-      <DynamicForm ref="dynamicFormRef" :mark-data="markData" v-model="editorStore.formData" 
+      <DynamicForm ref="dynamicFormRef" :mark-data="markData" v-model="editorStore.formData"
         v-model:repeatCountMap="editorStore.rowRepeatCountMap" />
     </div>
 
     <div v-else class="loading-state">
-      <el-icon class="is-loading"><Loading /></el-icon>
+      <el-icon class="is-loading">
+        <Loading />
+      </el-icon>
       <span>正在初始化表单...</span>
     </div>
 
-    <el-dialog
-      v-model="showAiDialog"
-      title="AI 智能填充"
-      width="600px"
-      class="ai-config-dialog"
-      :modal="true"
-      :append-to-body="true"
-      :lock-scroll="false"
-      align-center
-    >
+    <el-dialog v-model="showAiDialog" title="AI 智能填充" width="600px" class="ai-config-dialog" :modal="true"
+      :append-to-body="true" :lock-scroll="false" align-center>
       <div class="ai-card-content">
         <div class="config-section">
+          <label>选择 AI 模型</label>
+          <div class="model-selector">
+            <div class="model-option" :class="{ active: selectedModel === 'kimi' }" @click="selectedModel = 'kimi'">
+              <el-icon>
+                <MagicStick />
+              </el-icon>
+              <span>Kimi</span>
+            </div>
+            <div class="model-option" :class="{ active: selectedModel === 'claude' }" @click="selectedModel = 'claude'">
+              <el-icon>
+                <Cpu />
+              </el-icon>
+              <span>Claude</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-section">
           <label>上传案卷资料（可选）</label>
-          <el-upload
-            class="upload-zone"
-            drag
-            action="#"
-            :auto-upload="false"
-            :on-change="handleFileChange"
-            :file-list="fileList"
-            accept=".pdf,.docx,.doc,.txt"
-          >
-            <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
+          <el-upload class="upload-zone" drag action="#" :auto-upload="false" :on-change="handleFileChange"
+            :file-list="fileList" accept=".pdf,.docx,.doc,.txt">
+            <el-icon class="el-icon--upload">
+              <UploadFilled />
+            </el-icon>
             <div class="el-upload__text">
               将文件拖到此处，或 <em>点击上传</em>
             </div>
@@ -63,12 +67,7 @@
 
         <div class="config-section">
           <label>或直接输入案情描述</label>
-          <el-input
-            v-model="aiText"
-            type="textarea"
-            :rows="6"
-            placeholder="请粘贴案情描述、起诉状内容、当事人信息等..."
-          />
+          <el-input v-model="aiText" type="textarea" :rows="6" placeholder="请粘贴案情描述、起诉状内容、当事人信息等..." />
         </div>
       </div>
 
@@ -77,13 +76,13 @@
           <button class="btn-cyber secondary" @click="showAiDialog = false">
             取消
           </button>
-          <button
-            class="btn-cyber primary"
-            :disabled="aiLoading"
-            @click="handleAIParse"
-          >
-            <el-icon v-if="aiLoading" class="is-loading"><Loading /></el-icon>
-            <el-icon v-else><MagicStick /></el-icon>
+          <button class="btn-cyber primary" :disabled="aiLoading" @click="handleAIParse">
+            <el-icon v-if="aiLoading" class="is-loading">
+              <Loading />
+            </el-icon>
+            <el-icon v-else>
+              <MagicStick />
+            </el-icon>
             {{ aiLoading ? "解析中..." : "开始智能填充" }}
           </button>
         </div>
@@ -97,10 +96,12 @@
           <div class="ai-brain-icon">
             <div class="brain-circle"></div>
             <div class="brain-waves"></div>
-            <el-icon class="icon"><Cpu /></el-icon>
+            <el-icon class="icon">
+              <Cpu />
+            </el-icon>
           </div>
-          
-          <h2 class="analysis-title">AI 正在深度分析案卷...</h2>
+
+          <h2 class="analysis-title">{{ selectedModel === 'claude' ? 'Claude' : 'Kimi' }} AI 正在深度分析案卷...</h2>
           
           <div class="terminal-box">
             <div class="terminal-header">
@@ -109,9 +110,10 @@
               <span class="dot green"></span>
             </div>
             <div class="terminal-body" ref="terminalRef">
-              <div v-for="(log, index) in analysisLogs" :key="index" class="log-line">
-                <span class="prompt">></span> {{ log }}
+              <div class="log-line progress" v-for="(log, i) in progressLogs" :key="'p'+i">
+                <span class="prompt">&gt;</span> {{ log }}
               </div>
+              <div class="log-line thinking" v-if="thinkingBuffer">{{ thinkingBuffer }}</div>
               <div class="cursor-line">
                 <span class="blink-cursor">_</span>
               </div>
@@ -119,7 +121,7 @@
           </div>
 
           <div class="progress-info">
-             {{ aiStatus || '正在建立安全连接...' }}
+            {{ aiStatus || '正在建立安全连接...' }}
           </div>
           <button class="btn-cancel-ai" @click="cancelAIParse">取消填充</button>
         </div>
@@ -158,9 +160,13 @@ const showAiDialog = ref(false)
 const aiText = ref('')
 const aiLoading = ref(false)
 const fileList = ref([])
+const selectedModel = ref('kimi')
 const aiStatus = ref('')  // AI 当前状态提示
 const aiButtonHover = ref(false) // AI 按钮悬停状态
-const analysisLogs = ref([]) // 动画日志列表
+
+const thinkingBuffer = ref('') // 累加思考内容的缓冲区
+const progressLogs = ref([]) // 进度消息列表
+
 const terminalRef = ref(null) // 终端元素引用
 const aiAbortController = ref(null) // 用于取消 AI 请求
 const aiChanges = ref([]) // AI 填充变更记录 [{key, oldValue, newValue, fieldLabel}]
@@ -173,6 +179,33 @@ function cancelAIParse() {
   }
 }
 
+// 选项值规范化（兜底：处理“是/否”与“了解/不了解”不匹配）
+function normalizeOptionValue(rawValue, field) {
+  if (!field || field.type !== 'options') return rawValue
+  const options = Array.isArray(field.options) ? field.options : []
+  if (options.length === 0) return rawValue
+
+  const mapSingle = (val) => {
+    if (options.includes(val)) return val
+    // 了解/不了解 <-> 是/否
+    if (options.includes('了解') && options.includes('不了解')) {
+      if (val === '是') return '了解'
+      if (val === '否') return '不了解'
+    }
+    if (options.includes('是') && options.includes('否')) {
+      if (val === '了解') return '是'
+      if (val === '不了解') return '否'
+    }
+    return val
+  }
+
+  if (Array.isArray(rawValue)) {
+    return rawValue.map(mapSingle)
+  }
+
+  return mapSingle(rawValue)
+}
+
 // 文件选择回调
 function handleFileChange(uploadFile) {
   fileList.value = [uploadFile]
@@ -181,21 +214,21 @@ function handleFileChange(uploadFile) {
 // 从 markData 提取字段列表
 function extractFields(markData) {
   const fields = []
-  
+
   if (!markData?.data) return fields
-  
+
   // 遍历所有 table
   for (const table of markData.data) {
     if (table.type !== 'table' || !table.data) continue
-    
+
     for (const row of table.data) {
       if (row.type !== 'table-row' || !row.data) continue
-      
+
       // 先扫描 row 中所有 col，找到 table-title 获取分类信息
       let currentCanRepeat = false
       let currentMarkKey = ''
       let currentSubTitle = ''
-      
+
       for (const col of row.data) {
         if (col.type !== 'table-col' || !col.data) continue
         for (const item of col.data) {
@@ -208,11 +241,11 @@ function extractFields(markData) {
         }
         if (currentSubTitle) break // 找到标题后停止搜索
       }
-      
+
       // 再次遍历 row 中所有 col，提取 fields
       for (const col of row.data) {
         if (col.type !== 'table-col' || !col.data) continue
-        
+
         for (const item of col.data) {
           // 普通字段 - 在 fieldLabel 中添加简短分类前缀帮助 AI 识别
           if (item.type === 'field' && item.data) {
@@ -222,13 +255,18 @@ function extractFields(markData) {
               .replace('（自然人）', '-人')
               .replace('（法人、非法人组织）', '-法人')
             const labelWithCategory = shortTitle ? `[${shortTitle}]${baseLabel}` : baseLabel
+            const optionLabels = (item.data.props?.options || [])
+              .map(opt => (typeof opt === 'string' ? opt : opt?.label))
+              .filter(Boolean)
+
             fields.push({
               fieldKey: item.data.fieldKey,
               fieldLabel: labelWithCategory,
               type: item.data.type || 'text',
               isMultiple: item.data.props?.isMultiple || false,
               canRepeat: currentCanRepeat,
-              markKey: currentMarkKey
+              markKey: currentMarkKey,
+              options: optionLabels
             })
           }
           // inline-fields
@@ -239,13 +277,18 @@ function extractFields(markData) {
                 .replace('（自然人）', '-人')
                 .replace('（法人、非法人组织）', '-法人')
               const labelWithCategory = shortTitle ? `[${shortTitle}]${baseLabel}` : baseLabel
+              const optionLabels = (f.props?.options || [])
+                .map(opt => (typeof opt === 'string' ? opt : opt?.label))
+                .filter(Boolean)
+
               fields.push({
                 fieldKey: f.fieldKey,
                 fieldLabel: labelWithCategory,
                 type: f.type || 'text',
                 isMultiple: f.props?.isMultiple || false,
                 canRepeat: currentCanRepeat,
-                markKey: currentMarkKey
+                markKey: currentMarkKey,
+                options: optionLabels
               })
             }
           }
@@ -253,7 +296,7 @@ function extractFields(markData) {
       }
     }
   }
-  
+
   return fields
 }
 
@@ -265,6 +308,8 @@ async function handleAIParse() {
   }
 
   aiLoading.value = true
+  thinkingBuffer.value = ''   
+  progressLogs.value = []      
   aiChanges.value = []
   showAiDialog.value = false
   const abortCtrl = new AbortController()
@@ -280,6 +325,7 @@ async function handleAIParse() {
     const formData = new FormData()
     // console.log(formData)
     formData.append('fields', JSON.stringify(fields))
+    formData.append('model', selectedModel.value)
     if (aiText.value.trim()) {
       formData.append('text', aiText.value)
     }
@@ -290,15 +336,16 @@ async function handleAIParse() {
     // 使用流式api（支持取消和超时）
     await parseWithAIStream(formData, async (event) => {
       if (event.type === 'progress') {
-        // 更新状态提示
         aiStatus.value = event.message
-        // 添加到日志动画
-        analysisLogs.value.push(event.message)
-        // 自动滚动到底部
+        progressLogs.value.push(event.message)
         nextTick(() => {
-          if (terminalRef.value) {
-            terminalRef.value.scrollTop = terminalRef.value.scrollHeight
-          }
+          if (terminalRef.value) terminalRef.value.scrollTop = terminalRef.value.scrollHeight
+        })
+      }
+      if (event.type === 'thinking') {
+        thinkingBuffer.value += event.content || ''
+        nextTick(() => {
+          if (terminalRef.value) terminalRef.value.scrollTop = terminalRef.value.scrollHeight
         })
       }
       if (event.type === 'field') {
@@ -307,17 +354,17 @@ async function handleAIParse() {
         // 尝试获取字段定义
         let field = fieldMap[key]
         let baseKey = key
-        
+
         // 如果找不到字段定义，尝试解析 _N 后缀（处理多人员）
         if (!field) {
           const match = key.match(/^(.+)_(\d+)$/)
           if (match) {
             baseKey = match[1]
             const personIndex = parseInt(match[2], 10) // _1 表示第2个人（index 1）
-            
+
             if (fieldMap[baseKey]) {
               field = fieldMap[baseKey]
-              
+
               // 自动增加人员数量
               if (field.markKey) {
                 const requiredCount = personIndex + 1
@@ -341,7 +388,7 @@ async function handleAIParse() {
           dynamicFormRef.value.expandCategoryByFieldKey(baseKey)
           await new Promise(resolve => setTimeout(resolve, 100))
         }
-        
+
         // 滚动到当前字段 (使用 key, 因为 DOM 中会生成带后缀的 key)
         // 注意：如果刚刚增加了人员，DOM 可能还没完全渲染好，稍微等待
         await nextTick()
@@ -350,7 +397,7 @@ async function handleAIParse() {
           fieldEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
           await new Promise(resolve => setTimeout(resolve, 200))
         }
-        
+
         // 处理日期格式
         let finalValue = value
         // 处理数字类型
@@ -365,46 +412,26 @@ async function handleAIParse() {
             finalValue = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
           }
         }
+        // 选项值兜底规范化
+        let normalizedValue = normalizeOptionValue(finalValue, field)
+
         // 记录变更（旧值 -> 新值）
         const oldValue = editorStore.formData[key] ?? ''
 
         // 填充字段
-        if (field?.isMultiple && typeof finalValue === 'string') {
-          editorStore.formData[key] = [finalValue]
+        if (field?.isMultiple && typeof normalizedValue === 'string') {
+          editorStore.formData[key] = [normalizedValue]
         } else {
-          editorStore.formData[key] = finalValue
+          editorStore.formData[key] = normalizedValue
         }
 
         // 追踪变更
         aiChanges.value.push({
           key,
           oldValue: oldValue || '',
-          newValue: finalValue,
+          newValue: normalizedValue,
           fieldLabel: field?.fieldLabel || key
         })
-      }
-      if (event.type === 'complete') {
-        // 打印总的识别结果
-        console.log('🎉 ========== AI 识别完成 ==========')
-        console.log(`📊 识别统计:`)
-        console.log(`  - 识别字段数: ${aiChanges.value.length}`)
-        console.log(`  - 请求ID: ${event.requestId}`)
-
-        // 打印表单填充结果
-        console.log('\n📝 表单填充结果:')
-        console.table(aiChanges.value.map(change => ({
-          '字段': change.fieldLabel,
-          'Key': change.key,
-          '旧值': change.oldValue || '(空)',
-          '新值': change.newValue
-        })))
-
-        console.log('\n✅ formData 最终状态:')
-        console.log(JSON.parse(JSON.stringify(editorStore.formData)))
-        console.log('=====================================\n')
-
-        ElMessage.success(event.message)
-        aiStatus.value = ''
       }
       if (event.type === 'error') {
         ElMessage.error(event.message)
@@ -488,11 +515,9 @@ $text-gray: #94a3b8;
     display: flex;
     align-items: center;
     gap: 8px;
-    background: linear-gradient(
-      135deg,
-      rgba($accent, 0.15),
-      rgba($primary, 0.1)
-    );
+    background: linear-gradient(135deg,
+        rgba($accent, 0.15),
+        rgba($primary, 0.1));
     border: 1px solid rgba($accent, 0.4);
     padding: 12px 18px;
     border-radius: 30px 0 0 30px;
@@ -526,11 +551,9 @@ $text-gray: #94a3b8;
     &.expanded,
     &:hover {
       right: 0;
-      background: linear-gradient(
-        135deg,
-        rgba($accent, 0.25),
-        rgba($primary, 0.2)
-      );
+      background: linear-gradient(135deg,
+          rgba($accent, 0.25),
+          rgba($primary, 0.2));
       box-shadow: -4px 0 30px rgba($accent, 0.4);
     }
   }
@@ -578,6 +601,7 @@ $text-gray: #94a3b8;
 
   .el-input__inner {
     color: #ffffff !important;
+
     &::placeholder {
       color: rgba(255, 255, 255, 0.3);
     }
@@ -586,6 +610,7 @@ $text-gray: #94a3b8;
   .el-textarea__inner {
     color: #ffffff !important;
     padding: 10px 15px !important;
+
     &::placeholder {
       color: rgba(255, 255, 255, 0.3);
     }
@@ -601,18 +626,22 @@ $text-gray: #94a3b8;
   .el-radio {
     color: #e2e8f0;
     margin-right: 20px;
+
     .el-radio__label {
       color: #e2e8f0;
     }
+
     .el-radio__inner {
       background: transparent;
       border-color: rgba(255, 255, 255, 0.4);
     }
+
     &.is-checked {
       .el-radio__inner {
         background: $primary;
         border-color: $primary;
       }
+
       .el-radio__label {
         color: $primary;
       }
@@ -622,18 +651,22 @@ $text-gray: #94a3b8;
   // 新增 Checkbox 样式覆盖
   .el-checkbox {
     color: #e2e8f0;
+
     .el-checkbox__label {
       color: #e2e8f0;
     }
+
     .el-checkbox__inner {
       background: transparent;
       border-color: rgba(255, 255, 255, 0.4);
     }
+
     &.is-checked {
       .el-checkbox__inner {
         background: $primary;
         border-color: $primary;
       }
+
       .el-checkbox__label {
         color: $primary;
       }
@@ -644,8 +677,10 @@ $text-gray: #94a3b8;
 // AI 弹窗样式 (保持不变)
 .ai-card-content {
   padding: 10px 0;
+
   .config-section {
     margin-bottom: 24px;
+
     label {
       display: block;
       color: $text-white;
@@ -654,10 +689,12 @@ $text-gray: #94a3b8;
       font-weight: 600;
     }
   }
+
   .model-selector {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
+
     .model-option {
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.1);
@@ -666,6 +703,7 @@ $text-gray: #94a3b8;
       text-align: center;
       cursor: pointer;
       transition: all 0.3s;
+
       .el-icon {
         font-size: 24px;
         color: $text-gray;
@@ -673,21 +711,26 @@ $text-gray: #94a3b8;
         display: block;
         margin: 0 auto 8px;
       }
+
       span {
         font-size: 12px;
         color: $text-gray;
         display: block;
       }
+
       &:hover {
         background: rgba(255, 255, 255, 0.1);
       }
+
       &.active {
         background: rgba($primary, 0.15);
         border-color: $primary;
+
         .el-icon,
         span {
           color: $primary;
         }
+
         box-shadow: 0 0 15px rgba($primary, 0.15);
       }
     }
@@ -699,15 +742,19 @@ $text-gray: #94a3b8;
     background: rgba(255, 255, 255, 0.02) !important;
     border-color: rgba(255, 255, 255, 0.1) !important;
     transition: all 0.3s;
+
     &:hover {
       border-color: $primary !important;
       background: rgba($primary, 0.05) !important;
     }
+
     .el-icon--upload {
       color: $text-gray;
     }
+
     .el-upload__text {
       color: $text-gray;
+
       em {
         color: $primary;
       }
@@ -725,18 +772,22 @@ $text-gray: #94a3b8;
   align-items: center;
   gap: 6px;
   transition: all 0.3s;
+
   &.secondary {
     background: transparent;
     border: 1px solid #475569;
     color: #cbd5e1;
+
     &:hover {
       color: white;
       border-color: white;
     }
   }
+
   &.primary {
     background: $primary;
     color: white;
+
     &:hover {
       background: color-mix(in srgb, $primary 90%, white 10%);
       box-shadow: 0 0 15px rgba($primary, 0.3);
@@ -748,13 +799,16 @@ $text-gray: #94a3b8;
   0% {
     box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
   }
+
   70% {
     box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
   }
+
   100% {
     box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
   }
 }
+
 // 全屏 AI 分析遮罩
 .ai-analysis-overlay {
   position: fixed;
@@ -800,6 +854,7 @@ $text-gray: #94a3b8;
       border: 2px solid rgba($primary, 0.3);
       border-radius: 50%;
       animation: spin 4s linear infinite;
+
       &::before {
         content: "";
         position: absolute;
@@ -863,9 +918,18 @@ $text-gray: #94a3b8;
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        &.red { background: #ff5f56; }
-        &.yellow { background: #ffbd2e; }
-        &.green { background: #27c93f; }
+
+        &.red {
+          background: #ff5f56;
+        }
+
+        &.yellow {
+          background: #ffbd2e;
+        }
+
+        &.green {
+          background: #27c93f;
+        }
       }
     }
 
@@ -877,11 +941,12 @@ $text-gray: #94a3b8;
       font-size: 13px;
       color: $text-gray;
       text-align: left;
-      
+
       /* 自定义滚动条 */
       &::-webkit-scrollbar {
         width: 6px;
       }
+
       &::-webkit-scrollbar-thumb {
         background: rgba($primary, 0.3);
         border-radius: 3px;
@@ -892,10 +957,26 @@ $text-gray: #94a3b8;
         line-height: 1.4;
         animation: fadeIn 0.3s ease-out;
         word-break: break-all;
-        
+
         .prompt {
           color: $primary;
           margin-right: 8px;
+        }
+
+        // progress 消息：亮色、带 > 前缀
+        &.progress {
+          color: $accent;
+          font-size: 13px;
+        }
+
+        // thinking 内容：暗色、小字、连续文本
+        &.thinking {
+          color: rgba($text-gray, 0.4);
+          font-size: 12px;
+          white-space: pre-wrap;
+          border-left: 2px solid rgba($primary, 0.15);
+          padding-left: 10px;
+          margin-top: 4px;
         }
       }
 
@@ -923,6 +1004,7 @@ $text-gray: #94a3b8;
     font-size: 14px;
     cursor: pointer;
     transition: all 0.3s;
+
     &:hover {
       background: rgba(239, 68, 68, 0.25);
       border-color: #ef4444;
@@ -932,27 +1014,55 @@ $text-gray: #94a3b8;
 
 // 动画关键帧
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes ripple {
-  0% { transform: scale(0.8); opacity: 1; }
-  100% { transform: scale(1.5); opacity: 0; }
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
 }
 
 @keyframes shine {
-  to { background-position: 200% center; }
+  to {
+    background-position: 200% center;
+  }
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 // Vue 动画
@@ -965,7 +1075,6 @@ $text-gray: #94a3b8;
 .fade-leave-to {
   opacity: 0;
 }
-
 </style>
 
 <style lang="scss">
@@ -980,18 +1089,22 @@ $text-gray: #94a3b8;
     margin-right: 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     padding: 20px !important;
+
     .el-dialog__title {
       color: #ffffff !important;
       font-weight: 700;
     }
   }
+
   .el-dialog__body {
     padding: 20px 30px !important;
     color: #fff;
   }
+
   .el-dialog__footer {
     border-top: 1px solid rgba(255, 255, 255, 0.05);
     padding: 16px 30px !important;
+
     .dialog-footer {
       display: flex;
       justify-content: flex-end;

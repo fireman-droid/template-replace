@@ -124,7 +124,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch, markRaw } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch, markRaw } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -249,6 +249,11 @@ const handleDelete = async (item) => {
 // 页面加载时获取案卷列表
 onMounted(() => {
   fetchCases()
+  window.addEventListener('case-created', fetchCases)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('case-created', fetchCases)
 })
 </script>
 

@@ -123,10 +123,11 @@ class Template {
     
     if (rows[0]) {
       const row = rows[0]
-      return {
-        ...row,
-        markData: typeof row.mark_data === 'string' ? JSON.parse(row.mark_data || '{}') : row.mark_data
+      let markData = row.mark_data
+      if (typeof markData === 'string') {
+        try { markData = JSON.parse(markData || '{}') } catch { markData = {} }
       }
+      return { ...row, markData }
     }
     return null
   }

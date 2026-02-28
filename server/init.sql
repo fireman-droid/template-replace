@@ -61,16 +61,3 @@ CREATE TABLE IF NOT EXISTS cases (
   FOREIGN KEY (template_id) REFERENCES templates(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 插入示例模板
-INSERT INTO templates (name, description, icon, features, mark_data, enabled) VALUES 
-('离婚纠纷协议', '适用于双方自愿离婚，需处理子女抚养及财产分割。', 'UserFilled', '["抚养权判定", "房产分割", "债务处理"]', '{}', TRUE),
-('买卖合同纠纷', '适用于动产/不动产交易违约、货款拖欠等商事纠纷。', 'Money', '["违约金计算", "风险转移", "质量异议"]', '{}', TRUE),
-('房屋租赁/纠纷', '适用于房屋租赁违约、押金退还、腾房等居住权纠纷。', 'House', '["装修折旧", "免租期条款", "优先购买权"]', '{}', TRUE)
-ON DUPLICATE KEY UPDATE name=name;
-
--- 插入示例案卷数据
-INSERT INTO cases (title, template_id, user_id, status, form_data) VALUES 
-('张三诉李四离婚纠纷案', 1, 2, 'draft', '{"husband_name":"张三","wife_name":"李四"}'),
-('某公司房屋买卖合同', 2, 2, 'completed', '{"buyer":"某公司","seller":"王五"}'),
-('民间借贷纠纷诉讼', 3, 2, 'draft', '{"landlord":"赵六","tenant":"孙七"}')
-ON DUPLICATE KEY UPDATE title=title;
